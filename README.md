@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Intentionally
 
-## Getting Started
+Video-first dating app. See [`AGENTS.md`](./AGENTS.md) for the full
+build brief — it's the source of truth for scope, stack, and data model.
 
-First, run the development server:
+## Local development
+
+Requirements: Node 20.x and pnpm.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+cp .env.local.example .env.local   # then fill in real values
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app runs on http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Useful scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Script | Purpose |
+|---|---|
+| `pnpm dev` | Start the Next.js dev server |
+| `pnpm build` | Production build |
+| `pnpm lint` | ESLint (with `/reference` ignored) |
+| `pnpm typecheck` | `tsc --noEmit` |
+| `pnpm db:diff` | Diff local migrations against the linked Supabase project |
+| `pnpm db:push` | Apply migrations to the linked Supabase project |
 
-## Learn More
+## Database migrations
 
-To learn more about Next.js, take a look at the following resources:
+Migrations live in `supabase/migrations/` and are managed through the
+Supabase CLI (installed as a devDependency, run via `pnpm exec
+supabase ...`). We don't run a local Postgres / Docker stack — all
+schema changes go straight to the cloud project.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+First-time setup:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm exec supabase link --project-ref <your-project-ref>
+pnpm db:push
+```
 
-## Deploy on Vercel
+`supabase link` will prompt for your DB password.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Environment variables
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Documented in [`.env.local.example`](./.env.local.example) — every
+variable from AGENTS.md §11 with a placeholder value. Never commit
+`.env.local`.
+
+## Project layout
+
+See AGENTS.md §4 for the canonical layout. In Step 1 we've scaffolded:
+
+- `app/(public)/` — landing + login pages (no auth required)
+- `app/(app)/` — authenticated routes; layout redirects to `/login`
+  if no session
+- `app/auth/callback/` — code-exchange handler for code-based auth
+- `middleware.ts` — refreshes the Supabase session cookie on every
+  non-asset request
+- `lib/supabase/` — browser / server / middleware clients
+- `supabase/migrations/` — SQL migrations
+
+Later steps will fill in `lib/qa`, `lib/daily`, `lib/stripe`, etc.
+
+## Deployment
+
+Not wired yet. See AGENTS.md §10 for the build sequence — deployment
+notes will land alongside Step 11 polish.
