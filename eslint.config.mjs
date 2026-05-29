@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Read-only prototype — see AGENTS.md §14.
+    "reference/**",
   ]),
 ]);
 
