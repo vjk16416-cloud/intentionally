@@ -136,6 +136,8 @@ Postgres via Supabase. All tables have `id uuid primary key default gen_random_u
 
 ### `profiles` (extends `auth.users` 1:1, created via trigger on auth signup)
 
+> Columns marked `not null` below are the *final* shape after onboarding. Because the trigger inserts a row at phone-OTP signup — before any onboarding data exists — those columns are nullable in the schema and enforced by the onboarding flow / a "profile complete" check rather than by the DB. `id_verified`, `paused`, `created_at`, and `updated_at` are the only columns truly `not null` at the DB level.
+
 ```sql
 id uuid references auth.users primary key
 display_name text not null
