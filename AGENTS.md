@@ -67,7 +67,7 @@ Do not build any of the following without explicit founder approval. If a chat m
 
 | Layer | Choice | Why |
 |---|---|---|
-| Framework | Next.js 14 (App Router) + TypeScript | Founder-friendly hosting on Vercel; type safety reduces agent errors |
+| Framework | Next.js 16 + React 19 (App Router) + TypeScript | Founder-friendly hosting on Vercel; type safety reduces agent errors |
 | Styling | Tailwind CSS + shadcn/ui | Matches existing prototype aesthetic |
 | Database / Auth / Realtime / Storage | Supabase | One service, generous free tier, EU region |
 | Video | Daily.co (prebuilt UI) | ~£0.004/min, no WebRTC to maintain |
