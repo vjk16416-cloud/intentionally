@@ -69,5 +69,5 @@ export async function saveTrustedContact(
     return { error: error.message };
   }
 
-  redirect("/onboarding/photos");
+  redirect("/onboarding/done");
 }
