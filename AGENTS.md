@@ -277,6 +277,19 @@ On confirmation:
 
 **T-5 minutes:** SMS + email to both with the questions preview and join link.
 
+#### Scheduling refinements (build at Step 5)
+
+These are product decisions locked in now so that Step 5 builds them in from the start. They sit on top of the existing scheduling model — availability grid at onboarding, availability overlap as a matching filter, three pre-computed mutual slots offered post-match, 48-hour match expiry — and refine *how* those slots are picked, presented, and followed through.
+
+1. **Bias the three offered slots toward the next 24–48 hours**, not spread evenly across the week. Sooner slots convert better; interest decays fast after a match.
+2. **Treat a booked slot as a real appointment, not a soft tap.** On booking, generate an add-to-calendar link (ICS) and schedule two reminders: morning-of and one hour before.
+3. **Add a small commitment step at the moment of booking** — e.g. a one-line "what are you hoping to talk about?" — to increase psychological investment and follow-through.
+4. **T-5 takeover, not a notification.** Five minutes before the Q&A, show both users a full-screen, ring-style "starts in 5 minutes" takeover (like an incoming call) rather than a dismissible system notification.
+5. **Symmetric but gentle no-show accountability.** A no-show on a confirmed Q&A slightly deprioritises the no-show's next match in the queue; first offence is not punitive, repeated offences compound. Applied equally to both sides.
+6. **Grace reschedule instead of binary show/no-show.** Offer a one-tap "running late / move 10 minutes" option within a short window around the scheduled start, so a minor delay doesn't collapse the session.
+
+**Pre-build validation:** before the full scheduling loop is built, pressure-test the core assumption (that the wedge audience will actually attend a scheduled 10-minute live video call with a stranger) by manually matching ~10 real users and scheduling their Q&As by hand. If attendance is poor under manual conditions, the automated loop won't fix it.
+
 ### 6.5 Live Q&A (the core moment)
 
 **Layout:**
