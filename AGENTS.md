@@ -25,7 +25,9 @@ Intentionally is a video-first dating app. Matches must complete a mandatory 10-
 Swipe culture produces low-signal matches because text is a weak interview format. By forcing one structured, time-bounded human interaction earlier in the funnel, we should produce higher-quality matches with fewer ghosts, fewer bad first dates, and more relationships per 100 matches than incumbents.
 
 ### Target audience
-Late-20s to mid-30s, big-city, dating-app-fatigued. London-first. Working hypothesis for MVP copy: "London, 26–34, dating-app-fatigued, willing to pay for better signal." Final wedge audience to be locked before beta.
+Late-20s to mid-30s, big-city, dating-app-fatigued. **London-primary** — London is the density / seeding / marketing focus and will be the only actively seeded market for MVP. Working hypothesis for MVP copy: "London, 26–34, dating-app-fatigued, willing to pay for better signal." Final wedge audience to be locked before beta.
+
+Other UK cities (~20, see §5 / the `MARKETS` const) are **open-for-signup but NOT yet seeded** — they exist so we don't turn people away at the door, not because we expect an active match pool there. Users outside London should not expect matches until we deliberately seed those cities. Do not invest engineering or copy in those markets ahead of London hitting the wedge metrics above.
 
 ### What success looks like for the MVP
 Beta with 50–100 invited users in one London neighbourhood. We're hunting these three numbers:
@@ -150,7 +152,8 @@ intention text not null                    -- 'long-term' | 'short-term' | 'figu
 bio_prompt_key text not null               -- key into BIO_PROMPTS const
 bio_answer text not null check (char_length(bio_answer) <= 200)
 photos text[] not null check (array_length(photos, 1) between 2 and 6)
-neighbourhood text not null
+city text not null                         -- one of the seeded UK cities (see lib/onboarding/constants MARKETS)
+neighbourhood text not null                -- must belong to the chosen city in MARKETS
 id_verified boolean default false
 id_verified_at timestamptz
 paused boolean default false
@@ -164,7 +167,7 @@ updated_at timestamptz default now()
 user_id uuid references profiles unique
 name text not null
 phone_e164 text not null
-relationship text                          -- 'friend' | 'family' | 'partner' | 'other'
+relationship text                          -- 'friend' | 'family' | 'other' (nullable)
 ```
 **RLS:** users can only read/write their own.
 
@@ -253,7 +256,7 @@ body text
 4. Photos (min 2, max 6, Supabase Storage — direct client upload to `{userId}/{uuid}.{ext}`, gated by per-folder RLS)
 5. Intention (3 options)
 6. Bio prompt (pick 1 of ~12 prompts, answer ≤200 chars)
-7. London neighbourhood (select from list of ~30 — hard-coded)
+7. City + neighbourhood (UK only; pick city from the seeded `MARKETS` list, then neighbourhood from that city's list)
 8. Trusted contact (name + phone in E.164)
 9. Done → Discover
 
@@ -264,7 +267,7 @@ Block all app routes when the profile is incomplete or the trusted contact is mi
 ### 6.2 Discover & swipe
 Stack of profile cards (existing prototype design). One profile per card showing photos, name, age, intention badge, bio prompt + answer, neighbourhood. Swipe right = like. Swipe left = pass. Tap = expanded view. **Limit: 20 likes per 24h** (anti-spam, not monetisation).
 
-Filter rules: only show profiles where `seeking` and `gender` overlap appropriately, and where there is no existing swipe row from the viewer.
+Filter rules: only show profiles where `seeking` and `gender` overlap appropriately, where `city` matches the viewer's `city` (in-person dates require local density — never show cross-city profiles), and where there is no existing swipe row from the viewer.
 
 ### 6.3 Match
 When B likes A and A has already liked B (or vice versa), both see a match modal. CTA: **"Schedule your Q&A."** Match expires in 7 days if no Q&A scheduled — set by `expires_at`, checked by cron.
