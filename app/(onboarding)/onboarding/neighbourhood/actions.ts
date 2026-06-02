@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 
-import { LONDON_NEIGHBOURHOOD_SET } from "@/lib/onboarding/constants";
+import { isValidMarket } from "@/lib/onboarding/constants";
 import { createClient } from "@/lib/supabase/server";
 
 export type NeighbourhoodActionState = {
@@ -13,8 +13,16 @@ export async function saveNeighbourhood(
   _prev: NeighbourhoodActionState,
   formData: FormData,
 ): Promise<NeighbourhoodActionState> {
-  const neighbourhood = String(formData.get("neighbourhood") ?? "");
-  if (!LONDON_NEIGHBOURHOOD_SET.has(neighbourhood)) {
+  const city = String(formData.get("city") ?? "").trim();
+  const neighbourhood = String(formData.get("neighbourhood") ?? "").trim();
+
+  if (!city) {
+    return { error: "Pick your city." };
+  }
+  if (!neighbourhood) {
+    return { error: "Pick your neighbourhood." };
+  }
+  if (!isValidMarket(city, neighbourhood)) {
     return { error: "Pick a neighbourhood from the list." };
   }
 
@@ -28,7 +36,7 @@ export async function saveNeighbourhood(
 
   const { error } = await supabase
     .from("profiles")
-    .update({ neighbourhood })
+    .update({ city, neighbourhood })
     .eq("id", user.id);
 
   if (error) {

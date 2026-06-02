@@ -11,5 +11,6 @@ export type ProfileOnboardingFields = {
   bio_prompt_key: string | null;
   bio_answer: string | null;
   photos: string[] | null;
+  city: string | null;
   neighbourhood: string | null;
 };

@@ -256,11 +256,3 @@ export function getNeighbourhoodsFor(city: string): readonly string[] {
 export function isValidMarket(city: string, neighbourhood: string): boolean {
   return getNeighbourhoodsFor(city).includes(neighbourhood);
 }
-
-// Backwards-compat shims for the legacy London-only neighbourhood
-// step. Removed in the follow-up commit that wires up the city +
-// neighbourhood dependent select.
-export const LONDON_NEIGHBOURHOODS = MARKETS[0].neighbourhoods;
-export const LONDON_NEIGHBOURHOOD_SET: ReadonlySet<string> = new Set(
-  LONDON_NEIGHBOURHOODS,
-);

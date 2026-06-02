@@ -30,7 +30,7 @@ export async function getOnboardingState(
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "display_name, date_of_birth, gender, seeking, intention, bio_prompt_key, bio_answer, photos, neighbourhood",
+      "display_name, date_of_birth, gender, seeking, intention, bio_prompt_key, bio_answer, photos, city, neighbourhood",
     )
     .eq("id", userId)
     .maybeSingle<ProfileOnboardingFields>();
@@ -54,7 +54,7 @@ export async function getOnboardingState(
   if (!profile.bio_prompt_key || !profile.bio_answer) {
     return { status: "incomplete", nextStep: "/onboarding/prompt" };
   }
-  if (!profile.neighbourhood) {
+  if (!profile.city || !profile.neighbourhood) {
     return { status: "incomplete", nextStep: "/onboarding/neighbourhood" };
   }
 

@@ -4,6 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 
 import { NeighbourhoodForm } from "./neighbourhood-form";
 
+type LocationFields = {
+  city: string | null;
+  neighbourhood: string | null;
+};
+
 export default async function NeighbourhoodStepPage() {
   const supabase = await createClient();
   const {
@@ -15,9 +20,9 @@ export default async function NeighbourhoodStepPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("neighbourhood")
+    .select("city, neighbourhood")
     .eq("id", user.id)
-    .maybeSingle<{ neighbourhood: string | null }>();
+    .maybeSingle<LocationFields>();
 
   return (
     <div className="space-y-6">
@@ -26,14 +31,15 @@ export default async function NeighbourhoodStepPage() {
           Step 6 of 7
         </p>
         <h1 className="text-2xl font-semibold tracking-tight">
-          Where in London?
+          Where do you live?
         </h1>
         <p className="text-sm text-muted-foreground">
-          Pick the neighbourhood you spend the most time in. You can change it
-          later.
+          Pick your city, then the neighbourhood you spend the most time in.
+          You can change it later.
         </p>
       </header>
       <NeighbourhoodForm
+        initialCity={profile?.city ?? null}
         initialNeighbourhood={profile?.neighbourhood ?? null}
       />
     </div>
