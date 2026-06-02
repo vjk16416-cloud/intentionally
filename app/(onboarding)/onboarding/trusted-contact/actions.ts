@@ -71,5 +71,5 @@ export async function saveTrustedContact(
   }
 
   const returnTo = String(formData.get("returnTo") ?? "");
-  redirect(resolveNextStep(returnTo, "/onboarding/done"));
+  redirect(resolveNextStep(returnTo, "/onboarding/review"));
 }
