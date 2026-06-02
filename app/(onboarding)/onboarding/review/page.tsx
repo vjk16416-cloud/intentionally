@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { buttonVariants } from "@/components/ui/button";
+import { computeAge } from "@/lib/age";
 import { BIO_PROMPTS } from "@/lib/onboarding/constants";
 import { getOnboardingState } from "@/lib/onboarding/state";
 import { PROFILE_PHOTOS_BUCKET } from "@/lib/storage/photos";
@@ -26,17 +27,6 @@ type ReviewTrustedContact = {
   phone_e164: string | null;
   relationship: string | null;
 };
-
-function computeAge(dob: string): number {
-  const birth = new Date(dob);
-  const now = new Date();
-  let age = now.getFullYear() - birth.getFullYear();
-  const m = now.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) {
-    age -= 1;
-  }
-  return age;
-}
 
 const GENDER_LABELS: Record<string, string> = {
   woman: "Woman",
