@@ -1,0 +1,64 @@
+"use client";
+
+import { useActionState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+import { saveProfile, type ProfileActionState } from "./actions";
+
+const INITIAL_STATE: ProfileActionState = {};
+
+export function ProfileForm({
+  initialDisplayName,
+  initialDateOfBirth,
+}: {
+  initialDisplayName: string;
+  initialDateOfBirth: string;
+}) {
+  const [state, action, pending] = useActionState(saveProfile, INITIAL_STATE);
+
+  return (
+    <form action={action} className="space-y-4">
+      <div className="space-y-1.5">
+        <label htmlFor="displayName" className="text-sm font-medium">
+          Display name
+        </label>
+        <Input
+          id="displayName"
+          name="displayName"
+          defaultValue={initialDisplayName}
+          maxLength={50}
+          autoComplete="given-name"
+          required
+          autoFocus
+        />
+        <p className="text-xs text-muted-foreground">
+          Shown to potential matches. Use a name, not a handle.
+        </p>
+      </div>
+      <div className="space-y-1.5">
+        <label htmlFor="dateOfBirth" className="text-sm font-medium">
+          Date of birth
+        </label>
+        <Input
+          id="dateOfBirth"
+          name="dateOfBirth"
+          type="date"
+          defaultValue={initialDateOfBirth}
+          required
+        />
+        <p className="text-xs text-muted-foreground">
+          You must be 18 or older. We&apos;ll show your age, never your date
+          of birth.
+        </p>
+      </div>
+      {state.error ? (
+        <p className="text-sm text-destructive">{state.error}</p>
+      ) : null}
+      <Button type="submit" size="lg" disabled={pending}>
+        {pending ? "Saving…" : "Continue"}
+      </Button>
+    </form>
+  );
+}
