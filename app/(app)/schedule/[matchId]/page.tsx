@@ -2,12 +2,13 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { buttonVariants } from "@/components/ui/button";
+import { computeMutualSlots } from "@/lib/scheduling/slots";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { isUserVerified } from "@/lib/verification";
 
 import { ConfirmButtons } from "./confirm-buttons";
-import { ProposeForm } from "./propose-form";
+import { SlotPicker } from "./slot-picker";
 
 type MatchRow = {
   id: string;
@@ -27,6 +28,7 @@ type QaSessionRow = {
 type ParticipantProfile = {
   id: string;
   display_name: string | null;
+  availability: number[] | null;
 };
 
 const dateFormatter = new Intl.DateTimeFormat("en-GB", {
@@ -66,11 +68,12 @@ export default async function SchedulePage({
   const otherId = match.user_a === user.id ? match.user_b : match.user_a;
   const { data: profiles } = await supabase
     .from("profiles")
-    .select("id, display_name")
+    .select("id, display_name, availability")
     .in("id", [match.user_a, match.user_b])
     .returns<ParticipantProfile[]>();
-  const otherName =
-    profiles?.find((p) => p.id === otherId)?.display_name ?? "your match";
+  const viewerProfile = profiles?.find((p) => p.id === user.id);
+  const otherProfile = profiles?.find((p) => p.id === otherId);
+  const otherName = otherProfile?.display_name ?? "your match";
 
   const { data: session } = await supabase
     .from("qa_sessions")
@@ -80,10 +83,7 @@ export default async function SchedulePage({
 
   // Closed / completed / unlocked matches — shouldn't really hit this
   // route, but show a graceful state if so.
-  if (
-    match.status !== "pending_qa" &&
-    match.status !== "qa_scheduled"
-  ) {
+  if (match.status !== "pending_qa" && match.status !== "qa_scheduled") {
     return (
       <main className="flex flex-1 items-center justify-center px-6 py-12">
         <div className="w-full max-w-md space-y-3 text-center">
@@ -126,6 +126,22 @@ export default async function SchedulePage({
     );
   }
 
+  // Compute three mutual-availability slots. When a proposal is already
+  // on the table, exclude its time from the picker — re-clicking the
+  // same slot would be a no-op for the proposer and "same time as a
+  // counter" makes no sense for the recipient.
+  const excludeIso = session
+    ? new Date(session.scheduled_at).toISOString()
+    : undefined;
+  const slots =
+    viewerProfile?.availability && otherProfile?.availability
+      ? computeMutualSlots(
+          viewerProfile.availability,
+          otherProfile.availability,
+          { excludeScheduledAtIso: excludeIso },
+        )
+      : [];
+
   // We've proposed, waiting on them.
   if (session && session.proposed_by_id === user.id) {
     const when = dateFormatter.format(new Date(session.scheduled_at));
@@ -141,14 +157,10 @@ export default async function SchedulePage({
             </h1>
             <p className="text-sm text-muted-foreground">
               We&apos;ll surface this on their /discover so they see it on
-              their next visit. You can also propose a different time.
+              their next visit. Or replace with a different time:
             </p>
           </header>
-          <ProposeForm
-            matchId={matchId}
-            otherName={otherName}
-            submitLabel="Replace with a different time"
-          />
+          <SlotPicker matchId={matchId} slots={slots} />
         </div>
       </main>
     );
@@ -175,13 +187,9 @@ export default async function SchedulePage({
           <ConfirmButtons matchId={matchId} />
           <div className="space-y-2">
             <p className="text-center text-xs text-muted-foreground">
-              Or propose a different time:
+              Or counter with one of these:
             </p>
-            <ProposeForm
-              matchId={matchId}
-              otherName={otherName}
-              submitLabel="Counter with this time"
-            />
+            <SlotPicker matchId={matchId} slots={slots} />
           </div>
         </div>
       </main>
@@ -200,11 +208,11 @@ export default async function SchedulePage({
             With {otherName}.
           </h1>
           <p className="text-sm text-muted-foreground">
-            Pick a time in the next two weeks. They&apos;ll get a chance to
-            confirm or propose another.
+            Here&apos;s when you&apos;re both free in the next week. Pick
+            one — they&apos;ll get to confirm or counter.
           </p>
         </header>
-        <ProposeForm matchId={matchId} otherName={otherName} />
+        <SlotPicker matchId={matchId} slots={slots} />
       </div>
     </main>
   );

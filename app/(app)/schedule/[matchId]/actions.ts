@@ -7,6 +7,7 @@ import { createDailyRoom } from "@/lib/daily/rooms";
 import { type Intention } from "@/lib/qa/questions";
 import { selectThreeQuestions } from "@/lib/qa/select";
 import { sendQaScheduledEmail } from "@/lib/resend/emails";
+import { computeMutualSlots } from "@/lib/scheduling/slots";
 import { getServiceRoleKey, SUPABASE_URL } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 import { isUserVerified } from "@/lib/verification";
@@ -16,9 +17,6 @@ function admin() {
     auth: { persistSession: false },
   });
 }
-
-const MIN_LEAD_MINUTES = 10;
-const MAX_LEAD_DAYS = 14;
 
 export type ProposeState = { error?: string };
 export type ConfirmState = { error?: string };
@@ -48,19 +46,13 @@ export async function proposeSlot(
   formData: FormData,
 ): Promise<ProposeState> {
   const matchId = String(formData.get("matchId") ?? "");
-  const dateTimeLocal = String(formData.get("scheduledAt") ?? "");
+  const scheduledAtIso = String(formData.get("scheduledAt") ?? "");
   if (!matchId) return { error: "Missing match." };
-  if (!dateTimeLocal) return { error: "Pick a date and time." };
+  if (!scheduledAtIso) return { error: "Pick a slot." };
 
-  const scheduledAt = new Date(dateTimeLocal);
+  const scheduledAt = new Date(scheduledAtIso);
   if (Number.isNaN(scheduledAt.getTime())) {
     return { error: "Invalid date." };
-  }
-  if (scheduledAt.getTime() < Date.now() + MIN_LEAD_MINUTES * 60_000) {
-    return { error: `Pick a time at least ${MIN_LEAD_MINUTES} minutes from now.` };
-  }
-  if (scheduledAt.getTime() > Date.now() + MAX_LEAD_DAYS * 24 * 60 * 60_000) {
-    return { error: `Pick a time within the next ${MAX_LEAD_DAYS} days.` };
   }
 
   const supabase = await createClient();
@@ -81,6 +73,34 @@ export async function proposeSlot(
 
   if (!(await isUserVerified(supabase, user.id))) {
     redirect(`/verify?return=/schedule/${matchId}`);
+  }
+
+  // Defense-in-depth: recompute the mutual-slot set and verify the
+  // submitted timestamp is in it. The picker already constrains
+  // the UI, but a forged form post would bypass that — so the
+  // action re-checks before writing. Lead-time / 7-day window is
+  // implicit in computeMutualSlots (MIN_LEAD_MINUTES + weekly
+  // wrap).
+  const { data: pairProfiles } = await supabase
+    .from("profiles")
+    .select("id, availability")
+    .in("id", [match.user_a, match.user_b])
+    .returns<{ id: string; availability: number[] | null }[]>();
+  if (!pairProfiles || pairProfiles.length < 2) {
+    return { error: "Couldn't load profiles." };
+  }
+  const profileA = pairProfiles.find((p) => p.id === match.user_a);
+  const profileB = pairProfiles.find((p) => p.id === match.user_b);
+  if (!profileA?.availability || !profileB?.availability) {
+    return { error: "Availability not set." };
+  }
+  const mutual = computeMutualSlots(
+    profileA.availability,
+    profileB.availability,
+    { limit: 1000 },
+  );
+  if (!mutual.some((s) => s.scheduledAtIso === scheduledAtIso)) {
+    return { error: "That slot is no longer available. Pick another." };
   }
 
   const a = admin();
