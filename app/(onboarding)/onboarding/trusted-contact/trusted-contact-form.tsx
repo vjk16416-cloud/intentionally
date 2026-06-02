@@ -15,7 +15,6 @@ const INITIAL_STATE: TrustedContactActionState = {};
 const RELATIONSHIP_OPTIONS = [
   { value: "friend", label: "Friend" },
   { value: "family", label: "Family" },
-  { value: "partner", label: "Partner" },
   { value: "other", label: "Other" },
 ] as const;
 

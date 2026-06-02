@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 const E164_PATTERN = /^\+[1-9]\d{6,14}$/;
 const NAME_MAX = 80;
 
-const RELATIONSHIP_VALUES = ["friend", "family", "partner", "other"] as const;
+const RELATIONSHIP_VALUES = ["friend", "family", "other"] as const;
 type Relationship = (typeof RELATIONSHIP_VALUES)[number];
 
 function isRelationship(value: string): value is Relationship {

@@ -35,8 +35,9 @@ export default async function TrustedContactStepPage() {
           One trusted person
         </h1>
         <p className="text-sm text-muted-foreground">
-          A friend or family member we&apos;ll only contact about your safety
-          — never about your dating life. Required to use Intentionally.
+          Just one person — a friend or family member we&apos;ll only contact
+          about your safety, never about your dating life. You can change who
+          it is later, but only one is on file at a time.
         </p>
       </header>
       <TrustedContactForm
