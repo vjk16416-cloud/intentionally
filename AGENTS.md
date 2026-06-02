@@ -154,6 +154,7 @@ bio_answer text not null check (char_length(bio_answer) <= 200)
 photos text[] not null check (array_length(photos, 1) between 2 and 6)
 city text not null                         -- one of the seeded UK cities (see lib/onboarding/constants MARKETS)
 neighbourhood text not null                -- must belong to the chosen city in MARKETS
+availability int[] not null                -- slot indices 0..335 = day_of_week * 48 + half_hour_of_day; at least MIN_SLOTS (4 = 2 hours) per the onboarding gate
 id_verified boolean default false
 id_verified_at timestamptz
 paused boolean default false
@@ -262,9 +263,10 @@ body text
 5. Intention (3 options)
 6. Bio prompt (pick 1 of ~12 prompts, answer ≤200 chars)
 7. City + neighbourhood (UK only; pick city from the seeded `MARKETS` list, then neighbourhood from that city's list)
-8. Trusted contact (name + phone in E.164)
-9. **Review** — summary of every section above with per-section "Edit" links. Edits round-trip back to review via `?return=review` (whitelisted in `lib/onboarding/navigation.ts`). Includes the inline ID-verification note. Not a data step; collects nothing.
-10. **How-it-works explainer** (at `/onboarding/done`) — primes the core Q&A mechanic (match → 10-min live video → mutual unlock → chat). Placeholder copy, founder review pending. CTA → /discover.
+8. Weekly availability (8am–midnight × 7-day hour grid; minimum 2 hours total. Used by the discover availability-overlap filter and the §6.4 three-slot picker.)
+9. Trusted contact (name + phone in E.164)
+10. **Review** — summary of every section above with per-section "Edit" links. Edits round-trip back to review via `?return=review` (whitelisted in `lib/onboarding/navigation.ts`). Includes the inline ID-verification note. Not a data step; collects nothing.
+11. **How-it-works explainer** (at `/onboarding/done`) — primes the core Q&A mechanic (match → 10-min live video → mutual unlock → chat). Placeholder copy, founder review pending. CTA → /discover.
 
 Steps 2–8 each have a Back link to the previous linear step (step 1 has no Back — phone OTP is below the auth boundary). Steps 9 and 10 are flow stops, not data steps, so they're not in `ONBOARDING_STEPS` and the completeness gate doesn't track them; users who skip directly to /discover after step 8 bypass them but the trusted-contact action routes through review in the linear flow.
 
@@ -275,7 +277,7 @@ Block all app routes when the profile is incomplete or the trusted contact is mi
 ### 6.2 Discover & swipe
 Stack of profile cards (existing prototype design). One profile per card showing photos, name, age, intention badge, bio prompt + answer, neighbourhood. Swipe right = like. Swipe left = pass. Tap = expanded view. **Limit: 20 likes per 24h** (anti-spam, not monetisation).
 
-Filter rules: only show profiles where `seeking` and `gender` overlap appropriately, where `city` matches the viewer's `city` (in-person dates require local density — never show cross-city profiles), and where there is no existing swipe row from the viewer.
+Filter rules: only show profiles where `seeking` and `gender` overlap appropriately, where `city` matches the viewer's `city` (in-person dates require local density — never show cross-city profiles), where the candidate's `availability` overlaps the viewer's (Postgres array `&&` operator via the GIN index — no overlap means no realistic scheduling), and where there is no existing swipe row from the viewer.
 
 ### 6.3 Match
 When B likes A and A has already liked B (or vice versa), both see a match modal. CTA: **"Schedule your Q&A."** Match expires in 7 days if no Q&A scheduled — set by `expires_at`, checked by cron.
@@ -309,7 +311,11 @@ Step 5 is phased to honour the validation note above:
 
 - **5a (shipped):** `qa_sessions` table + propose/confirm flow with a plain datetime picker (not the auto-computed 3-slot picker), Daily.co room on confirmation, three questions selected via `lib/qa/select.ts`, qa-scheduled email via Resend (best-effort — phone-OTP users without `auth.users.email` see details in-app at `/qa/[sessionId]`), `/qa/[sessionId]` minimal entry showing the join link. T-5 reminders, ICS, takeover, grace reschedule, no-show accountability, commitment step, SMS, onboarding availability grid, discover availability filter, 48-hour match expiry cron — **NOT in 5a.** Match expiry stays at the 7-day default until 5b's cron lands.
 - **PAUSE for manual validation:** founder manually matches ~10 real users and observes attendance before building further.
-- **5b (after validation):** full automated scheduling loop — onboarding availability grid (deferred from Step 2), discover availability filter, three-slot picker biased toward 24–48h, 48h match expiry cron, ICS attachments, automatic email reminders, commitment step at booking.
+- **5b (split into chunks, validation gate consciously overridden):**
+  - **5b.1 (shipped):** onboarding availability grid + discover availability overlap filter. New `availability int[]` column on profiles; new `/onboarding/availability` step slotted between neighbourhood and trusted-contact; min 2 hours/week to pass the gate; `&&` (GIN-indexed) filter on the discover feed.
+  - **5b.2 (pending):** three-slot picker biased toward 24–48h, replacing the 5a datetime-local picker.
+  - **5b.3 (pending):** commitment step at booking + ICS attachment on the qa-scheduled email.
+  - **5b.4 (pending):** 48h match expiry default + Vercel cron, plus morning-of and one-hour-before reminder emails via cron.
 - **5c (after validation):** behavioural-nudge polish — T-5 ring takeover, grace reschedule, gentle no-show accountability, SMS reminders via Twilio.
 
 The `qa_sessions` table has `proposed_at` / `proposed_by_id` / `confirmed_at` columns beyond §5's original listing — these support the propose/confirm flow without adding a "proposed" enum state. Rows are visible-as-scheduled only after `confirmed_at` is set.
