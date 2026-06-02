@@ -1,0 +1,37 @@
+import { redirect } from "next/navigation";
+
+import { createClient } from "@/lib/supabase/server";
+
+import { PhotosForm } from "./photos-form";
+
+export default async function PhotosStepPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("photos")
+    .eq("id", user.id)
+    .maybeSingle<{ photos: string[] | null }>();
+
+  return (
+    <div className="space-y-6">
+      <header className="space-y-2">
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+          Step 3 of 7
+        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">Photos</h1>
+        <p className="text-sm text-muted-foreground">
+          Two to six photos that look like you on a regular day. No group
+          shots without you clearly in them.
+        </p>
+      </header>
+      <PhotosForm userId={user.id} initialPaths={profile?.photos ?? []} />
+    </div>
+  );
+}
