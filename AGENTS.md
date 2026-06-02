@@ -389,9 +389,11 @@ Selection logic: from the pool matching the pair's combined intentions, randomly
   ```
 
 ### Stripe Identity
-- Verification session created server-side, user redirected
-- Webhook to `/api/webhooks/stripe-identity` updates `profiles.id_verified` and `id_verified_at`
-- Test mode used until beta launch
+- Verification session created server-side; document-only, allows UK driving licence and passport, requires live capture and matching selfie. `metadata.user_id` is the link back to our user — we do not store Stripe session IDs in our DB.
+- After Stripe's hosted UI closes, the user lands on `/verify/return`. That page reads the current `id_verified` and either shows success + Continue, or "processing — refresh in a moment" (the webhook is asynchronous; the return URL may arrive first).
+- Webhook to `/api/webhooks/stripe-identity` verifies the Stripe signature, then on `identity.verification_session.verified` sets `profiles.id_verified = true`. `id_verified_at` is preserved across re-verifications so it reflects the *first* verified time.
+- The gate enforcement point is the entry to Q&A scheduling (Step 5 in §10), **not** the app boundary. `lib/verification.ts` exposes `isUserVerified()` for that. Until Step 5 lands, unverified users see a "Verify ID" link in the (app) header.
+- Test mode used until beta launch. Local dev uses Stripe CLI to forward events: `stripe listen --forward-to localhost:3000/api/webhooks/stripe-identity --events identity.verification_session.verified,identity.verification_session.requires_input,identity.verification_session.canceled`. The CLI prints a separate `whsec_` for local — `STRIPE_IDENTITY_WEBHOOK_SECRET` in `.env.local` holds whichever is appropriate per environment.
 
 ### Twilio
 - SMS only (Supabase wraps OTP)
