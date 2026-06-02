@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { getOnboardingState } from "@/lib/onboarding/state";
 import { createClient } from "@/lib/supabase/server";
 
 import { signOut } from "./actions";
@@ -15,6 +16,13 @@ export default async function AppLayout({
 
   if (!user) {
     redirect("/login");
+  }
+
+  // Gate on profile completeness (NOT on id_verified — that's a Step 5
+  // pre-Q&A gate, not an onboarding requirement).
+  const onboarding = await getOnboardingState(supabase, user.id);
+  if (onboarding.status === "incomplete") {
+    redirect(onboarding.nextStep);
   }
 
   return (
