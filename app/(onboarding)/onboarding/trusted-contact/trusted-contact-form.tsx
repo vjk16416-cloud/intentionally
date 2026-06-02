@@ -2,8 +2,8 @@
 
 import { useActionState } from "react";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { StepNav } from "@/components/onboarding/step-nav";
 
 import {
   saveTrustedContact,
@@ -22,10 +22,14 @@ export function TrustedContactForm({
   initialName,
   initialPhone,
   initialRelationship,
+  returnTo,
+  previousStep,
 }: {
   initialName: string | null;
   initialPhone: string | null;
   initialRelationship: string | null;
+  returnTo: string | null;
+  previousStep: string | null;
 }) {
   const [state, action, pending] = useActionState(
     saveTrustedContact,
@@ -87,9 +91,11 @@ export function TrustedContactForm({
       {state.error ? (
         <p className="text-sm text-destructive">{state.error}</p>
       ) : null}
-      <Button type="submit" size="lg" disabled={pending}>
-        {pending ? "Saving…" : "Continue"}
-      </Button>
+      <StepNav
+        returnTo={returnTo}
+        previousStep={previousStep}
+        pending={pending}
+      />
     </form>
   );
 }

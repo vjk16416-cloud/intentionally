@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 
+import { resolveNextStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 const GENDER_VALUES = ["woman", "man", "non-binary"] as const;
@@ -51,5 +52,6 @@ export async function saveIdentity(
     return { error: error.message };
   }
 
-  redirect("/onboarding/photos");
+  const returnTo = String(formData.get("returnTo") ?? "");
+  redirect(resolveNextStep(returnTo, "/onboarding/photos"));
 }

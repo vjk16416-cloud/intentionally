@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { getPreviousStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 import { ProfileForm } from "./profile-form";
@@ -9,7 +10,11 @@ type ProfileFields = {
   date_of_birth: string | null;
 };
 
-export default async function ProfileStepPage() {
+export default async function ProfileStepPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ return?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -17,6 +22,10 @@ export default async function ProfileStepPage() {
   if (!user) {
     redirect("/login");
   }
+
+  const params = await searchParams;
+  const returnTo = params.return === "review" ? "/onboarding/review" : null;
+  const previousStep = getPreviousStep("/onboarding/profile");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -40,6 +49,8 @@ export default async function ProfileStepPage() {
       <ProfileForm
         initialDisplayName={profile?.display_name ?? ""}
         initialDateOfBirth={profile?.date_of_birth ?? ""}
+        returnTo={returnTo}
+        previousStep={previousStep}
       />
     </div>
   );

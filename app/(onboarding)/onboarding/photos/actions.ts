@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 
+import { resolveNextStep } from "@/lib/onboarding/navigation";
 import { isOwnedBy } from "@/lib/storage/photos";
 import { createClient } from "@/lib/supabase/server";
 
@@ -48,5 +49,6 @@ export async function savePhotos(
     return { error: error.message };
   }
 
-  redirect("/onboarding/intention");
+  const returnTo = String(formData.get("returnTo") ?? "");
+  redirect(resolveNextStep(returnTo, "/onboarding/intention"));
 }

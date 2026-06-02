@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { StepNav } from "@/components/onboarding/step-nav";
 
 import { saveIdentity, type IdentityActionState } from "./actions";
 
@@ -17,9 +17,13 @@ const OPTIONS = [
 export function IdentityForm({
   initialGender,
   initialSeeking,
+  returnTo,
+  previousStep,
 }: {
   initialGender: string | null;
   initialSeeking: string[];
+  returnTo: string | null;
+  previousStep: string | null;
 }) {
   const [state, action, pending] = useActionState(saveIdentity, INITIAL_STATE);
 
@@ -72,9 +76,11 @@ export function IdentityForm({
       {state.error ? (
         <p className="text-sm text-destructive">{state.error}</p>
       ) : null}
-      <Button type="submit" size="lg" disabled={pending}>
-        {pending ? "Saving…" : "Continue"}
-      </Button>
+      <StepNav
+        returnTo={returnTo}
+        previousStep={previousStep}
+        pending={pending}
+      />
     </form>
   );
 }

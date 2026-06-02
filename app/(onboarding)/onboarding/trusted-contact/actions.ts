@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 
+import { resolveNextStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 const E164_PATTERN = /^\+[1-9]\d{6,14}$/;
@@ -69,5 +70,6 @@ export async function saveTrustedContact(
     return { error: error.message };
   }
 
-  redirect("/onboarding/done");
+  const returnTo = String(formData.get("returnTo") ?? "");
+  redirect(resolveNextStep(returnTo, "/onboarding/done"));
 }

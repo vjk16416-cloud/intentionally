@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { getPreviousStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 import { IdentityForm } from "./identity-form";
@@ -9,7 +10,11 @@ type IdentityFields = {
   seeking: string[] | null;
 };
 
-export default async function IdentityStepPage() {
+export default async function IdentityStepPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ return?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -17,6 +22,10 @@ export default async function IdentityStepPage() {
   if (!user) {
     redirect("/login");
   }
+
+  const params = await searchParams;
+  const returnTo = params.return === "review" ? "/onboarding/review" : null;
+  const previousStep = getPreviousStep("/onboarding/identity");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -38,6 +47,8 @@ export default async function IdentityStepPage() {
       <IdentityForm
         initialGender={profile?.gender ?? null}
         initialSeeking={profile?.seeking ?? []}
+        returnTo={returnTo}
+        previousStep={previousStep}
       />
     </div>
   );

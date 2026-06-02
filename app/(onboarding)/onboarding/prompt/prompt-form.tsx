@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { StepNav } from "@/components/onboarding/step-nav";
 import { BIO_ANSWER_MAX, BIO_PROMPTS } from "@/lib/onboarding/constants";
 
 import { savePrompt, type PromptActionState } from "./actions";
@@ -12,9 +12,13 @@ const INITIAL_STATE: PromptActionState = {};
 export function PromptForm({
   initialPromptKey,
   initialAnswer,
+  returnTo,
+  previousStep,
 }: {
   initialPromptKey: string | null;
   initialAnswer: string | null;
+  returnTo: string | null;
+  previousStep: string | null;
 }) {
   const [state, action, pending] = useActionState(savePrompt, INITIAL_STATE);
   const [answer, setAnswer] = useState(initialAnswer ?? "");
@@ -67,9 +71,11 @@ export function PromptForm({
       {state.error ? (
         <p className="text-sm text-destructive">{state.error}</p>
       ) : null}
-      <Button type="submit" size="lg" disabled={pending}>
-        {pending ? "Saving…" : "Continue"}
-      </Button>
+      <StepNav
+        returnTo={returnTo}
+        previousStep={previousStep}
+        pending={pending}
+      />
     </form>
   );
 }

@@ -2,8 +2,8 @@
 
 import { useActionState } from "react";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { StepNav } from "@/components/onboarding/step-nav";
 
 import { saveProfile, type ProfileActionState } from "./actions";
 
@@ -12,9 +12,13 @@ const INITIAL_STATE: ProfileActionState = {};
 export function ProfileForm({
   initialDisplayName,
   initialDateOfBirth,
+  returnTo,
+  previousStep,
 }: {
   initialDisplayName: string;
   initialDateOfBirth: string;
+  returnTo: string | null;
+  previousStep: string | null;
 }) {
   const [state, action, pending] = useActionState(saveProfile, INITIAL_STATE);
 
@@ -56,9 +60,11 @@ export function ProfileForm({
       {state.error ? (
         <p className="text-sm text-destructive">{state.error}</p>
       ) : null}
-      <Button type="submit" size="lg" disabled={pending}>
-        {pending ? "Saving…" : "Continue"}
-      </Button>
+      <StepNav
+        returnTo={returnTo}
+        previousStep={previousStep}
+        pending={pending}
+      />
     </form>
   );
 }

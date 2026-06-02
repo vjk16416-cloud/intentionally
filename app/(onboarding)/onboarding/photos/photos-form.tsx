@@ -2,7 +2,7 @@
 
 import { useActionState, useMemo, useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { StepNav } from "@/components/onboarding/step-nav";
 import { createClient } from "@/lib/supabase/client";
 import {
   buildPhotoPath,
@@ -20,9 +20,13 @@ const MAX_PHOTOS = 6;
 export function PhotosForm({
   userId,
   initialPaths,
+  returnTo,
+  previousStep,
 }: {
   userId: string;
   initialPaths: string[];
+  returnTo: string | null;
+  previousStep: string | null;
 }) {
   const supabase = useMemo(() => createClient(), []);
   const [paths, setPaths] = useState<string[]>(initialPaths);
@@ -144,9 +148,12 @@ export function PhotosForm({
         <p className="text-sm text-destructive">{state.error}</p>
       ) : null}
 
-      <Button type="submit" size="lg" disabled={!ready || pending}>
-        {pending ? "Saving…" : "Continue"}
-      </Button>
+      <StepNav
+        returnTo={returnTo}
+        previousStep={previousStep}
+        pending={pending}
+        disabled={!ready}
+      />
     </form>
   );
 }

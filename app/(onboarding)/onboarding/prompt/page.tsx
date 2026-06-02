@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { getPreviousStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 import { PromptForm } from "./prompt-form";
@@ -9,7 +10,11 @@ type PromptFields = {
   bio_answer: string | null;
 };
 
-export default async function PromptStepPage() {
+export default async function PromptStepPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ return?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -17,6 +22,10 @@ export default async function PromptStepPage() {
   if (!user) {
     redirect("/login");
   }
+
+  const params = await searchParams;
+  const returnTo = params.return === "review" ? "/onboarding/review" : null;
+  const previousStep = getPreviousStep("/onboarding/prompt");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -38,6 +47,8 @@ export default async function PromptStepPage() {
       <PromptForm
         initialPromptKey={profile?.bio_prompt_key ?? null}
         initialAnswer={profile?.bio_answer ?? null}
+        returnTo={returnTo}
+        previousStep={previousStep}
       />
     </div>
   );

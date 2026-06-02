@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 
+import { resolveNextStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 const INTENTION_VALUES = ["long-term", "short-term", "figuring-it-out"] as const;
@@ -41,5 +42,6 @@ export async function saveIntention(
     return { error: error.message };
   }
 
-  redirect("/onboarding/prompt");
+  const returnTo = String(formData.get("returnTo") ?? "");
+  redirect(resolveNextStep(returnTo, "/onboarding/prompt"));
 }

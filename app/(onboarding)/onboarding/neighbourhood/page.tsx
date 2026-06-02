@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { getPreviousStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 import { NeighbourhoodForm } from "./neighbourhood-form";
@@ -9,7 +10,11 @@ type LocationFields = {
   neighbourhood: string | null;
 };
 
-export default async function NeighbourhoodStepPage() {
+export default async function NeighbourhoodStepPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ return?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -17,6 +22,10 @@ export default async function NeighbourhoodStepPage() {
   if (!user) {
     redirect("/login");
   }
+
+  const params = await searchParams;
+  const returnTo = params.return === "review" ? "/onboarding/review" : null;
+  const previousStep = getPreviousStep("/onboarding/neighbourhood");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -41,6 +50,8 @@ export default async function NeighbourhoodStepPage() {
       <NeighbourhoodForm
         initialCity={profile?.city ?? null}
         initialNeighbourhood={profile?.neighbourhood ?? null}
+        returnTo={returnTo}
+        previousStep={previousStep}
       />
     </div>
   );

@@ -1,10 +1,15 @@
 import { redirect } from "next/navigation";
 
+import { getPreviousStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 import { PhotosForm } from "./photos-form";
 
-export default async function PhotosStepPage() {
+export default async function PhotosStepPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ return?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -12,6 +17,10 @@ export default async function PhotosStepPage() {
   if (!user) {
     redirect("/login");
   }
+
+  const params = await searchParams;
+  const returnTo = params.return === "review" ? "/onboarding/review" : null;
+  const previousStep = getPreviousStep("/onboarding/photos");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -31,7 +40,12 @@ export default async function PhotosStepPage() {
           shots without you clearly in them.
         </p>
       </header>
-      <PhotosForm userId={user.id} initialPaths={profile?.photos ?? []} />
+      <PhotosForm
+        userId={user.id}
+        initialPaths={profile?.photos ?? []}
+        returnTo={returnTo}
+        previousStep={previousStep}
+      />
     </div>
   );
 }

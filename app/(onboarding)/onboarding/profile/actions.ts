@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 
+import { resolveNextStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export type ProfileActionState = {
@@ -57,5 +58,6 @@ export async function saveProfile(
     return { error: error.message };
   }
 
-  redirect("/onboarding/identity");
+  const returnTo = String(formData.get("returnTo") ?? "");
+  redirect(resolveNextStep(returnTo, "/onboarding/identity"));
 }

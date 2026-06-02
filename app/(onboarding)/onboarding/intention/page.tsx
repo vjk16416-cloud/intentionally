@@ -1,10 +1,15 @@
 import { redirect } from "next/navigation";
 
+import { getPreviousStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 import { IntentionForm } from "./intention-form";
 
-export default async function IntentionStepPage() {
+export default async function IntentionStepPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ return?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -12,6 +17,10 @@ export default async function IntentionStepPage() {
   if (!user) {
     redirect("/login");
   }
+
+  const params = await searchParams;
+  const returnTo = params.return === "review" ? "/onboarding/review" : null;
+  const previousStep = getPreviousStep("/onboarding/intention");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -33,7 +42,11 @@ export default async function IntentionStepPage() {
           toward.
         </p>
       </header>
-      <IntentionForm initialIntention={profile?.intention ?? null} />
+      <IntentionForm
+        initialIntention={profile?.intention ?? null}
+        returnTo={returnTo}
+        previousStep={previousStep}
+      />
     </div>
   );
 }

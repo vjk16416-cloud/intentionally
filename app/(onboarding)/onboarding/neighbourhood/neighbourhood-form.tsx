@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { StepNav } from "@/components/onboarding/step-nav";
 import {
   getNeighbourhoodsFor,
   MARKET_CITIES,
@@ -15,9 +15,13 @@ const INITIAL_STATE: NeighbourhoodActionState = {};
 export function NeighbourhoodForm({
   initialCity,
   initialNeighbourhood,
+  returnTo,
+  previousStep,
 }: {
   initialCity: string | null;
   initialNeighbourhood: string | null;
+  returnTo: string | null;
+  previousStep: string | null;
 }) {
   const [city, setCity] = useState<string>(initialCity ?? "");
   const [neighbourhood, setNeighbourhood] = useState<string>(
@@ -98,9 +102,11 @@ export function NeighbourhoodForm({
       {state.error ? (
         <p className="text-sm text-destructive">{state.error}</p>
       ) : null}
-      <Button type="submit" size="lg" disabled={pending}>
-        {pending ? "Saving…" : "Continue"}
-      </Button>
+      <StepNav
+        returnTo={returnTo}
+        previousStep={previousStep}
+        pending={pending}
+      />
     </form>
   );
 }

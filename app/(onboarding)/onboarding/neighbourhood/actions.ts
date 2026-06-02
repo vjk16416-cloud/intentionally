@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 
 import { isValidMarket } from "@/lib/onboarding/constants";
+import { resolveNextStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export type NeighbourhoodActionState = {
@@ -43,5 +44,6 @@ export async function saveNeighbourhood(
     return { error: error.message };
   }
 
-  redirect("/onboarding/trusted-contact");
+  const returnTo = String(formData.get("returnTo") ?? "");
+  redirect(resolveNextStep(returnTo, "/onboarding/trusted-contact"));
 }

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { getPreviousStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 import { TrustedContactForm } from "./trusted-contact-form";
@@ -10,7 +11,11 @@ type TrustedContactFields = {
   relationship: string | null;
 };
 
-export default async function TrustedContactStepPage() {
+export default async function TrustedContactStepPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ return?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -18,6 +23,10 @@ export default async function TrustedContactStepPage() {
   if (!user) {
     redirect("/login");
   }
+
+  const params = await searchParams;
+  const returnTo = params.return === "review" ? "/onboarding/review" : null;
+  const previousStep = getPreviousStep("/onboarding/trusted-contact");
 
   const { data: existing } = await supabase
     .from("trusted_contacts")
@@ -44,6 +53,8 @@ export default async function TrustedContactStepPage() {
         initialName={existing?.name ?? null}
         initialPhone={existing?.phone_e164 ?? null}
         initialRelationship={existing?.relationship ?? null}
+        returnTo={returnTo}
+        previousStep={previousStep}
       />
     </div>
   );

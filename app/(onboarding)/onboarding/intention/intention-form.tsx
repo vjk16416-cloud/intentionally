@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { StepNav } from "@/components/onboarding/step-nav";
 
 import { saveIntention, type IntentionActionState } from "./actions";
 
@@ -28,8 +28,12 @@ const OPTIONS = [
 
 export function IntentionForm({
   initialIntention,
+  returnTo,
+  previousStep,
 }: {
   initialIntention: string | null;
+  returnTo: string | null;
+  previousStep: string | null;
 }) {
   const [state, action, pending] = useActionState(saveIntention, INITIAL_STATE);
 
@@ -65,9 +69,11 @@ export function IntentionForm({
       {state.error ? (
         <p className="text-sm text-destructive">{state.error}</p>
       ) : null}
-      <Button type="submit" size="lg" disabled={pending}>
-        {pending ? "Saving…" : "Continue"}
-      </Button>
+      <StepNav
+        returnTo={returnTo}
+        previousStep={previousStep}
+        pending={pending}
+      />
     </form>
   );
 }

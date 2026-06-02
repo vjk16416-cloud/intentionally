@@ -6,6 +6,7 @@ import {
   BIO_ANSWER_MAX,
   BIO_PROMPT_KEYS,
 } from "@/lib/onboarding/constants";
+import { resolveNextStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export type PromptActionState = {
@@ -46,5 +47,6 @@ export async function savePrompt(
     return { error: error.message };
   }
 
-  redirect("/onboarding/neighbourhood");
+  const returnTo = String(formData.get("returnTo") ?? "");
+  redirect(resolveNextStep(returnTo, "/onboarding/neighbourhood"));
 }
