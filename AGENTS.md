@@ -19,7 +19,7 @@ If you (the agent) find yourself about to build something not listed in scope be
 ## 1. Product context
 
 ### What we're building
-Intentionally is a video-first dating app. Matches must complete a mandatory 10-minute live video Q&A — 3 therapist-designed questions, with a real-time blur on whoever is listening — before chat unlocks. Both parties must opt in after the Q&A for the conversation to continue. Every user is ID-verified. A trusted contact is mandatory. Phone numbers are only revealed 3 hours before a confirmed date.
+Intentionally is a video-first dating app. Matches must complete a mandatory 10-minute live video Q&A — 3 therapist-designed questions, with a real-time blur on whoever is listening — before chat unlocks. Both parties must opt in after the Q&A for the conversation to continue. Every user is ID-verified before their first Q&A (the Stripe Identity gate fires at Q&A scheduling entry — *not* at signup; see §6.1). A trusted contact is mandatory. Phone numbers are only revealed 3 hours before a confirmed date.
 
 ### The thesis
 Swipe culture produces low-signal matches because text is a weak interview format. By forcing one structured, time-bounded human interaction earlier in the funnel, we should produce higher-quality matches with fewer ghosts, fewer bad first dates, and more relationships per 100 matches than incumbents.
@@ -160,7 +160,7 @@ paused boolean default false
 updated_at timestamptz default now()
 ```
 
-**RLS:** any authenticated user can `select` where `id_verified = true and paused = false`. Users can only `update` their own row.
+**RLS:** any authenticated user can `select` profiles where `paused = false`, plus their own row always. Users can only `update` their own row. Visibility is NOT gated on `id_verified` — that gate fires only at Q&A scheduling entry per §6.1.
 
 ### `trusted_contacts`
 ```sql
