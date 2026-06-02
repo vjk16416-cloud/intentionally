@@ -61,6 +61,8 @@ Do not build any of the following without explicit founder approval. If a chat m
 - Custom analytics dashboard (use PostHog default UI)
 - Internationalisation (English only, GBP only, GMT/BST only)
 
+**If we revisit any of the above, the right home for the safety/retention ones is later in the build sequence, not onboarding:** mood check-in / SOS escalation belongs alongside Step 9 (date planning + phone reveal — the natural place for safety nudges); reputation / accountability score belongs alongside Step 10 (reporting + closing matches, where we already have the signal). Neither belongs anywhere near signup.
+
 ---
 
 ## 3. Tech stack (locked)
@@ -248,15 +250,16 @@ body text
 1. Phone OTP (Supabase phone auth via Twilio)
 2. Display name + DOB (18+ gate, server-side validated)
 3. Gender + seeking
-4. Photos (min 2, max 6, Supabase Storage with signed upload URLs)
-5. ID verification (Stripe Identity redirect → `/onboarding/verifying` polls webhook status)
-6. Intention (3 options)
-7. Bio prompt (pick 1 of ~12 prompts, answer ≤200 chars)
-8. London neighbourhood (select from list of ~30 — hard-coded)
-9. Trusted contact (name + phone in E.164)
-10. Done → Discover
+4. Photos (min 2, max 6, Supabase Storage — direct client upload to `{userId}/{uuid}.{ext}`, gated by per-folder RLS)
+5. Intention (3 options)
+6. Bio prompt (pick 1 of ~12 prompts, answer ≤200 chars)
+7. London neighbourhood (select from list of ~30 — hard-coded)
+8. Trusted contact (name + phone in E.164)
+9. Done → Discover
 
-Block all app routes if any of (`id_verified`, trusted contact, complete profile) is missing.
+**ID verification is NOT part of onboarding.** Users browse and match unverified; Stripe Identity is gated separately *before the first Q&A unlocks* (see Step 3 in §10 below). This is a deliberate change from the original ordering — the rationale is that ID verification adds friction at the worst point (signup) and is only load-bearing at the first real face-to-face moment.
+
+Block all app routes when the profile is incomplete or the trusted contact is missing. `id_verified` is checked at Q&A scheduling time, not at the app boundary.
 
 ### 6.2 Discover & swipe
 Stack of profile cards (existing prototype design). One profile per card showing photos, name, age, intention badge, bio prompt + answer, neighbourhood. Swipe right = like. Swipe left = pass. Tap = expanded view. **Limit: 20 likes per 24h** (anti-spam, not monetisation).
@@ -365,7 +368,7 @@ Selection logic: from the pool matching the pair's combined intentions, randomly
 - Project name: `intentionally-mvp`
 - Region: EU (London if available)
 - Phone auth enabled (Twilio configured)
-- Storage bucket `profile-photos` (public read for verified profiles; write via signed upload URLs)
+- Storage bucket `profile-photos`: **public-read** bucket. Paths are `{userId}/{uuid}.{ext}` (opaque, non-enumerable). RLS on `storage.objects` restricts INSERT/UPDATE/DELETE — and the auto-added SELECT policy — to the owner's folder; public-URL reads bypass RLS so cross-user photo display works in /discover. Revisit and tighten to signed read URLs before real-user launch (so paused / deleted profiles can have photo access revoked).
 - pg_cron extension enabled (for match expiry; phone reveal uses Vercel Cron instead)
 
 ### Daily.co
@@ -424,8 +427,8 @@ Ship in this order. Each step is a PR. Don't start step N+1 until step N is merg
 | # | Milestone | Demo to founder? |
 |---|---|---|
 | 1 | Scaffold + Supabase auth + protected layout + `profiles` table | |
-| 2 | Onboarding flow (all 9 screens, photo upload, neighbourhood, trusted contact) | |
-| 3 | Stripe Identity integration (redirect + webhook + gating) | |
+| 2 | Onboarding flow (name/DOB, gender + seeking, photos, intention, bio prompt, neighbourhood, trusted contact, done) | |
+| 3 | Stripe Identity integration — verification flow + webhook + **pre-Q&A** gate (not an onboarding step; see §6.1) | |
 | 4 | Discover + swipe + match (feed, swipe action, match trigger, match modal) | ✅ |
 | 5 | Q&A scheduling (availability picker, slot confirmation, Daily.co room creation, reminders) | |
 | 6 | Live Q&A screen (Daily.co embed, question state machine, blur, timer, outro) | |
