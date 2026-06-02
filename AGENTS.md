@@ -194,17 +194,22 @@ check (user_a < user_b)
 
 ### `qa_sessions`
 ```sql
-match_id uuid references matches
+match_id uuid references matches unique
 scheduled_at timestamptz not null
 duration_minutes int not null default 10
-daily_room_url text
-daily_room_name text
-questions jsonb not null                   -- [{id, text}, ...] chosen at scheduling time
+daily_room_url text                        -- populated on confirmation
+daily_room_name text                       -- populated on confirmation
+questions jsonb                            -- [{id, text}, ...]; populated on confirmation
 status text not null default 'scheduled'   -- 'scheduled' | 'in_progress' | 'completed' | 'no_show' | 'cancelled'
+proposed_at timestamptz not null default now()
+proposed_by_id uuid not null references profiles
+confirmed_at timestamptz                   -- null until the other participant confirms
 started_at timestamptz
 ended_at timestamptz
 no_show_user_id uuid references profiles   -- nullable
 ```
+
+**RLS:** SELECT scoped to the two participants (via the underlying match). All writes go through the service-role client — no client INSERT/UPDATE policies. The propose/confirm flow uses `proposed_at` / `proposed_by_id` / `confirmed_at` rather than a "proposed" enum state, so the row is only visible-as-scheduled once `confirmed_at IS NOT NULL`.
 
 ### `qa_outcomes`
 ```sql
@@ -276,7 +281,8 @@ Filter rules: only show profiles where `seeking` and `gender` overlap appropriat
 When B likes A and A has already liked B (or vice versa), both see a match modal. CTA: **"Schedule your Q&A."** Match expires in 7 days if no Q&A scheduled — set by `expires_at`, checked by cron.
 
 ### 6.4 Q&A scheduling
-Two-sided slot picker. Each user marks availability windows for the next 7 days in 30-min slots. When the system finds overlap, the first proposer picks one slot from the overlap; the other confirms (or proposes a different overlap slot).
+
+**Locked model.** Availability is collected once at onboarding (a 7-day, 30-min-slot grid), used as a discover filter (only show profiles whose availability overlaps the viewer's), and on match the system pre-computes **three mutual slots** biased toward the next 24–48 hours. Match expires in **48 hours** if no slot is booked.
 
 On confirmation:
 - Daily.co room created server-side
@@ -284,11 +290,9 @@ On confirmation:
 - Match status → `qa_scheduled`
 - Calendar invites emailed to both (ICS attachment)
 
-**T-5 minutes:** SMS + email to both with the questions preview and join link.
+#### Scheduling refinements (lock these in at Step 5)
 
-#### Scheduling refinements (build at Step 5)
-
-These are product decisions locked in now so that Step 5 builds them in from the start. They sit on top of the existing scheduling model — availability grid at onboarding, availability overlap as a matching filter, three pre-computed mutual slots offered post-match, 48-hour match expiry — and refine *how* those slots are picked, presented, and followed through.
+These are product decisions locked in alongside the core model above. They refine *how* slots are picked, presented, and followed through.
 
 1. **Bias the three offered slots toward the next 24–48 hours**, not spread evenly across the week. Sooner slots convert better; interest decays fast after a match.
 2. **Treat a booked slot as a real appointment, not a soft tap.** On booking, generate an add-to-calendar link (ICS) and schedule two reminders: morning-of and one hour before.
@@ -298,6 +302,17 @@ These are product decisions locked in now so that Step 5 builds them in from the
 6. **Grace reschedule instead of binary show/no-show.** Offer a one-tap "running late / move 10 minutes" option within a short window around the scheduled start, so a minor delay doesn't collapse the session.
 
 **Pre-build validation:** before the full scheduling loop is built, pressure-test the core assumption (that the wedge audience will actually attend a scheduled 10-minute live video call with a stranger) by manually matching ~10 real users and scheduling their Q&As by hand. If attendance is poor under manual conditions, the automated loop won't fix it.
+
+#### Step 5 phasing
+
+Step 5 is phased to honour the validation note above:
+
+- **5a (shipped):** `qa_sessions` table + propose/confirm flow with a plain datetime picker (not the auto-computed 3-slot picker), Daily.co room on confirmation, three questions selected via `lib/qa/select.ts`, qa-scheduled email via Resend (best-effort — phone-OTP users without `auth.users.email` see details in-app at `/qa/[sessionId]`), `/qa/[sessionId]` minimal entry showing the join link. T-5 reminders, ICS, takeover, grace reschedule, no-show accountability, commitment step, SMS, onboarding availability grid, discover availability filter, 48-hour match expiry cron — **NOT in 5a.** Match expiry stays at the 7-day default until 5b's cron lands.
+- **PAUSE for manual validation:** founder manually matches ~10 real users and observes attendance before building further.
+- **5b (after validation):** full automated scheduling loop — onboarding availability grid (deferred from Step 2), discover availability filter, three-slot picker biased toward 24–48h, 48h match expiry cron, ICS attachments, automatic email reminders, commitment step at booking.
+- **5c (after validation):** behavioural-nudge polish — T-5 ring takeover, grace reschedule, gentle no-show accountability, SMS reminders via Twilio.
+
+The `qa_sessions` table has `proposed_at` / `proposed_by_id` / `confirmed_at` columns beyond §5's original listing — these support the propose/confirm flow without adding a "proposed" enum state. Rows are visible-as-scheduled only after `confirmed_at` is set.
 
 ### 6.5 Live Q&A (the core moment)
 
@@ -401,8 +416,9 @@ Selection logic: from the pool matching the pair's combined intentions, randomly
 - Used for: T-5 Q&A reminder, T-3h phone reveal
 
 ### Resend
-- Domain: `intentionally.app` (placeholder — founder to confirm before launch)
-- Templates: `welcome`, `match-created`, `qa-reminder-5min`, `mutual-unlock`, `phone-revealed`, `match-closed`
+- Domain: `intentionally.app` (placeholder — founder to confirm before launch). **5a uses `onboarding@resend.dev` instead**: works without DNS verification but only delivers to the Resend account holder's email. Switch to `intentionally.app` (or whatever sender domain) before real-user beta.
+- Templates planned: `welcome`, `match-created`, `qa-scheduled`, `qa-reminder-5min`, `mutual-unlock`, `phone-revealed`, `match-closed`. **5a ships only `qa-scheduled`** (plain text, placeholder copy). The rest follow in their owning steps.
+- Phone-OTP users don't have an email on `auth.users` by default — the scheduling action treats sends as best-effort and surfaces the same details in-app at `/qa/[sessionId]`. Email collection at onboarding (or post-onboarding) is a 5b/beta decision.
 
 ### PostHog
 - EU region. Initialised in `app/layout.tsx` (client side).
