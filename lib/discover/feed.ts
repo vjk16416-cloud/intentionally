@@ -22,6 +22,7 @@ type ViewerProfile = {
   city: string | null;
   gender: string | null;
   seeking: string[] | null;
+  availability: number[] | null;
 };
 
 type RawProfile = {
@@ -36,9 +37,15 @@ type RawProfile = {
 };
 
 // Per §6.2: only show profiles where seeking and gender overlap
-// appropriately, where city = viewer's city, and where the viewer
-// hasn't already swiped on them. id_verified is NOT a filter — the
-// locked decision is to gate verification only at Q&A scheduling.
+// appropriately, where city = viewer's city, where availability
+// overlaps the viewer's, and where the viewer hasn't already swiped
+// on them. id_verified is NOT a filter — the locked decision is to
+// gate verification only at Q&A scheduling.
+//
+// Availability uses the Postgres array overlap operator (&&) via
+// supabase-js .overlaps(). The GIN index added with the column
+// makes this cheap. Candidates with NULL availability are naturally
+// excluded (NULL && anything is NULL).
 //
 // Ordering: created_at desc. PostgREST doesn't expose `order by
 // random()` directly, and we'd rather not add an RPC just for this
@@ -51,7 +58,7 @@ export async function getDiscoverFeed(
 ): Promise<DiscoverCard[]> {
   const { data: viewer } = await supabase
     .from("profiles")
-    .select("id, city, gender, seeking")
+    .select("id, city, gender, seeking, availability")
     .eq("id", userId)
     .maybeSingle<ViewerProfile>();
 
@@ -60,7 +67,9 @@ export async function getDiscoverFeed(
     !viewer.city ||
     !viewer.gender ||
     !viewer.seeking ||
-    viewer.seeking.length === 0
+    viewer.seeking.length === 0 ||
+    !viewer.availability ||
+    viewer.availability.length === 0
   ) {
     // The (app) layout completeness gate should have caught this;
     // bail safely if not.
@@ -85,6 +94,7 @@ export async function getDiscoverFeed(
     .eq("city", viewer.city)
     .in("gender", viewer.seeking)
     .contains("seeking", [viewer.gender])
+    .overlaps("availability", viewer.availability)
     .order("created_at", { ascending: false })
     .limit(limit);
 
