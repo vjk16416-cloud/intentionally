@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { buttonVariants } from "@/components/ui/button";
 import { computeAge } from "@/lib/age";
+import { summariseAvailability } from "@/lib/onboarding/availability";
 import { BIO_PROMPTS } from "@/lib/onboarding/constants";
 import { getOnboardingState } from "@/lib/onboarding/state";
 import { PROFILE_PHOTOS_BUCKET } from "@/lib/storage/photos";
@@ -20,6 +21,7 @@ type ReviewProfile = {
   photos: string[] | null;
   city: string | null;
   neighbourhood: string | null;
+  availability: number[] | null;
 };
 
 type ReviewTrustedContact = {
@@ -97,7 +99,7 @@ export default async function OnboardingReviewPage() {
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "display_name, date_of_birth, gender, seeking, intention, bio_prompt_key, bio_answer, photos, city, neighbourhood",
+      "display_name, date_of_birth, gender, seeking, intention, bio_prompt_key, bio_answer, photos, city, neighbourhood, availability",
     )
     .eq("id", user.id)
     .maybeSingle<ReviewProfile>();
@@ -197,6 +199,13 @@ export default async function OnboardingReviewPage() {
         >
           {profile.neighbourhood}
           {profile.city ? `, ${profile.city}` : null}
+        </ReviewSection>
+
+        <ReviewSection
+          title="Availability"
+          editHref="/onboarding/availability?return=review"
+        >
+          {summariseAvailability(profile.availability ?? [])}
         </ReviewSection>
 
         <ReviewSection
