@@ -3,14 +3,9 @@ import { redirect } from "next/navigation";
 import { getPreviousStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-import { ProfileForm } from "./profile-form";
+import { AvailabilityForm } from "./availability-form";
 
-type ProfileFields = {
-  display_name: string | null;
-  date_of_birth: string | null;
-};
-
-export default async function ProfileStepPage({
+export default async function AvailabilityStepPage({
   searchParams,
 }: {
   searchParams: Promise<{ return?: string }>;
@@ -25,30 +20,31 @@ export default async function ProfileStepPage({
 
   const params = await searchParams;
   const returnTo = params.return === "review" ? "/onboarding/review" : null;
-  const previousStep = getPreviousStep("/onboarding/profile");
+  const previousStep = getPreviousStep("/onboarding/availability");
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name, date_of_birth")
+    .select("availability")
     .eq("id", user.id)
-    .maybeSingle<ProfileFields>();
+    .maybeSingle<{ availability: number[] | null }>();
 
   return (
     <div className="space-y-6">
       <header className="space-y-2">
         <p className="text-xs uppercase tracking-wider text-muted-foreground">
-          Step 1 of 8
+          Step 7 of 8
         </p>
         <h1 className="text-2xl font-semibold tracking-tight">
-          First, the basics
+          When are you usually free?
         </h1>
         <p className="text-sm text-muted-foreground">
-          Your name and date of birth. You must be 18 or older.
+          Pick the weekly hours you could realistically take a 10-minute
+          video call. We&apos;ll only show you matches whose availability
+          overlaps with yours.
         </p>
       </header>
-      <ProfileForm
-        initialDisplayName={profile?.display_name ?? ""}
-        initialDateOfBirth={profile?.date_of_birth ?? ""}
+      <AvailabilityForm
+        initialSlots={profile?.availability ?? []}
         returnTo={returnTo}
         previousStep={previousStep}
       />

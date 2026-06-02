@@ -37,7 +37,7 @@ export default async function PromptStepPage({
     <div className="space-y-6">
       <header className="space-y-2">
         <p className="text-xs uppercase tracking-wider text-muted-foreground">
-          Step 5 of 7
+          Step 5 of 8
         </p>
         <h1 className="text-2xl font-semibold tracking-tight">A few words</h1>
         <p className="text-sm text-muted-foreground">

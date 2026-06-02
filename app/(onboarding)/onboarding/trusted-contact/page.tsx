@@ -38,7 +38,7 @@ export default async function TrustedContactStepPage({
     <div className="space-y-6">
       <header className="space-y-2">
         <p className="text-xs uppercase tracking-wider text-muted-foreground">
-          Step 7 of 7
+          Step 8 of 8
         </p>
         <h1 className="text-2xl font-semibold tracking-tight">
           One trusted person

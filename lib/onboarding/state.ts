@@ -1,3 +1,4 @@
+import { MIN_SLOTS } from "@/lib/onboarding/availability";
 import type { createClient } from "@/lib/supabase/server";
 import type { ProfileOnboardingFields } from "@/types/profiles";
 
@@ -12,6 +13,7 @@ export const ONBOARDING_STEPS = [
   "/onboarding/intention",
   "/onboarding/prompt",
   "/onboarding/neighbourhood",
+  "/onboarding/availability",
   "/onboarding/trusted-contact",
 ] as const;
 
@@ -30,7 +32,7 @@ export async function getOnboardingState(
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "display_name, date_of_birth, gender, seeking, intention, bio_prompt_key, bio_answer, photos, city, neighbourhood",
+      "display_name, date_of_birth, gender, seeking, intention, bio_prompt_key, bio_answer, photos, city, neighbourhood, availability",
     )
     .eq("id", userId)
     .maybeSingle<ProfileOnboardingFields>();
@@ -56,6 +58,12 @@ export async function getOnboardingState(
   }
   if (!profile.city || !profile.neighbourhood) {
     return { status: "incomplete", nextStep: "/onboarding/neighbourhood" };
+  }
+  if (
+    !profile.availability ||
+    profile.availability.length < MIN_SLOTS
+  ) {
+    return { status: "incomplete", nextStep: "/onboarding/availability" };
   }
 
   const { count } = await supabase
