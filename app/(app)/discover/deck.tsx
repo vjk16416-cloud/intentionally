@@ -6,18 +6,17 @@ import { Button } from "@/components/ui/button";
 import type { DiscoverCard } from "@/lib/discover/feed";
 
 import { likeProfile, passProfile, type MatchedCard } from "./actions";
+import { MatchModal } from "./match-modal";
 import { ProfileCard } from "./profile-card";
+
+type ActiveMatch = { matchId: string; match: MatchedCard };
 
 export function DiscoverDeck({ cards }: { cards: DiscoverCard[] }) {
   const [index, setIndex] = useState(0);
   const [pending, startTransition] = useTransition();
   const [limitReached, setLimitReached] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-  // Inline placeholder for now — the proper modal lands in the next
-  // commit. Kept here so this commit is testable in isolation: you
-  // can see that a like creating a match surfaces *something* to the
-  // user, just not the final UI.
-  const [matchedWith, setMatchedWith] = useState<MatchedCard | null>(null);
+  const [activeMatch, setActiveMatch] = useState<ActiveMatch | null>(null);
 
   if (cards.length === 0) {
     return (
@@ -53,7 +52,7 @@ export function DiscoverDeck({ cards }: { cards: DiscoverCard[] }) {
         return;
       }
       if (result.matched) {
-        setMatchedWith(result.with);
+        setActiveMatch({ matchId: result.matchId, match: result.with });
       }
       setIndex((i) => i + 1);
     });
@@ -101,22 +100,12 @@ export function DiscoverDeck({ cards }: { cards: DiscoverCard[] }) {
         </Button>
       </div>
 
-      {matchedWith ? (
-        <div className="rounded-2xl border bg-muted p-4 text-center">
-          <p className="text-sm font-medium">
-            It&apos;s a match with {matchedWith.display_name}.
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            (Proper match modal lands in the next commit.)
-          </p>
-          <button
-            type="button"
-            onClick={() => setMatchedWith(null)}
-            className="mt-2 text-xs underline"
-          >
-            Dismiss
-          </button>
-        </div>
+      {activeMatch ? (
+        <MatchModal
+          matchId={activeMatch.matchId}
+          match={activeMatch.match}
+          onDismiss={() => setActiveMatch(null)}
+        />
       ) : null}
     </div>
   );
