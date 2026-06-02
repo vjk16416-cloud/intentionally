@@ -13,4 +13,5 @@ export type ProfileOnboardingFields = {
   photos: string[] | null;
   city: string | null;
   neighbourhood: string | null;
+  availability: number[] | null;
 };
