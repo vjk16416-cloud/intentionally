@@ -249,7 +249,7 @@ body text
 
 ## 6. User flows
 
-### 6.1 Onboarding (single linear flow, no skips)
+### 6.1 Onboarding (single linear flow, with editable review at the end)
 1. Phone OTP (Supabase phone auth via Twilio)
 2. Display name + DOB (18+ gate, server-side validated)
 3. Gender + seeking
@@ -258,7 +258,10 @@ body text
 6. Bio prompt (pick 1 of ~12 prompts, answer ≤200 chars)
 7. City + neighbourhood (UK only; pick city from the seeded `MARKETS` list, then neighbourhood from that city's list)
 8. Trusted contact (name + phone in E.164)
-9. Done → Discover
+9. **Review** — summary of every section above with per-section "Edit" links. Edits round-trip back to review via `?return=review` (whitelisted in `lib/onboarding/navigation.ts`). Includes the inline ID-verification note. Not a data step; collects nothing.
+10. **How-it-works explainer** (at `/onboarding/done`) — primes the core Q&A mechanic (match → 10-min live video → mutual unlock → chat). Placeholder copy, founder review pending. CTA → /discover.
+
+Steps 2–8 each have a Back link to the previous linear step (step 1 has no Back — phone OTP is below the auth boundary). Steps 9 and 10 are flow stops, not data steps, so they're not in `ONBOARDING_STEPS` and the completeness gate doesn't track them; users who skip directly to /discover after step 8 bypass them but the trusted-contact action routes through review in the linear flow.
 
 **ID verification is NOT part of onboarding.** Users browse and match unverified; Stripe Identity is gated separately *before the first Q&A unlocks* (see Step 3 in §10 below). This is a deliberate change from the original ordering — the rationale is that ID verification adds friction at the worst point (signup) and is only load-bearing at the first real face-to-face moment.
 
