@@ -313,7 +313,7 @@ Step 5 is phased to honour the validation note above:
 - **PAUSE for manual validation:** founder manually matches ~10 real users and observes attendance before building further.
 - **5b (split into chunks, validation gate consciously overridden):**
   - **5b.1 (shipped):** onboarding availability grid + discover availability overlap filter. New `availability int[]` column on profiles; new `/onboarding/availability` step slotted between neighbourhood and trusted-contact; min 2 hours/week to pass the gate; `&&` (GIN-indexed) filter on the discover feed.
-  - **5b.2 (pending):** three-slot picker biased toward 24–48h, replacing the 5a datetime-local picker.
+  - **5b.2 (shipped):** three-slot picker replacing the 5a datetime-local picker. `lib/scheduling/london-time.ts` (DST-aware London-clock helpers via `Intl`) + `lib/scheduling/slots.ts` (`computeMutualSlots` — pure helper that returns the next mutual future occurrences, MIN_LEAD_MINUTES-filtered, sorted soonest-first). The picker constrains UI to mutual availability; the propose action re-validates server-side against the mutual set as defense-in-depth.
   - **5b.3 (pending):** commitment step at booking + ICS attachment on the qa-scheduled email.
   - **5b.4 (pending):** 48h match expiry default + Vercel cron, plus morning-of and one-hour-before reminder emails via cron.
 - **5c (after validation):** behavioural-nudge polish — T-5 ring takeover, grace reschedule, gentle no-show accountability, SMS reminders via Twilio.
