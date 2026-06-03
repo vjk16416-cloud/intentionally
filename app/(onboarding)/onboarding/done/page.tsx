@@ -17,7 +17,7 @@ export default async function OnboardingDonePage() {
 
   // If anything is still missing, push them back to the right step
   // rather than letting them celebrate prematurely.
-  const state = await getOnboardingState(supabase, user.id);
+  const state = await getOnboardingState(supabase, user);
   if (state.status === "incomplete") {
     redirect(state.nextStep);
   }

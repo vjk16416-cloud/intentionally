@@ -1,3 +1,5 @@
+import type { User } from "@supabase/supabase-js";
+
 import { MIN_SLOTS } from "@/lib/onboarding/availability";
 import type { createClient } from "@/lib/supabase/server";
 import type { ProfileOnboardingFields } from "@/types/profiles";
@@ -5,7 +7,10 @@ import type { ProfileOnboardingFields } from "@/types/profiles";
 // Linear order of onboarding steps. The completeness check returns the
 // first incomplete step in this order. ID verification is deliberately
 // NOT in this list — it's gated separately before Q&A unlocks (Step 3
-// in the build sequence).
+// in the build sequence). /onboarding/phone is ALSO not in this list —
+// it's a conditional one-off that fires only for email-auth users
+// whose auth.users.phone is null, and we don't want it as a Back-link
+// destination from /onboarding/profile.
 export const ONBOARDING_STEPS = [
   "/onboarding/profile",
   "/onboarding/identity",
@@ -17,7 +22,11 @@ export const ONBOARDING_STEPS = [
   "/onboarding/trusted-contact",
 ] as const;
 
-export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
+// `/onboarding/phone` is a possible nextStep without being in the
+// iterable linear array.
+export type OnboardingStep =
+  | (typeof ONBOARDING_STEPS)[number]
+  | "/onboarding/phone";
 
 export type OnboardingState =
   | { status: "complete" }
@@ -25,16 +34,26 @@ export type OnboardingState =
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
+// Signature takes the Supabase User (not just userId) because the
+// phone-collection gate reads from auth.users.phone, not from
+// profiles — every other check here is on profiles, but phone-OTP
+// is a Supabase-auth identity field, not profile data.
 export async function getOnboardingState(
   supabase: SupabaseServerClient,
-  userId: string,
+  user: User,
 ): Promise<OnboardingState> {
+  // Phone gate fires first. Fires only for email-auth users; phone-OTP
+  // users have user.phone set as a side effect of signup.
+  if (!user.phone) {
+    return { status: "incomplete", nextStep: "/onboarding/phone" };
+  }
+
   const { data: profile } = await supabase
     .from("profiles")
     .select(
       "display_name, date_of_birth, gender, seeking, intention, bio_prompt_key, bio_answer, photos, city, neighbourhood, availability",
     )
-    .eq("id", userId)
+    .eq("id", user.id)
     .maybeSingle<ProfileOnboardingFields>();
 
   if (!profile) {
@@ -69,7 +88,7 @@ export async function getOnboardingState(
   const { count } = await supabase
     .from("trusted_contacts")
     .select("id", { count: "exact", head: true })
-    .eq("user_id", userId);
+    .eq("user_id", user.id);
 
   if (!count) {
     return { status: "incomplete", nextStep: "/onboarding/trusted-contact" };

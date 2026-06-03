@@ -15,7 +15,7 @@ export default async function OnboardingIndex() {
     redirect("/login");
   }
 
-  const state = await getOnboardingState(supabase, user.id);
+  const state = await getOnboardingState(supabase, user);
   if (state.status === "complete") {
     redirect("/discover");
   }

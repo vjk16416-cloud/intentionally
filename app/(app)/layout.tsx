@@ -23,7 +23,7 @@ export default async function AppLayout({
 
   // Gate on profile completeness (NOT on id_verified — that's a Step 5
   // pre-Q&A gate, not an onboarding requirement).
-  const onboarding = await getOnboardingState(supabase, user.id);
+  const onboarding = await getOnboardingState(supabase, user);
   if (onboarding.status === "incomplete") {
     redirect(onboarding.nextStep);
   }

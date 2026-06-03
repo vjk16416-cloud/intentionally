@@ -91,7 +91,7 @@ export default async function OnboardingReviewPage() {
 
   // Only show review when every step has data. An incomplete user
   // shouldn't be staring at half a profile.
-  const state = await getOnboardingState(supabase, user.id);
+  const state = await getOnboardingState(supabase, user);
   if (state.status === "incomplete") {
     redirect(state.nextStep);
   }
