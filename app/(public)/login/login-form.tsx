@@ -9,65 +9,69 @@ import {
   requestOtp,
   verifyOtp,
   type LoginActionState,
+  type LoginIdentifierKind,
 } from "./actions";
 
 const INITIAL_STATE: LoginActionState = {};
 
 export function LoginForm() {
-  const [stage, setStage] = useState<"phone" | "code">("phone");
-  const [phone, setPhone] = useState("");
+  const [stage, setStage] = useState<"request" | "verify">("request");
+  const [identifier, setIdentifier] = useState("");
+  const [kind, setKind] = useState<LoginIdentifierKind | null>(null);
 
-  const [phoneState, phoneAction, phonePending] = useActionState(
+  const [requestState, requestAction, requestPending] = useActionState(
     async (prev: LoginActionState, formData: FormData) => {
       const next = await requestOtp(prev, formData);
-      if (next.phone && !next.error) {
-        setPhone(next.phone);
-        setStage("code");
+      if (next.identifier && next.kind && !next.error) {
+        setIdentifier(next.identifier);
+        setKind(next.kind);
+        setStage("verify");
       }
       return next;
     },
     INITIAL_STATE,
   );
 
-  const [codeState, codeAction, codePending] = useActionState(
+  const [verifyState, verifyAction, verifyPending] = useActionState(
     verifyOtp,
     INITIAL_STATE,
   );
 
-  if (stage === "phone") {
+  if (stage === "request") {
     return (
-      <form action={phoneAction} className="space-y-4">
+      <form action={requestAction} className="space-y-4">
         <div className="space-y-1.5">
-          <label htmlFor="phone" className="text-sm font-medium">
-            Phone number
+          <label htmlFor="identifier" className="text-sm font-medium">
+            Email or phone
           </label>
           <Input
-            id="phone"
-            name="phone"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            placeholder="+447700900123"
-            defaultValue={phoneState.phone}
+            id="identifier"
+            name="identifier"
+            type="text"
+            autoComplete="username"
+            placeholder="you@example.com or +447700900123"
+            defaultValue={requestState.identifier}
             required
+            autoFocus
           />
           <p className="text-xs text-muted-foreground">
-            E.164 format. We&apos;ll text you a 6-digit code.
+            We&apos;ll text or email a 6-digit code. Phone in E.164 format.
           </p>
         </div>
-        {phoneState.error ? (
-          <p className="text-sm text-destructive">{phoneState.error}</p>
+        {requestState.error ? (
+          <p className="text-sm text-destructive">{requestState.error}</p>
         ) : null}
-        <Button type="submit" size="lg" disabled={phonePending}>
-          {phonePending ? "Sending code…" : "Send code"}
+        <Button type="submit" size="lg" disabled={requestPending}>
+          {requestPending ? "Sending code…" : "Send code"}
         </Button>
       </form>
     );
   }
 
   return (
-    <form action={codeAction} className="space-y-4">
-      <input type="hidden" name="phone" value={phone} />
+    <form action={verifyAction} className="space-y-4">
+      <input type="hidden" name="identifier" value={identifier} />
+      <input type="hidden" name="kind" value={kind ?? ""} />
       <div className="space-y-1.5">
         <label htmlFor="token" className="text-sm font-medium">
           6-digit code
@@ -84,21 +88,21 @@ export function LoginForm() {
           autoFocus
         />
         <p className="text-xs text-muted-foreground">
-          Sent to {phone}.{" "}
+          Sent to {identifier}.{" "}
           <button
             type="button"
             className="underline"
-            onClick={() => setStage("phone")}
+            onClick={() => setStage("request")}
           >
-            Change number
+            Change {kind === "email" ? "email" : "number"}
           </button>
         </p>
       </div>
-      {codeState.error ? (
-        <p className="text-sm text-destructive">{codeState.error}</p>
+      {verifyState.error ? (
+        <p className="text-sm text-destructive">{verifyState.error}</p>
       ) : null}
-      <Button type="submit" size="lg" disabled={codePending}>
-        {codePending ? "Verifying…" : "Verify"}
+      <Button type="submit" size="lg" disabled={verifyPending}>
+        {verifyPending ? "Verifying…" : "Verify"}
       </Button>
     </form>
   );

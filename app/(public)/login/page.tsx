@@ -9,7 +9,7 @@ export default function LoginPage() {
             Sign in to Intentionally
           </h1>
           <p className="text-sm text-muted-foreground">
-            We use your phone number for sign-in and date-night SMS.
+            Email or phone — we&apos;ll send a 6-digit code.
           </p>
         </header>
         <LoginForm />
