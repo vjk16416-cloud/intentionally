@@ -19,7 +19,7 @@ If you (the agent) find yourself about to build something not listed in scope be
 ## 1. Product context
 
 ### What we're building
-Intentionally is a video-first dating app. Matches must complete a mandatory 10-minute live video Q&A — 3 therapist-designed questions, with a real-time blur on whoever is listening — before chat unlocks. Both parties must opt in after the Q&A for the conversation to continue. Every user is ID-verified before their first Q&A (the Stripe Identity gate fires at Q&A scheduling entry — *not* at signup; see §6.1). A trusted contact is mandatory. Phone numbers are only revealed 3 hours before a confirmed date.
+Intentionally is a video-first dating app. Matches must complete a mandatory 10-minute live video Q&A — 3 therapist-designed questions, with a real-time blur on whoever is listening — before chat unlocks. Both parties must opt in after the Q&A for the conversation to continue. Every user is ID-verified before their first Q&A (the Stripe Identity gate fires at Q&A scheduling entry — *not* at signup; see §6.1). A trusted contact is mandatory. Every user has a verified phone on file (collected at signup for phone-OTP users, at a one-off /onboarding/phone step for email-OTP users; see §6.1). Phone numbers are only revealed 3 hours before a confirmed date.
 
 ### The thesis
 Swipe culture produces low-signal matches because text is a weak interview format. By forcing one structured, time-bounded human interaction earlier in the funnel, we should produce higher-quality matches with fewer ghosts, fewer bad first dates, and more relationships per 100 matches than incumbents.
@@ -256,7 +256,8 @@ body text
 ## 6. User flows
 
 ### 6.1 Onboarding (single linear flow, with editable review at the end)
-1. Phone OTP (Supabase phone auth via Twilio)
+1. **Phone OR email OTP** (Supabase auth; phone via Twilio, email via Supabase SMTP for now — swap to Resend SMTP before real-user beta). Single login input auto-detects: `@` present → email, else E.164 phone. Magic links explicitly disabled — OTP only.
+   - **Conditional sub-step `/onboarding/phone`** fires immediately after login if `auth.users.phone` is null (i.e., the user signed up via email). Collects a phone via `updateUser({ phone })` → `verifyOtp(type: "phone_change")`, same Twilio surface as the login OTP. Outside the linear 8-step count (no `Step X of N` chip); phone-OTP users skip it entirely. Not in `ONBOARDING_STEPS`.
 2. Display name + DOB (18+ gate, server-side validated)
 3. Gender + seeking
 4. Photos (min 2, max 6, Supabase Storage — direct client upload to `{userId}/{uuid}.{ext}`, gated by per-folder RLS)
@@ -395,6 +396,7 @@ Selection logic: from the pool matching the pair's combined intentions, randomly
 - Project name: `intentionally-mvp`
 - Region: EU (London if available)
 - Phone auth enabled (Twilio configured)
+- Email auth enabled, OTP only — **magic links explicitly disabled** in the Email provider settings.
 - Storage bucket `profile-photos`: **public-read** bucket. Paths are `{userId}/{uuid}.{ext}` (opaque, non-enumerable). RLS on `storage.objects` restricts INSERT/UPDATE/DELETE — and the auto-added SELECT policy — to the owner's folder; public-URL reads bypass RLS so cross-user photo display works in /discover. Revisit and tighten to signed read URLs before real-user launch (so paused / deleted profiles can have photo access revoked).
 - pg_cron extension enabled (for match expiry; phone reveal uses Vercel Cron instead)
 
@@ -423,6 +425,7 @@ Selection logic: from the pool matching the pair's combined intentions, randomly
 
 ### Resend
 - Domain: `intentionally.app` (placeholder — founder to confirm before launch). **5a uses `onboarding@resend.dev` instead**: works without DNS verification but only delivers to the Resend account holder's email. Switch to `intentionally.app` (or whatever sender domain) before real-user beta.
+- Auth-related emails (email OTP for sign-in) currently go via **Supabase's default SMTP**, not Resend. Before real-user beta, point Supabase Auth at Resend SMTP for a branded sender and better deliverability — Supabase's shared SMTP rate-limits and isn't great for production.
 - Templates planned: `welcome`, `match-created`, `qa-scheduled`, `qa-reminder-5min`, `mutual-unlock`, `phone-revealed`, `match-closed`. **5a ships only `qa-scheduled`** (plain text, placeholder copy). The rest follow in their owning steps.
 - Phone-OTP users don't have an email on `auth.users` by default — the scheduling action treats sends as best-effort and surfaces the same details in-app at `/qa/[sessionId]`. Email collection at onboarding (or post-onboarding) is a 5b/beta decision.
 
