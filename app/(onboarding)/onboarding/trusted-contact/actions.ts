@@ -35,7 +35,7 @@ export async function saveTrustedContact(
   }
   if (!E164_PATTERN.test(phone)) {
     return {
-      error: "Phone must be in E.164 format, e.g. +447700900123.",
+      error: "Enter a valid phone number. Choose the country code and type the mobile number.",
     };
   }
   let relationship: Relationship | null = null;

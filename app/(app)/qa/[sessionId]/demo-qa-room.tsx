@@ -1,4 +1,7 @@
 /* eslint-disable @next/next/no-html-link-for-pages */
+"use client";
+
+import { useSearchParams } from "next/navigation";
 
 const QUESTIONS = [
   "What is something you value in how someone communicates?",
@@ -6,9 +9,8 @@ const QUESTIONS = [
   "What would make a first conversation feel genuinely comfortable?",
 ];
 
-function safeQuestionIndex(value: string | string[] | undefined) {
-  const raw = Array.isArray(value) ? value[0] : value;
-  const parsed = Number(raw ?? "0");
+function safeQuestionIndex(value: string | null) {
+  const parsed = Number(value ?? "0");
 
   if (!Number.isFinite(parsed)) return 0;
   if (parsed < 0) return 0;
@@ -17,20 +19,12 @@ function safeQuestionIndex(value: string | string[] | undefined) {
   return parsed;
 }
 
-export default async function QaSessionPage({
-  searchParams,
-}: {
-  searchParams: Promise<{
-    q?: string;
-    finished?: string;
-    decision?: string;
-  }>;
-}) {
-  const params = await searchParams;
+export default function DemoQaRoom() {
+  const searchParams = useSearchParams();
 
-  const questionIndex = safeQuestionIndex(params.q);
-  const finished = params.finished === "true";
-  const decision = params.decision;
+  const questionIndex = safeQuestionIndex(searchParams.get("q"));
+  const finished = searchParams.get("finished") === "true";
+  const decision = searchParams.get("decision");
 
   const currentQuestion = QUESTIONS[questionIndex];
   const isLastQuestion = questionIndex === QUESTIONS.length - 1;
@@ -140,14 +134,14 @@ export default async function QaSessionPage({
               <div className="mt-6 grid grid-cols-2 gap-3">
                 <a
                   href={nextHref}
-                  className="block rounded-2xl border border-border bg-card px-4 py-4 text-center text-base font-semibold text-foreground"
+                  className="block rounded-2xl border border-black bg-white px-4 py-4 text-center text-base font-semibold text-black"
                 >
                   Skip
                 </a>
 
                 <a
                   href={nextHref}
-                  className="block rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
+                  className="block rounded-2xl bg-black px-4 py-4 text-center text-base font-semibold text-white"
                 >
                   {isLastQuestion ? "Finish" : "Next"}
                 </a>
@@ -176,15 +170,15 @@ export default async function QaSessionPage({
               ) : (
                 <div className="mt-6 grid grid-cols-1 gap-3">
                   <a
-                    href="/chat/demo-demo-match"
-                    className="block rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
+                    href="/qa/demo-demo-match?finished=true&decision=continue"
+                    className="block rounded-2xl bg-black px-4 py-4 text-center text-base font-semibold text-white"
                   >
                     Continue
                   </a>
 
                   <a
                     href="/qa/demo-demo-match?finished=true&decision=pass"
-                    className="block rounded-2xl border border-border bg-card px-4 py-4 text-center text-base font-semibold text-foreground"
+                    className="block rounded-2xl border border-black bg-white px-4 py-4 text-center text-base font-semibold text-black"
                   >
                     Pass privately
                   </a>
@@ -196,7 +190,7 @@ export default async function QaSessionPage({
 
         <a
           href="/discover"
-          className="block rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
+          className="block rounded-2xl bg-black px-4 py-4 text-center text-base font-semibold text-white"
         >
           Back to Discover
         </a>

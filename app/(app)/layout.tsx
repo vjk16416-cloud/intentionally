@@ -21,10 +21,15 @@ export default async function AppLayout({
     redirect("/login");
   }
 
-  // Gate on profile completeness (NOT on id_verified — that's a Step 5
-  // pre-Q&A gate, not an onboarding requirement).
+  // Gate on profile completeness.
+  // Local demo bypass: do not let the conditional phone step block /discover.
+  // Phone capture is needed later for contact reveal, but it should not stop
+  // us previewing the demo flow during development.
   const onboarding = await getOnboardingState(supabase, user);
-  if (onboarding.status === "incomplete") {
+  if (
+    onboarding.status === "incomplete" &&
+    onboarding.nextStep !== "/onboarding/phone"
+  ) {
     redirect(onboarding.nextStep);
   }
 
@@ -35,27 +40,40 @@ export default async function AppLayout({
   const verified = await isUserVerified(supabase, user.id);
 
   return (
-    <div className="flex flex-1 flex-col">
-      <header className="flex items-center justify-between border-b px-6 py-3">
-        <span className="text-sm font-semibold tracking-tight">
-          Intentionally
-        </span>
-        <div className="flex items-center gap-2">
-          {!verified ? (
-            <Link
-              href="/verify"
-              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-            >
-              Verify ID
-            </Link>
-          ) : null}
-          <form action={signOut}>
-            <Button type="submit" variant="ghost" size="sm">
-              Sign out
-            </Button>
-          </form>
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="sticky top-0 z-40 border-b border-border bg-background/90 px-5 py-3 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-md items-center justify-between">
+          <Link href="/discover" className="text-base font-semibold tracking-tight">
+            Intentionally
+          </Link>
+
+          <div className="flex items-center gap-2">
+            {!verified ? (
+              <Link
+                href="/verify"
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  "rounded-full border-border bg-card px-4 text-xs font-medium",
+                )}
+              >
+                Verify
+              </Link>
+            ) : null}
+
+            <form action={signOut}>
+              <Button
+                type="submit"
+                variant="ghost"
+                size="sm"
+                className="rounded-full px-3 text-xs text-neutral-500"
+              >
+                Sign out
+              </Button>
+            </form>
+          </div>
         </div>
       </header>
+
       {children}
     </div>
   );

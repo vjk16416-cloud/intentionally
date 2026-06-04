@@ -38,14 +38,14 @@ export function IntentionForm({
   const [state, action, pending] = useActionState(saveIntention, INITIAL_STATE);
 
   return (
-    <form action={action} className="space-y-6">
+    <form action={action} className="space-y-5">
       <fieldset className="space-y-2">
         <legend className="sr-only">Your intention</legend>
         <div className="space-y-2">
           {OPTIONS.map((opt) => (
             <label
               key={opt.value}
-              className="flex cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 transition-colors hover:bg-muted has-[:checked]:border-foreground has-[:checked]:bg-muted"
+              className="flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-card px-4 py-3 shadow-sm transition-colors hover:bg-muted has-[:checked]:border-accent has-[:checked]:bg-accent/10"
             >
               <input
                 type="radio"
@@ -53,10 +53,10 @@ export function IntentionForm({
                 value={opt.value}
                 defaultChecked={initialIntention === opt.value}
                 required
-                className="mt-1 size-4"
+                className="mt-1 size-4 accent-[hsl(var(--accent))]"
               />
               <span className="space-y-0.5">
-                <span className="block text-sm font-medium">{opt.label}</span>
+                <span className="block text-sm font-semibold text-foreground">{opt.label}</span>
                 <span className="block text-xs text-muted-foreground">
                   {opt.hint}
                 </span>

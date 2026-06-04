@@ -23,13 +23,14 @@ export function ProfileForm({
   const [state, action, pending] = useActionState(saveProfile, INITIAL_STATE);
 
   return (
-    <form action={action} className="space-y-4">
+    <form action={action} className="space-y-5">
       <div className="space-y-1.5">
-        <label htmlFor="displayName" className="text-sm font-medium">
+        <label htmlFor="displayName" className="text-sm font-semibold text-foreground">
           Display name
         </label>
         <Input
           id="displayName"
+          className="h-12 rounded-2xl border-border bg-card px-4 text-base shadow-sm focus-visible:ring-accent"
           name="displayName"
           defaultValue={initialDisplayName}
           maxLength={50}
@@ -42,11 +43,12 @@ export function ProfileForm({
         </p>
       </div>
       <div className="space-y-1.5">
-        <label htmlFor="dateOfBirth" className="text-sm font-medium">
+        <label htmlFor="dateOfBirth" className="text-sm font-semibold text-foreground">
           Date of birth
         </label>
         <Input
           id="dateOfBirth"
+          className="h-12 rounded-2xl border-border bg-card px-4 text-base shadow-sm focus-visible:ring-accent"
           name="dateOfBirth"
           type="date"
           defaultValue={initialDateOfBirth}

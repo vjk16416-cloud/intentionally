@@ -18,7 +18,7 @@ export async function requestPhoneOtp(
   const phone = String(formData.get("phone") ?? "").trim();
   if (!E164_PATTERN.test(phone)) {
     return {
-      error: "Enter a phone number in E.164 format (e.g. +447700900123).",
+      error: "Enter a valid phone number. Choose your country code and type your mobile number.",
     };
   }
 

@@ -35,19 +35,19 @@ export function StepNav({
       {returnTo ? (
         <Link
           href="/onboarding/review"
-          className={cn(buttonVariants({ variant: "ghost", size: "lg" }))}
+          className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
         >
           Cancel
         </Link>
       ) : previousStep ? (
         <Link
           href={previousStep}
-          className={cn(buttonVariants({ variant: "ghost", size: "lg" }))}
+          className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
         >
           Back
         </Link>
       ) : null}
-      <Button type="submit" size="lg" disabled={pending || disabled}>
+      <Button type="submit" size="lg" disabled={pending || disabled} className="rounded-2xl bg-accent px-5 text-accent-foreground hover:opacity-90">
         {pending ? "Saving…" : submitLabel}
       </Button>
     </div>

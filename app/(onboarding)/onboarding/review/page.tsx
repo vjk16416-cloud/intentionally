@@ -65,12 +65,12 @@ function ReviewSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border p-4">
+    <section className="rounded-2xl border border-border bg-card p-4 shadow-sm">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-sm font-medium">{title}</h2>
+        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
         <Link
           href={editHref}
-          className="text-xs underline underline-offset-2 hover:no-underline"
+          className="text-xs font-semibold text-accent underline underline-offset-2 hover:no-underline"
         >
           Edit
         </Link>
@@ -163,7 +163,7 @@ export default async function OnboardingReviewPage() {
             {photoUrls.map((url) => (
               <div
                 key={url}
-                className="relative aspect-square overflow-hidden rounded-xl border"
+                className="relative aspect-square overflow-hidden rounded-xl border border-border bg-card shadow-sm"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -228,7 +228,7 @@ export default async function OnboardingReviewPage() {
       <div>
         <Link
           href="/onboarding/done"
-          className={cn(buttonVariants({ size: "lg" }))}
+          className={cn(buttonVariants({ size: "lg" }), "w-full rounded-2xl bg-accent text-accent-foreground hover:opacity-90")}
         >
           Looks good — continue
         </Link>

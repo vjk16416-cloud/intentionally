@@ -15,18 +15,27 @@ import {
 const INITIAL_STATE: LoginActionState = {};
 
 export function LoginForm() {
-  const [stage, setStage] = useState<"request" | "verify">("request");
+  const [stage, setStage] = useState<"request" | "emailSent" | "verifyPhone">(
+    "request",
+  );
   const [identifier, setIdentifier] = useState("");
   const [kind, setKind] = useState<LoginIdentifierKind | null>(null);
 
   const [requestState, requestAction, requestPending] = useActionState(
     async (prev: LoginActionState, formData: FormData) => {
       const next = await requestOtp(prev, formData);
+
       if (next.identifier && next.kind && !next.error) {
         setIdentifier(next.identifier);
         setKind(next.kind);
-        setStage("verify");
+
+        if (next.kind === "email") {
+          setStage("emailSent");
+        } else {
+          setStage("verifyPhone");
+        }
       }
+
       return next;
     },
     INITIAL_STATE,
@@ -36,6 +45,28 @@ export function LoginForm() {
     verifyOtp,
     INITIAL_STATE,
   );
+
+  if (stage === "emailSent") {
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <h2 className="text-lg font-semibold">Check your email</h2>
+          <p className="text-sm text-muted-foreground">
+            We sent a secure sign-in link to {identifier}. Open the email and
+            click the link to continue.
+          </p>
+        </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setStage("request")}
+        >
+          Use a different email
+        </Button>
+      </div>
+    );
+  }
 
   if (stage === "request") {
     return (
@@ -55,14 +86,17 @@ export function LoginForm() {
             autoFocus
           />
           <p className="text-xs text-muted-foreground">
-            We&apos;ll text or email a 6-digit code. Phone in E.164 format.
+            We&apos;ll email you a secure sign-in link. Phone login still uses a
+            6-digit SMS code.
           </p>
         </div>
+
         {requestState.error ? (
           <p className="text-sm text-destructive">{requestState.error}</p>
         ) : null}
+
         <Button type="submit" size="lg" disabled={requestPending}>
-          {requestPending ? "Sending code…" : "Send code"}
+          {requestPending ? "Sending…" : "Send sign-in link"}
         </Button>
       </form>
     );
@@ -72,9 +106,10 @@ export function LoginForm() {
     <form action={verifyAction} className="space-y-4">
       <input type="hidden" name="identifier" value={identifier} />
       <input type="hidden" name="kind" value={kind ?? ""} />
+
       <div className="space-y-1.5">
         <label htmlFor="token" className="text-sm font-medium">
-          6-digit code
+          6-digit SMS code
         </label>
         <Input
           id="token"
@@ -94,13 +129,15 @@ export function LoginForm() {
             className="underline"
             onClick={() => setStage("request")}
           >
-            Change {kind === "email" ? "email" : "number"}
+            Change number
           </button>
         </p>
       </div>
+
       {verifyState.error ? (
         <p className="text-sm text-destructive">{verifyState.error}</p>
       ) : null}
+
       <Button type="submit" size="lg" disabled={verifyPending}>
         {verifyPending ? "Verifying…" : "Verify"}
       </Button>

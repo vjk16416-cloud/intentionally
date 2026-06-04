@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
@@ -10,13 +11,11 @@ export type LoginActionState = {
   identifier?: string;
   kind?: LoginIdentifierKind;
   error?: string;
+  sent?: boolean;
 };
 
 const E164_PATTERN = /^\+[1-9]\d{6,14}$/;
 
-// Detect whether an input is intended as an email or a phone. Rule:
-// presence of '@' = email (Supabase handles full validation downstream);
-// otherwise must be E.164 phone. Returns null for unrecognised input.
 function detectKind(value: string): LoginIdentifierKind | null {
   if (value.includes("@")) return "email";
   if (E164_PATTERN.test(value)) return "phone";
@@ -33,21 +32,33 @@ export async function requestOtp(
   if (!kind) {
     return {
       error:
-        "Enter your email address or phone number in E.164 format (e.g. +447700900123).",
+        "Enter your email address or phone number in E.164 format, for example +447700900123.",
     };
   }
 
   const supabase = await createClient();
+
+  const headersList = await headers();
+  const origin =
+    headersList.get("origin") ??
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    "http://localhost:3000";
+
   const { error } =
     kind === "email"
-      ? await supabase.auth.signInWithOtp({ email: identifier })
+      ? await supabase.auth.signInWithOtp({
+          email: identifier,
+          options: {
+            emailRedirectTo: `${origin}/auth/callback`,
+          },
+        })
       : await supabase.auth.signInWithOtp({ phone: identifier });
 
   if (error) {
     return { identifier, kind, error: error.message };
   }
 
-  return { identifier, kind };
+  return { identifier, kind, sent: true };
 }
 
 export async function verifyOtp(
@@ -58,35 +69,28 @@ export async function verifyOtp(
   const kindRaw = String(formData.get("kind") ?? "");
   const token = String(formData.get("token") ?? "").trim();
 
-  if (kindRaw !== "email" && kindRaw !== "phone") {
-    return { error: "Invalid login state." };
+  if (kindRaw !== "phone") {
+    return { identifier, error: "Email sign-in now uses a secure email link." };
   }
-  const kind: LoginIdentifierKind = kindRaw;
 
   if (!identifier || !token) {
     return {
       identifier,
-      kind,
-      error: "Identifier and code are both required.",
+      kind: "phone",
+      error: "Phone number and code are both required.",
     };
   }
 
   const supabase = await createClient();
-  const { error } =
-    kind === "email"
-      ? await supabase.auth.verifyOtp({
-          email: identifier,
-          token,
-          type: "email",
-        })
-      : await supabase.auth.verifyOtp({
-          phone: identifier,
-          token,
-          type: "sms",
-        });
+
+  const { error } = await supabase.auth.verifyOtp({
+    phone: identifier,
+    token,
+    type: "sms",
+  });
 
   if (error) {
-    return { identifier, kind, error: error.message };
+    return { identifier, kind: "phone", error: error.message };
   }
 
   redirect("/discover");

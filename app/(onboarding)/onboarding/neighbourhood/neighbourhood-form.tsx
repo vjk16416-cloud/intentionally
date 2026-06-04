@@ -3,14 +3,24 @@
 import { useActionState, useState } from "react";
 
 import { StepNav } from "@/components/onboarding/step-nav";
-import {
-  getNeighbourhoodsFor,
-  MARKET_CITIES,
-} from "@/lib/onboarding/constants";
-
 import { saveNeighbourhood, type NeighbourhoodActionState } from "./actions";
 
 const INITIAL_STATE: NeighbourhoodActionState = {};
+
+const SUGGESTED_AREAS = [
+  "Dagenham",
+  "Ilford",
+  "Barking",
+  "Romford",
+  "Stratford",
+  "East Ham",
+  "Walthamstow",
+  "Hackney",
+  "Bethnal Green",
+  "Shoreditch",
+];
+
+const DISTANCE_OPTIONS = ["5 miles", "10 miles", "25 miles", "50 miles"];
 
 export function NeighbourhoodForm({
   initialCity,
@@ -23,85 +33,114 @@ export function NeighbourhoodForm({
   returnTo: string | null;
   previousStep: string | null;
 }) {
-  const [city, setCity] = useState<string>(initialCity ?? "");
-  const [neighbourhood, setNeighbourhood] = useState<string>(
+  const [city, setCity] = useState(initialCity ?? "");
+  const [neighbourhood, setNeighbourhood] = useState(
     initialNeighbourhood ?? "",
   );
+  const [distance, setDistance] = useState("10 miles");
+
   const [state, action, pending] = useActionState(
     saveNeighbourhood,
     INITIAL_STATE,
   );
 
-  const neighbourhoods = city ? getNeighbourhoodsFor(city) : [];
-
-  function onCityChange(next: string) {
-    setCity(next);
-    // If the previously-selected neighbourhood doesn't exist in the
-    // new city, clear it so the user has to pick again.
-    if (!getNeighbourhoodsFor(next).includes(neighbourhood)) {
-      setNeighbourhood("");
-    }
-  }
-
   return (
-    <form action={action} className="space-y-4">
-      <div className="space-y-1.5">
-        <label htmlFor="city" className="text-sm font-medium">
-          City
-        </label>
-        <select
-          id="city"
-          name="city"
-          value={city}
-          onChange={(e) => onCityChange(e.target.value)}
-          required
-          className="h-9 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+    <form action={action} className="space-y-5">
+      <div className="space-y-3">
+        <button
+          type="button"
+          className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground shadow-sm transition hover:bg-muted"
         >
-          <option value="" disabled>
-            Choose your city…
-          </option>
-          {MARKET_CITIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+          Use my current location
+        </button>
+
+        <p className="text-xs leading-5 text-muted-foreground">
+          Or add your city and area manually. We only use this to keep match suggestions local.
+        </p>
       </div>
 
       <div className="space-y-1.5">
-        <label htmlFor="neighbourhood" className="text-sm font-medium">
-          Neighbourhood
+        <label htmlFor="city" className="text-sm font-semibold text-foreground">
+          City or town
         </label>
-        <select
+        <input
+          id="city"
+          name="city"
+          value={city}
+          onChange={(event) => setCity(event.target.value)}
+          required
+          placeholder="London"
+          className="h-12 w-full rounded-2xl border border-border bg-card px-4 text-base shadow-sm outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/30"
+        />
+        <p className="text-xs text-muted-foreground">
+          Examples: London, Manchester, Birmingham.
+        </p>
+      </div>
+
+      <div className="space-y-1.5">
+        <label htmlFor="neighbourhood" className="text-sm font-semibold text-foreground">
+          Neighbourhood or area
+        </label>
+        <input
           id="neighbourhood"
           name="neighbourhood"
           value={neighbourhood}
-          onChange={(e) => setNeighbourhood(e.target.value)}
+          onChange={(event) => setNeighbourhood(event.target.value)}
           required
-          disabled={!city}
-          className="h-9 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
-        >
-          <option value="" disabled>
-            {city ? "Choose your neighbourhood…" : "Pick a city first"}
-          </option>
-          {neighbourhoods.map((n) => (
-            <option key={n} value={n}>
-              {n}
-            </option>
+          placeholder="Dagenham"
+          className="h-12 w-full rounded-2xl border border-border bg-card px-4 text-base shadow-sm outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/30"
+        />
+        <p className="text-xs text-muted-foreground">
+          This keeps suggestions local without showing your exact address.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-foreground">
+          How far are you open to matching?
+        </label>
+        <input type="hidden" name="distance" value={distance} />
+        <div className="grid grid-cols-2 gap-2">
+          {DISTANCE_OPTIONS.map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => setDistance(option)}
+              className={`rounded-xl border px-3 py-3 text-sm transition ${
+                distance === option
+                  ? "border-accent bg-accent text-accent-foreground shadow-sm"
+                  : "border-border bg-card text-foreground hover:bg-muted"
+              }`}
+            >
+              {option}
+            </button>
           ))}
-        </select>
-        {city ? (
-          <p className="text-xs text-muted-foreground">
-            {city === "London"
-              ? "We use this to suggest people near you."
-              : "London is the only actively seeded market right now — you can still sign up, but match pools elsewhere may be thin."}
-          </p>
-        ) : null}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          You can change this later.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-sm font-semibold text-foreground">Popular nearby examples</p>
+        <div className="flex flex-wrap gap-2">
+          {SUGGESTED_AREAS.map((area) => (
+            <button
+              key={area}
+              type="button"
+              onClick={() => setNeighbourhood(area)}
+              className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-foreground hover:bg-muted"
+            >
+              {area}
+            </button>
+          ))}
+        </div>
       </div>
 
       {state.error ? (
         <p className="text-sm text-destructive">{state.error}</p>
       ) : null}
+
       <StepNav
         returnTo={returnTo}
         previousStep={previousStep}

@@ -27,7 +27,7 @@ export function PromptForm({
   return (
     <form action={action} className="space-y-5">
       <div className="space-y-1.5">
-        <label htmlFor="promptKey" className="text-sm font-medium">
+        <label htmlFor="promptKey" className="text-sm font-semibold text-foreground">
           Pick a prompt
         </label>
         <select
@@ -35,7 +35,7 @@ export function PromptForm({
           name="promptKey"
           defaultValue={initialPromptKey ?? ""}
           required
-          className="h-9 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+          className="h-12 w-full rounded-2xl border border-border bg-card px-4 text-sm shadow-sm outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/30"
         >
           <option value="" disabled>
             Choose one…
@@ -49,7 +49,7 @@ export function PromptForm({
       </div>
 
       <div className="space-y-1.5">
-        <label htmlFor="answer" className="text-sm font-medium">
+        <label htmlFor="answer" className="text-sm font-semibold text-foreground">
           Your answer
         </label>
         <textarea
@@ -60,12 +60,13 @@ export function PromptForm({
           required
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
-          className="w-full resize-none rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-          placeholder="Keep it short and honest — under 200 characters."
+          className="w-full resize-none rounded-2xl border border-border bg-card px-4 py-3 text-sm leading-6 shadow-sm outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/30"
+          placeholder="Something specific, honest, and easy to reply to."
         />
-        <p className="text-xs text-muted-foreground">
-          {remaining} character{remaining === 1 ? "" : "s"} left
-        </p>
+        <div className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-xs text-muted-foreground shadow-sm">
+          <span>Keep it short and specific.</span>
+          <span>{remaining} left</span>
+        </div>
       </div>
 
       {state.error ? (

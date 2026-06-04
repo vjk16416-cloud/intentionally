@@ -42,11 +42,14 @@ export async function getOnboardingState(
   supabase: SupabaseServerClient,
   user: User,
 ): Promise<OnboardingState> {
-  // Phone gate fires first. Fires only for email-auth users; phone-OTP
-  // users have user.phone set as a side effect of signup.
-  if (!user.phone) {
-    return { status: "incomplete", nextStep: "/onboarding/phone" };
-  }
+  // Phone collection is temporarily non-blocking for MVP development.
+  // We still show /onboarding/phone, but missing auth.users.phone should not
+  // block review/discover while SMS/Twilio setup is unfinished.
+  // TODO: Re-enable this gate before production if verified phone is required.
+  //
+  // if (!user.phone) {
+  //   return { status: "incomplete", nextStep: "/onboarding/phone" };
+  // }
 
   const { data: profile } = await supabase
     .from("profiles")

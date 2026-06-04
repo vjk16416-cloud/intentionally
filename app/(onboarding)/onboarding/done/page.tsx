@@ -23,51 +23,66 @@ export default async function OnboardingDonePage() {
   }
 
   return (
-    <div className="space-y-6">
-      <header className="space-y-2">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
-          You&apos;re in
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Here&apos;s how it works.
-        </h1>
-      </header>
+    <main className="min-h-[calc(100vh-57px)] bg-background px-5 py-8 text-foreground">
+      <div className="mx-auto w-full max-w-md">
+        <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm">
+          <header className="space-y-2">
+            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+              You&apos;re in
+            </p>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Here&apos;s how it works.
+            </h1>
+          </header>
 
-      {/* PLACEHOLDER COPY — founder to refine. Must convey:
-        match → 10-min live video Q&A (3 therapist-designed questions
-        with a soft blur on whoever's listening) → both decide
-        privately → only then chat unlocks. Keep it short and
-        benefit-led; this is the moment that sets the expectation for
-        the video call. */}
-      <div className="space-y-4 text-sm text-muted-foreground">
-        <p>
-          When you and someone match, the next thing isn&apos;t a text
-          message — it&apos;s a{" "}
-          <span className="font-medium text-foreground">
-            ten-minute live video call
-          </span>
-          , with three therapist-designed questions to start you off and a
-          soft blur on whoever&apos;s listening.
-        </p>
-        <p>
-          When it ends, you both decide privately whether to keep talking.
-          Both say yes — chat opens. Either says no — the match closes
-          quietly, and we never tell anyone who passed.
-        </p>
-        <p>
-          The idea: ten minutes of real conversation tells you more than
-          ten days of texting. We&apos;d rather you find out fast.
-        </p>
-      </div>
+          <div className="mt-6 space-y-3">
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+              <p className="text-sm font-semibold text-foreground">
+                1. Match first
+              </p>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                When you and someone match, we move you towards a short Q&amp;A instead of endless texting.
+              </p>
+            </div>
 
-      <div>
-        <Link
-          href="/discover"
-          className={cn(buttonVariants({ size: "lg" }))}
-        >
-          Start browsing
-        </Link>
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+              <p className="text-sm font-semibold text-foreground">
+                2. Ten-minute video Q&amp;A
+              </p>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                You answer three guided questions. The listener stays softly blurred so it feels calmer and less performative.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+              <p className="text-sm font-semibold text-foreground">
+                3. Decide privately
+              </p>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                If you both want to continue, chat opens. If not, the match closes quietly.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 rounded-2xl bg-accent p-4 text-accent-foreground shadow-sm">
+            <p className="text-sm font-semibold">
+              Ten minutes of real conversation tells you more than ten days of texting.
+            </p>
+          </div>
+
+          <div className="mt-5">
+            <Link
+              href="/discover"
+              className={cn(
+                buttonVariants({ size: "lg" }),
+                "w-full rounded-2xl bg-accent text-accent-foreground hover:opacity-90",
+              )}
+            >
+              Start browsing
+            </Link>
+          </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }

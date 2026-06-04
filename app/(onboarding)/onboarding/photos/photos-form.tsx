@@ -95,7 +95,7 @@ export function PhotosForm({
         {paths.map((path) => (
           <div
             key={path}
-            className="relative aspect-square overflow-hidden rounded-2xl border"
+            className="relative aspect-square overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
           >
             {/* Raw <img>: photos are user-uploaded and the bucket
               host is variable per env; not worth wiring next/image
@@ -108,8 +108,17 @@ export function PhotosForm({
             />
             <button
               type="button"
-              onClick={() => removePhoto(path)}
-              className="absolute right-2 top-2 rounded-full bg-background/90 px-2 py-0.5 text-xs font-medium shadow-sm"
+              onClick={() => {
+                removePhoto(path).catch((error: unknown) => {
+                  console.error("Photo removal failed:", error);
+                  setUploadError(
+                    error instanceof Error
+                      ? error.message
+                      : "Photo removal failed. Please try again.",
+                  );
+                });
+              }}
+              className="absolute right-2 top-2 rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-semibold text-foreground shadow-sm backdrop-blur transition hover:bg-muted"
             >
               Remove
             </button>
@@ -117,8 +126,8 @@ export function PhotosForm({
           </div>
         ))}
         {paths.length < MAX_PHOTOS ? (
-          <label className="flex aspect-square cursor-pointer items-center justify-center rounded-2xl border border-dashed text-xs text-muted-foreground transition-colors hover:bg-muted">
-            <span>{uploading ? "Uploading…" : "+ Add photo"}</span>
+          <label className="flex aspect-square cursor-pointer items-center justify-center rounded-2xl border border-dashed border-border bg-card text-xs font-semibold text-muted-foreground shadow-sm transition-colors hover:bg-muted">
+            <span>{uploading ? "Uploading…" : "+ Add"}</span>
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp"
@@ -127,7 +136,14 @@ export function PhotosForm({
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
-                  void onPickFile(file);
+                  onPickFile(file).catch((error: unknown) => {
+                    console.error("Photo upload failed:", error);
+                    setUploadError(
+                      error instanceof Error
+                        ? error.message
+                        : "Photo upload failed. Please try again.",
+                    );
+                  });
                   e.target.value = "";
                 }
               }}
@@ -136,10 +152,12 @@ export function PhotosForm({
         ) : null}
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        {paths.length} of {MAX_PHOTOS} added · at least {MIN_PHOTOS} required ·
-        JPEG, PNG or WebP, up to 5 MB
-      </p>
+      <div className="rounded-2xl border border-border bg-card px-4 py-3 text-xs leading-5 text-muted-foreground shadow-sm">
+        <p>
+          {paths.length} of {MAX_PHOTOS} added · at least {MIN_PHOTOS} required.
+        </p>
+        <p>JPEG, PNG or WebP. Max 5 MB per photo.</p>
+      </div>
 
       {uploadError ? (
         <p className="text-sm text-destructive">{uploadError}</p>

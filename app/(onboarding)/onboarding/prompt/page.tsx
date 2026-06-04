@@ -34,22 +34,31 @@ export default async function PromptStepPage({
     .maybeSingle<PromptFields>();
 
   return (
-    <div className="space-y-6">
-      <header className="space-y-2">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
-          Step 5 of 8
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight">A few words</h1>
-        <p className="text-sm text-muted-foreground">
-          One prompt, one answer. Specifics beat platitudes.
-        </p>
-      </header>
-      <PromptForm
-        initialPromptKey={profile?.bio_prompt_key ?? null}
-        initialAnswer={profile?.bio_answer ?? null}
-        returnTo={returnTo}
-        previousStep={previousStep}
-      />
-    </div>
+    <main className="min-h-[calc(100vh-57px)] bg-background px-5 py-8 text-foreground">
+      <div className="mx-auto w-full max-w-md">
+        <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm">
+          <header className="space-y-2">
+            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+              Step 5 of 8
+            </p>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              A few words
+            </h1>
+            <p className="text-sm leading-6 text-muted-foreground">
+              Pick one prompt and answer it in a way that feels specific to you.
+            </p>
+          </header>
+
+          <div className="mt-6">
+            <PromptForm
+              initialPromptKey={profile?.bio_prompt_key ?? null}
+              initialAnswer={profile?.bio_answer ?? null}
+              returnTo={returnTo}
+              previousStep={previousStep}
+            />
+          </div>
+        </section>
+      </div>
+    </main>
   );
 }

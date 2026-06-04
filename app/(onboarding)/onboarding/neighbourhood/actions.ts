@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 
-import { isValidMarket } from "@/lib/onboarding/constants";
 import { resolveNextStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,19 +17,26 @@ export async function saveNeighbourhood(
   const neighbourhood = String(formData.get("neighbourhood") ?? "").trim();
 
   if (!city) {
-    return { error: "Pick your city." };
+    return { error: "Enter your city or town." };
   }
+
+  if (city.length < 2) {
+    return { error: "City or town must be at least 2 characters." };
+  }
+
   if (!neighbourhood) {
-    return { error: "Pick your neighbourhood." };
+    return { error: "Enter your neighbourhood or area." };
   }
-  if (!isValidMarket(city, neighbourhood)) {
-    return { error: "Pick a neighbourhood from the list." };
+
+  if (neighbourhood.length < 2) {
+    return { error: "Neighbourhood or area must be at least 2 characters." };
   }
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
   if (!user) {
     redirect("/login");
   }

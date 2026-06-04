@@ -1,9 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useMemo, useState } from "react";
 
-import { Input } from "@/components/ui/input";
 import { StepNav } from "@/components/onboarding/step-nav";
+import { Input } from "@/components/ui/input";
 
 import {
   saveTrustedContact,
@@ -18,6 +18,41 @@ const RELATIONSHIP_OPTIONS = [
   { value: "other", label: "Other" },
 ] as const;
 
+const COUNTRY_CODES = [
+  { label: "United Kingdom", code: "+44", example: "07700900123" },
+  { label: "India", code: "+91", example: "9876543210" },
+  { label: "United Arab Emirates", code: "+971", example: "501234567" },
+  { label: "Sri Lanka", code: "+94", example: "0712345678" },
+  { label: "United States", code: "+1", example: "2025550123" },
+  { label: "Canada", code: "+1", example: "4165550123" },
+  { label: "Australia", code: "+61", example: "0412345678" },
+];
+
+function normalisePhone(countryCode: string, localNumber: string) {
+  const digitsOnly = localNumber.replace(/\D/g, "");
+  const withoutLeadingZero = digitsOnly.replace(/^0+/, "");
+  return `${countryCode}${withoutLeadingZero}`;
+}
+
+function splitInitialPhone(phone: string | null) {
+  if (!phone) {
+    return { countryCode: "+44", localNumber: "" };
+  }
+
+  const matchedCountry = COUNTRY_CODES.find((country) =>
+    phone.startsWith(country.code),
+  );
+
+  if (!matchedCountry) {
+    return { countryCode: "+44", localNumber: phone };
+  }
+
+  return {
+    countryCode: matchedCountry.code,
+    localNumber: phone.slice(matchedCountry.code.length),
+  };
+}
+
 export function TrustedContactForm({
   initialName,
   initialPhone,
@@ -31,53 +66,105 @@ export function TrustedContactForm({
   returnTo: string | null;
   previousStep: string | null;
 }) {
+  const initialPhoneParts = splitInitialPhone(initialPhone);
+
+  const [countryCode, setCountryCode] = useState(
+    initialPhoneParts.countryCode,
+  );
+  const [localNumber, setLocalNumber] = useState(
+    initialPhoneParts.localNumber,
+  );
+
   const [state, action, pending] = useActionState(
     saveTrustedContact,
     INITIAL_STATE,
   );
 
+  const selectedCountry = useMemo(
+    () => COUNTRY_CODES.find((country) => country.code === countryCode),
+    [countryCode],
+  );
+
+  const fullPhoneNumber = normalisePhone(countryCode, localNumber);
+
   return (
-    <form action={action} className="space-y-4">
+    <form action={action} className="space-y-5">
+      <div className="rounded-2xl border border-border bg-muted/40 px-4 py-3">
+        <p className="text-sm font-semibold text-foreground">
+          Safety contact only
+        </p>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">
+          They are not shown on your profile and will not be contacted about your matches.
+        </p>
+      </div>
+
       <div className="space-y-1.5">
-        <label htmlFor="name" className="text-sm font-medium">
+        <label htmlFor="name" className="text-sm font-semibold text-foreground">
           Their name
         </label>
         <Input
           id="name"
+          className="h-12 rounded-2xl border-border bg-card px-4 text-base shadow-sm focus-visible:ring-accent"
           name="name"
           defaultValue={initialName ?? ""}
           maxLength={80}
+          placeholder="e.g. Arnee"
           required
           autoFocus
         />
       </div>
+
+      <input type="hidden" name="phone" value={fullPhoneNumber} />
+
       <div className="space-y-1.5">
-        <label htmlFor="phone" className="text-sm font-medium">
+        <label htmlFor="countryCode" className="text-sm font-semibold text-foreground">
+          Country code
+        </label>
+        <select
+          id="countryCode"
+          value={countryCode}
+          onChange={(event) => setCountryCode(event.target.value)}
+          className="h-12 w-full rounded-2xl border border-border bg-card px-4 text-sm shadow-sm outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/30"
+        >
+          {COUNTRY_CODES.map((country) => (
+            <option key={`${country.label}-${country.code}`} value={country.code}>
+              {country.label} {country.code}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="space-y-1.5">
+        <label htmlFor="localNumber" className="text-sm font-semibold text-foreground">
           Phone number
         </label>
         <Input
-          id="phone"
-          name="phone"
+          id="localNumber"
+          className="h-12 rounded-2xl border-border bg-card px-4 text-base shadow-sm focus-visible:ring-accent"
+          name="localNumber"
           type="tel"
           inputMode="tel"
-          placeholder="+447700900123"
-          defaultValue={initialPhone ?? ""}
+          autoComplete="tel-national"
+          placeholder={selectedCountry?.example ?? "07700900123"}
+          value={localNumber}
+          onChange={(event) => setLocalNumber(event.target.value)}
           required
         />
-        <p className="text-xs text-muted-foreground">
-          E.164 format. We only contact them about your safety, never about
-          matches.
+        <p className="text-xs leading-5 text-muted-foreground">
+          Enter their number normally. We&apos;ll format it as{" "}
+          {localNumber ? fullPhoneNumber : `${countryCode}...`}.
         </p>
       </div>
+
       <div className="space-y-1.5">
-        <label htmlFor="relationship" className="text-sm font-medium">
-          Relationship (optional)
+        <label htmlFor="relationship" className="text-sm font-semibold text-foreground">
+          Relationship
         </label>
         <select
           id="relationship"
           name="relationship"
           defaultValue={initialRelationship ?? ""}
-          className="h-9 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+          className="h-12 w-full rounded-2xl border border-border bg-card px-4 text-sm shadow-sm outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/30"
         >
           <option value="">Prefer not to say</option>
           {RELATIONSHIP_OPTIONS.map((opt) => (
@@ -88,9 +175,19 @@ export function TrustedContactForm({
         </select>
       </div>
 
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <p className="text-sm font-semibold text-foreground">Privacy promise</p>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">
+          This person is only stored as a safety contact. They are not shown on
+          your profile and we will not message them unless a safety flow needs
+          it.
+        </p>
+      </div>
+
       {state.error ? (
         <p className="text-sm text-destructive">{state.error}</p>
       ) : null}
+
       <StepNav
         returnTo={returnTo}
         previousStep={previousStep}
