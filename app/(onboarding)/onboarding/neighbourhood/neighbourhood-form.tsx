@@ -1,26 +1,86 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 
 import { StepNav } from "@/components/onboarding/step-nav";
 import { saveNeighbourhood, type NeighbourhoodActionState } from "./actions";
 
 const INITIAL_STATE: NeighbourhoodActionState = {};
 
-const SUGGESTED_AREAS = [
-  "Dagenham",
-  "Ilford",
-  "Barking",
-  "Romford",
-  "Stratford",
-  "East Ham",
-  "Walthamstow",
-  "Hackney",
-  "Bethnal Green",
-  "Shoreditch",
+const CITY_OPTIONS = [
+  "London",
+  "Manchester",
+  "Birmingham",
+  "Leeds",
+  "Bristol",
 ];
 
-const DISTANCE_OPTIONS = ["5 miles", "10 miles", "25 miles", "50 miles"];
+const NEIGHBOURHOODS_BY_CITY: Record<string, string[]> = {
+  London: [
+    "Dagenham",
+    "Ilford",
+    "Barking",
+    "Romford",
+    "Stratford",
+    "East Ham",
+    "Walthamstow",
+    "Hackney",
+    "Bethnal Green",
+    "Shoreditch",
+  ],
+  Manchester: [
+    "Ancoats",
+    "Northern Quarter",
+    "Didsbury",
+    "Chorlton",
+    "Salford",
+    "Fallowfield",
+  ],
+  Birmingham: [
+    "Digbeth",
+    "Edgbaston",
+    "Jewellery Quarter",
+    "Moseley",
+    "Selly Oak",
+  ],
+  Leeds: [
+    "City Centre",
+    "Headingley",
+    "Chapel Allerton",
+    "Hyde Park",
+    "Roundhay",
+  ],
+  Bristol: [
+    "Clifton",
+    "Redland",
+    "Bedminster",
+    "Stokes Croft",
+    "Bishopston",
+  ],
+};
+
+const DISTANCE_OPTIONS = [
+  {
+    label: "Local",
+    value: "5 miles",
+    helper: "Closest matches",
+  },
+  {
+    label: "Nearby",
+    value: "10 miles",
+    helper: "Balanced",
+  },
+  {
+    label: "Flexible",
+    value: "25 miles",
+    helper: "More options",
+  },
+  {
+    label: "Wider",
+    value: "50 miles",
+    helper: "Maximum reach",
+  },
+];
 
 export function NeighbourhoodForm({
   initialCity,
@@ -33,29 +93,49 @@ export function NeighbourhoodForm({
   returnTo: string | null;
   previousStep: string | null;
 }) {
-  const [city, setCity] = useState(initialCity ?? "");
-  const [neighbourhood, setNeighbourhood] = useState(
-    initialNeighbourhood ?? "",
+  const defaultCity =
+    initialCity && CITY_OPTIONS.includes(initialCity) ? initialCity : "London";
+
+  const [city, setCity] = useState(defaultCity);
+
+  const neighbourhoodOptions = useMemo(
+    () => NEIGHBOURHOODS_BY_CITY[city] ?? NEIGHBOURHOODS_BY_CITY.London,
+    [city],
   );
-  const [distance, setDistance] = useState("10 miles");
+
+  const defaultNeighbourhood =
+    initialNeighbourhood && neighbourhoodOptions.includes(initialNeighbourhood)
+      ? initialNeighbourhood
+      : neighbourhoodOptions[0];
+
+  const [neighbourhood, setNeighbourhood] = useState(defaultNeighbourhood);
+  const [distanceIndex, setDistanceIndex] = useState(1);
+
+  const selectedDistance = DISTANCE_OPTIONS[distanceIndex];
 
   const [state, action, pending] = useActionState(
     saveNeighbourhood,
     INITIAL_STATE,
   );
 
+  function handleCityChange(nextCity: string) {
+    const nextNeighbourhoods =
+      NEIGHBOURHOODS_BY_CITY[nextCity] ?? NEIGHBOURHOODS_BY_CITY.London;
+
+    setCity(nextCity);
+    setNeighbourhood(nextNeighbourhoods[0]);
+  }
+
   return (
-    <form action={action} className="space-y-6">
+    <form action={action} className="space-y-5">
       <div className="rounded-3xl border border-border/70 bg-card/60 p-4 shadow-sm">
-        <div className="space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            Location
-          </p>
-          <p className="text-sm leading-6 text-muted-foreground">
-            Add the area you spend the most time in. We use this for local match
-            suggestions, not to show your exact address.
-          </p>
-        </div>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          Location
+        </p>
+        <p className="mt-1 text-sm leading-6 text-muted-foreground">
+          Choose where you spend most of your time. Your exact address is never
+          shown.
+        </p>
 
         <button
           type="button"
@@ -65,7 +145,7 @@ export function NeighbourhoodForm({
         </button>
       </div>
 
-      <div className="space-y-4">
+      <div className="grid gap-4">
         <div className="space-y-1.5">
           <label
             htmlFor="city"
@@ -73,18 +153,20 @@ export function NeighbourhoodForm({
           >
             City or town
           </label>
-          <input
+          <select
             id="city"
             name="city"
             value={city}
-            onChange={(event) => setCity(event.target.value)}
+            onChange={(event) => handleCityChange(event.target.value)}
             required
-            placeholder="London"
             className="h-12 w-full rounded-2xl border border-border bg-card px-4 text-base shadow-sm outline-none transition focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/30"
-          />
-          <p className="text-xs text-muted-foreground">
-            For example: London, Manchester, Birmingham.
-          </p>
+          >
+            {CITY_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="space-y-1.5">
@@ -94,72 +176,80 @@ export function NeighbourhoodForm({
           >
             Neighbourhood or area
           </label>
-          <input
+          <select
             id="neighbourhood"
             name="neighbourhood"
             value={neighbourhood}
             onChange={(event) => setNeighbourhood(event.target.value)}
             required
-            placeholder="Ilford"
             className="h-12 w-full rounded-2xl border border-border bg-card px-4 text-base shadow-sm outline-none transition focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/30"
-          />
+          >
+            {neighbourhoodOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
           <p className="text-xs text-muted-foreground">
-            Keep it broad. Your exact address is never shown.
+            This keeps match suggestions local without sharing your exact
+            location.
           </p>
         </div>
       </div>
 
-      <div className="space-y-3">
-        <div>
-          <label className="text-sm font-semibold text-foreground">
-            Matching distance
-          </label>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Choose how local you want your early matches to feel.
-          </p>
+      <div className="rounded-3xl border border-border/70 bg-card/60 p-4 shadow-sm">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-foreground">
+              Matching distance
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Move between local and wider matches.
+            </p>
+          </div>
+
+          <div className="rounded-2xl bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground">
+            {selectedDistance.value}
+          </div>
         </div>
 
-        <input type="hidden" name="distance" value={distance} />
+        <input type="hidden" name="distance" value={selectedDistance.value} />
 
-        <div className="grid grid-cols-4 gap-2">
-          {DISTANCE_OPTIONS.map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => setDistance(option)}
-              className={`rounded-2xl border px-2 py-3 text-sm font-medium transition ${
-                distance === option
-                  ? "border-accent bg-accent text-accent-foreground shadow-sm"
-                  : "border-border bg-card text-foreground hover:bg-muted"
-              }`}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
-      </div>
+        <div className="mt-5">
+          <input
+            type="range"
+            min="0"
+            max={DISTANCE_OPTIONS.length - 1}
+            step="1"
+            value={distanceIndex}
+            onChange={(event) => setDistanceIndex(Number(event.target.value))}
+            className="w-full accent-current"
+            aria-label="Matching distance"
+          />
 
-      <div className="space-y-3">
-        <div>
-          <p className="text-sm font-semibold text-foreground">
-            Popular nearby areas
+          <div className="mt-3 grid grid-cols-4 gap-2 text-center">
+            {DISTANCE_OPTIONS.map((option, index) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setDistanceIndex(index)}
+                className={`rounded-2xl px-2 py-2 text-xs transition ${
+                  distanceIndex === index
+                    ? "bg-accent text-accent-foreground"
+                    : "bg-background text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                <span className="block font-semibold">{option.label}</span>
+                <span className="mt-0.5 block text-[11px] opacity-80">
+                  {option.value}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <p className="mt-3 text-center text-xs text-muted-foreground">
+            {selectedDistance.helper}
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Tap one to fill the neighbourhood field quickly.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {SUGGESTED_AREAS.map((area) => (
-            <button
-              key={area}
-              type="button"
-              onClick={() => setNeighbourhood(area)}
-              className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-muted"
-            >
-              {area}
-            </button>
-          ))}
         </div>
       </div>
 
