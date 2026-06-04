@@ -49,7 +49,7 @@ export async function requestOtp(
       ? await supabase.auth.signInWithOtp({
           email: identifier,
           options: {
-            emailRedirectTo: `${origin}/auth/callback`,
+            emailRedirectTo: `${origin}/auth/callback?next=/onboarding`,
           },
         })
       : await supabase.auth.signInWithOtp({ phone: identifier });
