@@ -157,14 +157,14 @@ export function AvailabilityForm({
   const summary = summariseAvailability(Array.from(slots));
 
   return (
-    <form action={action} className="space-y-5">
+    <form action={action} className="space-y-4">
       <input
         type="hidden"
         name="slots"
         value={JSON.stringify(Array.from(slots))}
       />
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <div className="inline-flex rounded-full border border-input px-3 py-1 text-xs text-muted-foreground">
           Step 7 of 8
         </div>
@@ -172,28 +172,30 @@ export function AvailabilityForm({
           When are you free?
         </h2>
         <p className="text-sm leading-6 text-muted-foreground">
-          Pick broad windows for a 10-minute Q&A. You can change this later.
+          Pick broad windows for your 10-minute Q&A.
         </p>
       </div>
 
       <div
         className={cn(
-          "rounded-3xl border p-4",
-          ready ? "border-foreground bg-foreground text-background" : "border-input bg-muted/20",
+          "rounded-3xl border px-4 py-3",
+          ready
+            ? "border-foreground bg-foreground text-background"
+            : "border-input bg-muted/20",
         )}
       >
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-medium">
-              {ready ? "You’re good to continue" : "Pick at least 2 hours"}
+            <p className="text-sm font-semibold">
+              {ready ? "Ready to continue" : "Pick at least 2 hours"}
             </p>
             <p
               className={cn(
-                "mt-1 text-xs leading-5",
+                "mt-0.5 text-xs",
                 ready ? "text-background/75" : "text-muted-foreground",
               )}
             >
-              {selectedHours} {selectedHours === 1 ? "hour" : "hours"} selected.
+              {selectedHours} {selectedHours === 1 ? "hour" : "hours"} selected
             </p>
           </div>
 
@@ -202,7 +204,7 @@ export function AvailabilityForm({
               type="button"
               onClick={clearSelection}
               className={cn(
-                "text-xs font-medium underline underline-offset-4",
+                "rounded-full px-3 py-1 text-xs font-medium underline underline-offset-4",
                 ready ? "text-background" : "text-foreground",
               )}
             >
@@ -214,7 +216,7 @@ export function AvailabilityForm({
         {selectedHours > 0 ? (
           <p
             className={cn(
-              "mt-3 text-xs leading-5",
+              "mt-2 line-clamp-2 text-xs leading-5",
               ready ? "text-background/75" : "text-muted-foreground",
             )}
           >
@@ -224,17 +226,21 @@ export function AvailabilityForm({
       </div>
 
       <div className="space-y-2">
-        <p className="text-sm font-medium">Quick picks</p>
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-semibold">Quick picks</p>
+          <p className="text-xs text-muted-foreground">Optional shortcuts</p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
           {QUICK_PICKS.map((pick) => (
             <button
               key={pick.label}
               type="button"
               onClick={() => applyQuickPick(pick)}
-              className="rounded-2xl border border-input bg-background p-3 text-left transition hover:bg-muted"
+              className="rounded-2xl border border-input bg-background px-3 py-2 text-left transition hover:bg-muted"
             >
-              <span className="block text-sm font-medium">{pick.label}</span>
-              <span className="mt-1 block text-xs text-muted-foreground">
+              <span className="block text-xs font-semibold">{pick.label}</span>
+              <span className="mt-0.5 block text-[11px] text-muted-foreground">
                 {pick.helper}
               </span>
             </button>
@@ -244,9 +250,9 @@ export function AvailabilityForm({
 
       <div className="space-y-3">
         <div>
-          <p className="text-sm font-medium">Choose by day</p>
+          <p className="text-sm font-semibold">Choose by day</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Select a day, then choose the broad time blocks you’re usually free.
+            Select a day, then tap your usual free time.
           </p>
         </div>
 
@@ -261,16 +267,16 @@ export function AvailabilityForm({
                 type="button"
                 onClick={() => setActiveDay(index)}
                 className={cn(
-                  "rounded-2xl border px-1 py-3 text-center text-xs transition",
+                  "rounded-2xl border px-1 py-2 text-center text-xs transition",
                   active
                     ? "border-foreground bg-foreground text-background"
                     : "border-input bg-background hover:bg-muted",
                 )}
               >
-                <span className="block font-medium">{day}</span>
+                <span className="block font-semibold">{day}</span>
                 <span
                   className={cn(
-                    "mt-1 block text-[10px]",
+                    "mt-0.5 block text-[10px]",
                     active ? "text-background/70" : "text-muted-foreground",
                   )}
                 >
@@ -291,16 +297,18 @@ export function AvailabilityForm({
                 type="button"
                 onClick={() => toggleBlock(activeDay, block.hours)}
                 className={cn(
-                  "rounded-3xl border p-4 text-left transition",
+                  "rounded-2xl border px-4 py-3 text-left transition",
                   selected
                     ? "border-foreground bg-foreground text-background shadow-sm"
                     : "border-input bg-background hover:bg-muted",
                 )}
               >
-                <span className="block text-sm font-medium">{block.label}</span>
+                <span className="block text-sm font-semibold">
+                  {block.label}
+                </span>
                 <span
                   className={cn(
-                    "mt-1 block text-xs",
+                    "mt-0.5 block text-xs",
                     selected ? "text-background/70" : "text-muted-foreground",
                   )}
                 >
@@ -312,16 +320,17 @@ export function AvailabilityForm({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-input bg-muted/30 p-4">
-        <p className="text-sm font-medium">Why we ask</p>
+      <div className="rounded-2xl border border-input bg-muted/20 px-4 py-3">
+        <p className="text-sm font-semibold">Why we ask</p>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">
-          This helps us schedule Q&A sessions more smoothly and avoid dead
-          matches.
+          This helps schedule Q&A sessions smoothly and avoid dead matches.
         </p>
       </div>
 
       {state.error ? (
-        <p className="text-sm text-destructive">{state.error}</p>
+        <p className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {state.error}
+        </p>
       ) : null}
 
       <StepNav
