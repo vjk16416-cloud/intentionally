@@ -2,11 +2,11 @@
   "crons": [
     {
       "path": "/api/cron/expire-matches",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 9 * * *"
     },
     {
       "path": "/api/cron/qa-reminders",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 9 * * *"
     }
   ]
 }
