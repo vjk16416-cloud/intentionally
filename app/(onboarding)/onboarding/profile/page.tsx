@@ -45,7 +45,8 @@ export default async function ProfileStepPage({
               First, the basics
             </h1>
             <p className="text-sm leading-6 text-muted-foreground">
-              Your name and date of birth. You must be 18 or older.
+              Start with the basics. We&apos;ll only show your first name and age
+              to potential matches.
             </p>
           </header>
 
