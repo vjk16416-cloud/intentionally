@@ -37,10 +37,11 @@ export default async function IntentionStepPage({
               Step 4 of 8
             </p>
             <h1 className="text-2xl font-semibold tracking-tight">
-              What are you here for?
+              What kind of connection are you open to?
             </h1>
             <p className="text-sm leading-6 text-muted-foreground">
-              This helps guide the kind of conversations your Q&A experience will create.
+              Your answer helps shape the prompts and pace of your guided Q&amp;A
+              experience.
             </p>
           </header>
 
