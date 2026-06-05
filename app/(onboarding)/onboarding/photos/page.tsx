@@ -35,9 +35,9 @@ export default async function PhotosStepPage({
           Step 3 of 8
         </p>
         <h1 className="text-2xl font-semibold tracking-tight">Photos</h1>
-        <p className="text-sm text-muted-foreground">
-          Two to six photos that look like you on a regular day. No group
-          shots without you clearly in them.
+        <p className="text-sm leading-6 text-muted-foreground">
+          Add photos that feel like you in real life. Clear, recent photos help
+          people recognise you and feel more confident before a guided Q&amp;A.
         </p>
       </header>
       <PhotosForm
