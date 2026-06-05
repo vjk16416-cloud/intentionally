@@ -1,3 +1,5 @@
+[![Project Check](https://github.com/vjk16416-cloud/intentionally/actions/workflows/check.yml/badge.svg)](https://github.com/vjk16416-cloud/intentionally/actions/workflows/check.yml)
+
 # Intentionally
 
 Video-first dating app. See [`AGENTS.md`](./AGENTS.md) for the full
