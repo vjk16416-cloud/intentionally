@@ -164,12 +164,11 @@ export function AvailabilityForm({
         value={JSON.stringify(Array.from(slots))}
       />
 
-
       <div
         className={cn(
           "rounded-3xl border px-4 py-3",
           ready
-            ? "border-foreground bg-foreground text-background"
+            ? "border-accent bg-accent text-accent-foreground"
             : "border-input bg-muted/20",
         )}
       >
@@ -181,7 +180,7 @@ export function AvailabilityForm({
             <p
               className={cn(
                 "mt-0.5 text-xs",
-                ready ? "text-background/75" : "text-muted-foreground",
+                ready ? "text-accent-foreground/75" : "text-muted-foreground",
               )}
             >
               {selectedHours} {selectedHours === 1 ? "hour" : "hours"} selected
@@ -194,7 +193,7 @@ export function AvailabilityForm({
               onClick={clearSelection}
               className={cn(
                 "rounded-full px-3 py-1 text-xs font-medium underline underline-offset-4",
-                ready ? "text-background" : "text-foreground",
+                ready ? "text-accent-foreground" : "text-foreground",
               )}
             >
               Clear
@@ -206,7 +205,7 @@ export function AvailabilityForm({
           <p
             className={cn(
               "mt-2 line-clamp-2 text-xs leading-5",
-              ready ? "text-background/75" : "text-muted-foreground",
+              ready ? "text-accent-foreground/75" : "text-muted-foreground",
             )}
           >
             {summary}
@@ -258,7 +257,7 @@ export function AvailabilityForm({
                 className={cn(
                   "rounded-2xl border px-1 py-2 text-center text-xs transition",
                   active
-                    ? "border-foreground bg-foreground text-background"
+                    ? "border-accent bg-accent text-accent-foreground"
                     : "border-input bg-background hover:bg-muted",
                 )}
               >
@@ -266,7 +265,9 @@ export function AvailabilityForm({
                 <span
                   className={cn(
                     "mt-0.5 block text-[10px]",
-                    active ? "text-background/70" : "text-muted-foreground",
+                    active
+                      ? "text-accent-foreground/70"
+                      : "text-muted-foreground",
                   )}
                 >
                   {count > 0 ? `${count}h` : "—"}
@@ -288,7 +289,7 @@ export function AvailabilityForm({
                 className={cn(
                   "rounded-2xl border px-4 py-3 text-left transition",
                   selected
-                    ? "border-foreground bg-foreground text-background shadow-sm"
+                    ? "border-accent bg-accent text-accent-foreground shadow-sm"
                     : "border-input bg-background hover:bg-muted",
                 )}
               >
@@ -298,7 +299,9 @@ export function AvailabilityForm({
                 <span
                   className={cn(
                     "mt-0.5 block text-xs",
-                    selected ? "text-background/70" : "text-muted-foreground",
+                    selected
+                      ? "text-accent-foreground/70"
+                      : "text-muted-foreground",
                   )}
                 >
                   {block.helper}
