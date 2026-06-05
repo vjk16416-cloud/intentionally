@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 
 function loadEnvFile(path: string) {
@@ -181,11 +181,77 @@ async function main() {
       throw new Error(`Expected match status pending_qa, got ${match.status}`);
     }
 
+    console.log("Creating Q&A session proposal...");
+
+    const scheduledAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+
+    const { data: qaSession, error: qaInsertError } = await supabase
+      .from("qa_sessions")
+      .insert({
+        match_id: match.id,
+        scheduled_at: scheduledAt,
+        proposed_by_id: userAId,
+      })
+      .select("id, match_id, scheduled_at, proposed_by_id, confirmed_at, status")
+      .single();
+
+    if (qaInsertError || !qaSession) {
+      throw new Error(`Failed to create Q&A session: ${qaInsertError?.message}`);
+    }
+
+    if (qaSession.confirmed_at !== null) {
+      throw new Error("Expected Q&A session to be unconfirmed at proposal stage.");
+    }
+
+    console.log("Confirming Q&A session...");
+
+    const confirmedAt = new Date().toISOString();
+
+    const { data: confirmedSession, error: qaConfirmError } = await supabase
+      .from("qa_sessions")
+      .update({
+        confirmed_at: confirmedAt,
+      })
+      .eq("id", qaSession.id)
+      .select("id, confirmed_at")
+      .single();
+
+    if (qaConfirmError || !confirmedSession) {
+      throw new Error(`Failed to confirm Q&A session: ${qaConfirmError?.message}`);
+    }
+
+    if (!confirmedSession.confirmed_at) {
+      throw new Error("Expected Q&A session to have confirmed_at set.");
+    }
+
+    console.log("Updating match status to qa_scheduled...");
+
+    const { data: scheduledMatch, error: matchUpdateError } = await supabase
+      .from("matches")
+      .update({
+        status: "qa_scheduled",
+      })
+      .eq("id", match.id)
+      .select("id, status")
+      .single();
+
+    if (matchUpdateError || !scheduledMatch) {
+      throw new Error(`Failed to update match status: ${matchUpdateError?.message}`);
+    }
+
+    if (scheduledMatch.status !== "qa_scheduled") {
+      throw new Error(`Expected match status qa_scheduled, got ${scheduledMatch.status}`);
+    }
+
     console.log("Product-flow test passed:");
-    console.log(`- User A liked User B`);
-    console.log(`- User B liked User A`);
+    console.log("- User A liked User B");
+    console.log("- User B liked User A");
     console.log(`- Match created with status: ${match.status}`);
+    console.log("- Q&A session proposal created");
+    console.log("- Q&A session confirmed");
+    console.log(`- Match moved to status: ${scheduledMatch.status}`);
     console.log(`- Match ID: ${match.id}`);
+    console.log(`- Q&A Session ID: ${qaSession.id}`);
   } finally {
     console.log("Cleaning up test users...");
 
