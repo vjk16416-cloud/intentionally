@@ -183,7 +183,7 @@ export function NeighbourhoodForm({
           type="button"
           className="mt-4 w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
         >
-          Use my current location
+          Choose from list for now
         </button>
       </div>
 
