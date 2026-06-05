@@ -1,3 +1,5 @@
+name: Project Check
+
 on:
   push:
     branches: [main]
