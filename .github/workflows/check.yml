@@ -84,3 +84,6 @@ jobs:
 
       - name: Run product flow test
         run: pnpm test:product
+
+      - name: Run expiry flow test
+        run: pnpm test:expiry
