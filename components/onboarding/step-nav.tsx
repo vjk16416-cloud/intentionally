@@ -28,28 +28,43 @@ export function StepNav({
   submitLabel = "Continue",
 }: StepNavProps) {
   return (
-    <div className="flex items-center gap-2">
-      {returnTo ? (
-        <input type="hidden" name="returnTo" value={returnTo} />
-      ) : null}
-      {returnTo ? (
-        <Link
-          href="/onboarding/review"
-          className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
+    <div className="sticky bottom-0 z-20 -mx-4 mt-6 border-t border-border/70 bg-background/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+      <div className="mx-auto flex w-full max-w-lg items-center gap-2">
+        {returnTo ? (
+          <input type="hidden" name="returnTo" value={returnTo} />
+        ) : null}
+
+        {returnTo ? (
+          <Link
+            href="/onboarding/review"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "lg" }),
+              "rounded-2xl px-5",
+            )}
+          >
+            Cancel
+          </Link>
+        ) : previousStep ? (
+          <Link
+            href={previousStep}
+            className={cn(
+              buttonVariants({ variant: "outline", size: "lg" }),
+              "rounded-2xl px-5",
+            )}
+          >
+            Back
+          </Link>
+        ) : null}
+
+        <Button
+          type="submit"
+          size="lg"
+          disabled={pending || disabled}
+          className="flex-1 rounded-2xl bg-accent px-5 text-accent-foreground hover:opacity-90"
         >
-          Cancel
-        </Link>
-      ) : previousStep ? (
-        <Link
-          href={previousStep}
-          className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
-        >
-          Back
-        </Link>
-      ) : null}
-      <Button type="submit" size="lg" disabled={pending || disabled} className="rounded-2xl bg-accent px-5 text-accent-foreground hover:opacity-90">
-        {pending ? "Saving…" : submitLabel}
-      </Button>
+          {pending ? "Saving…" : submitLabel}
+        </Button>
+      </div>
     </div>
   );
 }
