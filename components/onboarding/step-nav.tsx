@@ -6,16 +6,9 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type StepNavProps = {
-  // When set, the form is in edit-from-review mode: render a hidden
-  // returnTo input (so the action redirects back to /onboarding/review
-  // after saving) and swap "Back" for "Cancel".
   returnTo: string | null;
-  // Path of the previous linear step, or null for step 1 (no Back).
   previousStep: string | null;
-  // useActionState's pending flag.
   pending: boolean;
-  // Optional extra disable flag (e.g. photos step disables Continue
-  // until 2+ photos are uploaded).
   disabled?: boolean;
   submitLabel?: string;
 };
@@ -28,7 +21,7 @@ export function StepNav({
   submitLabel = "Continue",
 }: StepNavProps) {
   return (
-    <div className="sticky bottom-0 z-20 -mx-4 mt-6 border-t border-border/70 bg-background/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-background/95 px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.06)] backdrop-blur sm:px-6">
       <div className="mx-auto flex w-full max-w-lg items-center gap-2">
         {returnTo ? (
           <input type="hidden" name="returnTo" value={returnTo} />
