@@ -65,17 +65,19 @@ function ReviewSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-border bg-card p-4 shadow-sm">
-      <div className="flex items-baseline justify-between gap-3">
+    <section className="rounded-2xl border border-border bg-card/80 px-4 py-3 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-semibold text-foreground">{title}</h2>
         <Link
           href={editHref}
-          className="text-xs font-semibold text-accent underline underline-offset-2 hover:no-underline"
+          className="rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold text-accent transition hover:bg-accent hover:text-accent-foreground"
         >
           Edit
         </Link>
       </div>
-      <div className="mt-2 text-sm text-muted-foreground">{children}</div>
+      <div className="mt-2 text-sm leading-6 text-muted-foreground">
+        {children}
+      </div>
     </section>
   );
 }
@@ -85,12 +87,11 @@ export default async function OnboardingReviewPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
   if (!user) {
     redirect("/login");
   }
 
-  // Only show review when every step has data. An incomplete user
-  // shouldn't be staring at half a profile.
   const state = await getOnboardingState(supabase, user);
   if (state.status === "incomplete") {
     redirect(state.nextStep);
@@ -111,7 +112,6 @@ export default async function OnboardingReviewPage() {
     .maybeSingle<ReviewTrustedContact>();
 
   if (!profile || !contact) {
-    // The completeness gate should have caught this. Fall back safely.
     redirect("/onboarding");
   }
 
@@ -120,35 +120,40 @@ export default async function OnboardingReviewPage() {
       supabase.storage.from(PROFILE_PHOTOS_BUCKET).getPublicUrl(path).data
         .publicUrl,
   );
+
   const seekingLabel = (profile.seeking ?? [])
     .map((g) => labelOf(GENDER_LABELS, g))
     .join(", ");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">
           Review your profile
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Make sure everything reads the way you want. You can edit any
-          section, then come back here.
+        <p className="text-sm leading-6 text-muted-foreground">
+          Check your profile before entering Intentionally. You can edit any
+          section and come back here.
         </p>
       </header>
 
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         <ReviewSection
-          title="Name & age"
+          title="Profile"
           editHref="/onboarding/profile?return=review"
         >
-          {profile.display_name}
-          {profile.date_of_birth
-            ? `, ${computeAge(profile.date_of_birth)}`
-            : null}
+          <div className="flex items-center justify-between gap-3">
+            <span className="font-medium text-foreground">
+              {profile.display_name}
+              {profile.date_of_birth
+                ? `, ${computeAge(profile.date_of_birth)}`
+                : null}
+            </span>
+          </div>
         </ReviewSection>
 
         <ReviewSection
-          title="Gender & seeking"
+          title="Identity"
           editHref="/onboarding/identity?return=review"
         >
           {labelOf(GENDER_LABELS, profile.gender)}
@@ -159,18 +164,14 @@ export default async function OnboardingReviewPage() {
           title="Photos"
           editHref="/onboarding/photos?return=review"
         >
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             {photoUrls.map((url) => (
               <div
                 key={url}
-                className="relative aspect-square overflow-hidden rounded-xl border border-border bg-card shadow-sm"
+                className="relative aspect-square overflow-hidden rounded-2xl border border-border bg-muted shadow-sm"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={url}
-                  alt=""
-                  className="size-full object-cover"
-                />
+                <img src={url} alt="" className="size-full object-cover" />
               </div>
             ))}
           </div>
@@ -183,10 +184,7 @@ export default async function OnboardingReviewPage() {
           {labelOf(INTENTION_LABELS, profile.intention)}
         </ReviewSection>
 
-        <ReviewSection
-          title="Bio"
-          editHref="/onboarding/prompt?return=review"
-        >
+        <ReviewSection title="Bio" editHref="/onboarding/prompt?return=review">
           <p className="font-medium text-foreground">
             {promptText(profile.bio_prompt_key)}
           </p>
@@ -220,19 +218,25 @@ export default async function OnboardingReviewPage() {
         </ReviewSection>
       </div>
 
-      <p className="rounded-2xl border border-border bg-muted/40 p-4 text-xs leading-5 text-muted-foreground">
-        ID verification happens later, just before your first guided Q&amp;A.
-        For now, you&apos;re simply reviewing how your profile will appear.
-      </p>
-
-      <div>
-        <Link
-          href="/onboarding/done"
-          className={cn(buttonVariants({ size: "lg" }), "w-full rounded-2xl bg-accent text-accent-foreground hover:opacity-90")}
-        >
-          Enter Intentionally
-        </Link>
+      <div className="rounded-2xl border border-border bg-muted/30 px-4 py-3">
+        <p className="text-sm font-semibold text-foreground">
+          Almost ready
+        </p>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">
+          ID verification happens later, before your first guided Q&amp;A. For
+          now, this is how your profile will appear.
+        </p>
       </div>
+
+      <Link
+        href="/onboarding/done"
+        className={cn(
+          buttonVariants({ size: "lg" }),
+          "w-full rounded-2xl bg-accent text-accent-foreground hover:opacity-90",
+        )}
+      >
+        Enter Intentionally
+      </Link>
     </div>
   );
 }
