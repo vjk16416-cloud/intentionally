@@ -220,9 +220,9 @@ export default async function OnboardingReviewPage() {
         </ReviewSection>
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        You&apos;ll be ID-verified once — just before your first Q&amp;A
-        call. Not now.
+      <p className="rounded-2xl border border-border bg-muted/40 p-4 text-xs leading-5 text-muted-foreground">
+        ID verification happens later, just before your first guided Q&amp;A.
+        For now, you&apos;re simply reviewing how your profile will appear.
       </p>
 
       <div>
@@ -230,7 +230,7 @@ export default async function OnboardingReviewPage() {
           href="/onboarding/done"
           className={cn(buttonVariants({ size: "lg" }), "w-full rounded-2xl bg-accent text-accent-foreground hover:opacity-90")}
         >
-          Looks good — continue
+          Enter Intentionally
         </Link>
       </div>
     </div>
