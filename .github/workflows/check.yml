@@ -19,7 +19,6 @@ jobs:
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-      STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
       STRIPE_IDENTITY_WEBHOOK_SECRET: ${{ secrets.STRIPE_IDENTITY_WEBHOOK_SECRET }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       CRON_SECRET: ${{ secrets.CRON_SECRET }}
@@ -51,7 +50,6 @@ jobs:
           test -n "$NEXT_PUBLIC_SUPABASE_ANON_KEY" || (echo "Missing NEXT_PUBLIC_SUPABASE_ANON_KEY" && exit 1)
           test -n "$SUPABASE_SERVICE_ROLE_KEY" || (echo "Missing SUPABASE_SERVICE_ROLE_KEY" && exit 1)
           test -n "$STRIPE_SECRET_KEY" || (echo "Missing STRIPE_SECRET_KEY" && exit 1)
-          test -n "$STRIPE_WEBHOOK_SECRET" || (echo "Missing STRIPE_WEBHOOK_SECRET" && exit 1)
           test -n "$STRIPE_IDENTITY_WEBHOOK_SECRET" || (echo "Missing STRIPE_IDENTITY_WEBHOOK_SECRET" && exit 1)
           test -n "$RESEND_API_KEY" || (echo "Missing RESEND_API_KEY" && exit 1)
           test -n "$CRON_SECRET" || (echo "Missing CRON_SECRET" && exit 1)
