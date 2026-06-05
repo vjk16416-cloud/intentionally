@@ -46,7 +46,8 @@ export default async function TrustedContactStepPage({
               One trusted person
             </h1>
             <p className="text-sm leading-6 text-muted-foreground">
-              Add one person we can contact only if a safety flow needs it.
+              Choose someone you trust. They will never appear on your profile
+              and are only used for safety support.
             </p>
           </header>
 
