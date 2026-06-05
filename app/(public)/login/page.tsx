@@ -6,10 +6,10 @@ export default function LoginPage() {
       <div className="w-full max-w-sm space-y-6">
         <header className="space-y-2 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">
-            Sign in to Intentionally
+            Start with intention.
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Email or phone — we&apos;ll send a 6-digit code.
+          <p className="text-sm leading-6 text-muted-foreground">
+            Sign in to continue your profile, matches and guided Q&amp;A.
           </p>
         </header>
         <LoginForm />

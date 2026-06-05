@@ -96,7 +96,7 @@ export function LoginForm() {
         ) : null}
 
         <Button type="submit" size="lg" disabled={requestPending}>
-          {requestPending ? "Sending…" : "Send sign-in link"}
+          {requestPending ? "Sending…" : "Send secure sign-in link"}
         </Button>
       </form>
     );
