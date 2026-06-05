@@ -164,17 +164,6 @@ export function AvailabilityForm({
         value={JSON.stringify(Array.from(slots))}
       />
 
-      <div className="space-y-1.5">
-        <div className="inline-flex rounded-full border border-input px-3 py-1 text-xs text-muted-foreground">
-          Step 7 of 8
-        </div>
-        <h2 className="text-2xl font-semibold tracking-tight">
-          When are you free?
-        </h2>
-        <p className="text-sm leading-6 text-muted-foreground">
-          Pick broad windows for your 10-minute Q&A.
-        </p>
-      </div>
 
       <div
         className={cn(
