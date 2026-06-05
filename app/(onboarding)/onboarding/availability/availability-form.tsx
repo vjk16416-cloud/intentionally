@@ -315,7 +315,8 @@ export function AvailabilityForm({
       <div className="rounded-2xl border border-input bg-muted/20 px-4 py-3">
         <p className="text-sm font-semibold">Why we ask</p>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">
-          This helps schedule Q&A sessions smoothly and avoid dead matches.
+          This helps us suggest Q&amp;A times that work for both people, so
+          matches can move forward naturally.
         </p>
       </div>
 
