@@ -80,7 +80,7 @@ export function LoginForm() {
             name="identifier"
             type="text"
             autoComplete="username"
-            placeholder="you@example.com or +447700900123"
+            placeholder="you@example.com or +44..."
             defaultValue={requestState.identifier}
             required
             autoFocus
