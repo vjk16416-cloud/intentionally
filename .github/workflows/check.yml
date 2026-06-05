@@ -89,3 +89,8 @@ jobs:
 
       - name: Run expiry flow test
         run: pnpm test:expiry
+
+      - name: Check live Vercel app
+        run: |
+          curl -I --fail --max-time 20 https://intentionally-seven.vercel.app/
+
