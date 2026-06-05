@@ -42,10 +42,11 @@ export default async function PromptStepPage({
               Step 5 of 8
             </p>
             <h1 className="text-2xl font-semibold tracking-tight">
-              A few words
+              Give people something to reply to
             </h1>
             <p className="text-sm leading-6 text-muted-foreground">
-              Pick one prompt and answer it in a way that feels specific to you.
+              Choose a prompt that makes it easy for someone to start a real
+              conversation with you.
             </p>
           </header>
 
