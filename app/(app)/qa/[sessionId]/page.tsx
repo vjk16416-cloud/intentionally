@@ -293,99 +293,77 @@ export default async function QaSessionPage({
           </div>
         </section>
 
-        <section className="rounded-[1.75rem] border bg-background p-5 shadow-sm">
-          {!finished ? (
-            <>
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-                  Question {questionIndex + 1} of {questions.length}
-                </p>
-                <span className="rounded-full bg-muted px-3 py-1 text-xs">
-                  2:00
-                </span>
+        {!finished ? (
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+            <a
+              href={nextHref}
+              className="rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-center text-sm font-semibold text-white"
+            >
+              Skip
+            </a>
+
+            <button
+              type="button"
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-[#eadcc8] text-2xl text-[#241c17] shadow-sm"
+              aria-label="Microphone"
+            >
+              🎙
+            </button>
+
+            <a
+              href={nextHref}
+              className="rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-center text-sm font-semibold text-white"
+            >
+              {isLastQuestion ? "Finish" : "Next"}
+            </a>
+          </div>
+        ) : (
+          <section className="rounded-[1.75rem] border bg-background p-5 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+              Private decision
+            </p>
+
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+              Do you want to keep talking?
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Chat only opens if both people choose to continue.
+            </p>
+
+            {decision ? (
+              <div className="mt-5 rounded-2xl bg-muted p-4 text-sm">
+                {decision === "continue"
+                  ? "You chose to continue. In the real app, we would wait for Maya’s private choice before opening chat."
+                  : "You passed privately. In the real app, the match would close quietly."}
               </div>
+            ) : (
+              <div className="mt-6 grid grid-cols-1 gap-3">
+                <form action={saveQaOutcome}>
+                  <input type="hidden" name="sessionId" value={sessionId} />
+                  <input type="hidden" name="decision" value="continue" />
+                  <button
+                    type="submit"
+                    className="w-full rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
+                  >
+                    Continue
+                  </button>
+                </form>
 
-              <h2 className="mt-4 text-2xl font-semibold leading-8 tracking-tight">
-                {currentQuestion}
-              </h2>
-
-              <div className="mt-5 h-2 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-black transition-all"
-                  style={{
-                    width: `${((questionIndex + 1) / questions.length) * 100}%`,
-                  }}
-                />
+                <form action={saveQaOutcome}>
+                  <input type="hidden" name="sessionId" value={sessionId} />
+                  <input type="hidden" name="decision" value="pass" />
+                  <button
+                    type="submit"
+                    className="w-full rounded-2xl border border-border bg-card px-4 py-4 text-center text-base font-semibold text-foreground"
+                  >
+                    Pass privately
+                  </button>
+                </form>
               </div>
-
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                Tap Next when you&apos;re ready to move to the next question.
-              </p>
-
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                <a
-                  href={nextHref}
-                  className="block rounded-2xl border border-border bg-card px-4 py-4 text-center text-base font-semibold text-foreground"
-                >
-                  Skip
-                </a>
-
-                <a
-                  href={nextHref}
-                  className="block rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
-                >
-                  {isLastQuestion ? "Finish" : "Next"}
-                </a>
-              </div>
-            </>
-          ) : (
-            <>
-              <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-                Private decision
-              </p>
-
-              <h2 className="mt-3 text-2xl font-semibold tracking-tight">
-                Do you want to keep talking?
-              </h2>
-
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Chat only opens if both people choose to continue.
-              </p>
-
-              {decision ? (
-                <div className="mt-5 rounded-2xl bg-muted p-4 text-sm">
-                  {decision === "continue"
-                    ? "You chose to continue. In the real app, we would wait for Maya’s private choice before opening chat."
-                    : "You passed privately. In the real app, the match would close quietly."}
-                </div>
-              ) : (
-                <div className="mt-6 grid grid-cols-1 gap-3">
-                  <form action={saveQaOutcome}>
-                    <input type="hidden" name="sessionId" value={sessionId} />
-                    <input type="hidden" name="decision" value="continue" />
-                    <button
-                      type="submit"
-                      className="w-full rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
-                    >
-                      Continue
-                    </button>
-                  </form>
-
-                  <form action={saveQaOutcome}>
-                    <input type="hidden" name="sessionId" value={sessionId} />
-                    <input type="hidden" name="decision" value="pass" />
-                    <button
-                      type="submit"
-                      className="w-full rounded-2xl border border-border bg-card px-4 py-4 text-center text-base font-semibold text-foreground"
-                    >
-                      Pass privately
-                    </button>
-                  </form>
-                </div>
-              )}
-            </>
-          )}
-        </section>
+            )}
+          </section>
+        )}
 
         <a
           href="/discover"
