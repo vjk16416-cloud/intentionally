@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 
+import { saveQaOutcome } from "./actions";
+
 const QUESTIONS = [
   "What is something you value in how someone communicates?",
   "What does effort look like to you in early dating?",
@@ -227,19 +229,27 @@ export default async function QaSessionPage({
                 </div>
               ) : (
                 <div className="mt-6 grid grid-cols-1 gap-3">
-                  <a
-                    href="/chat/demo-demo-match"
-                    className="block rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
-                  >
-                    Continue
-                  </a>
+                  <form action={saveQaOutcome}>
+                    <input type="hidden" name="sessionId" value={sessionId} />
+                    <input type="hidden" name="decision" value="continue" />
+                    <button
+                      type="submit"
+                      className="w-full rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
+                    >
+                      Continue
+                    </button>
+                  </form>
 
-                  <a
-                    href={`/qa/${sessionId}?finished=true&decision=pass`}
-                    className="block rounded-2xl border border-border bg-card px-4 py-4 text-center text-base font-semibold text-foreground"
-                  >
-                    Pass privately
-                  </a>
+                  <form action={saveQaOutcome}>
+                    <input type="hidden" name="sessionId" value={sessionId} />
+                    <input type="hidden" name="decision" value="pass" />
+                    <button
+                      type="submit"
+                      className="w-full rounded-2xl border border-border bg-card px-4 py-4 text-center text-base font-semibold text-foreground"
+                    >
+                      Pass privately
+                    </button>
+                  </form>
                 </div>
               )}
             </>
