@@ -1,5 +1,3 @@
-/* eslint-disable @next/next/no-html-link-for-pages */
-
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
