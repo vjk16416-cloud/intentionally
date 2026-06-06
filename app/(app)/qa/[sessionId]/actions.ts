@@ -52,5 +52,5 @@ export async function saveQaOutcome(formData: FormData) {
     { onConflict: "qa_session_id,user_id" },
   );
 
-  redirect(`/qa/${sessionId}?started=true&finished=true&decision=${decision}`);
+  redirect(`/qa/${sessionId}/waiting`);
 }
