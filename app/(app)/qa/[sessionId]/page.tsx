@@ -31,8 +31,6 @@ export default async function QaSessionPage({
     started?: string;
     finished?: string;
     decision?: string;
-    safety?: string;
-    pause?: string;
   }>;
 }) {
   const { sessionId } = await params;
@@ -82,8 +80,6 @@ export default async function QaSessionPage({
   const questionIndex = safeQuestionIndex(query.q);
   const finished = query.finished === "true";
   const decision = query.decision;
-  const showSafety = query.safety === "true";
-  const isPaused = query.pause === "true";
 
   const currentQuestion = questions[questionIndex] ?? questions[0];
   const isLastQuestion = questionIndex === questions.length - 1;
@@ -132,219 +128,38 @@ export default async function QaSessionPage({
     );
   }
 
-  return (
-    <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
-      <div className="mx-auto w-full max-w-md space-y-5">
-        <header className="space-y-3">
-          <div className="flex items-center justify-between">
-            <a
-              href="/discover"
-              className="flex h-10 w-10 items-center justify-center rounded-full border bg-background text-sm font-semibold text-muted-foreground"
-              aria-label="Leave Q&A"
-            >
-              ×
-            </a>
-
-            <span className="rounded-full border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
-              Q&amp;A Room
-            </span>
-
-            <a
-              href={`/qa/${sessionId}?started=true&q=${questionIndex}&safety=true`}
-              className="flex h-10 w-10 items-center justify-center rounded-full border bg-background text-sm"
-              aria-label="Open safety check"
-            >
-              🛡
-            </a>
-          </div>
-
-          <div className="rounded-[1.75rem] border bg-background p-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-                Question {questionIndex + 1} of {questions.length}
-              </p>
-              <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium">
-                {isPaused ? "Paused" : "08:42"}
-              </span>
-            </div>
-
-            <h1 className="mt-4 text-2xl font-semibold leading-8 tracking-tight">
-              {currentQuestion}
-            </h1>
-
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              No pressure to perform. Just answer in the way that feels true.
-            </p>
-          </div>
-        </header>
-
-        {showSafety ? (
-          <section className="rounded-[2rem] border bg-background p-5 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-              Safety Check
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-              You&apos;re in control.
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              You can pause, leave, or report without needing to explain
-              yourself.
-            </p>
-
-            <div className="mt-5 space-y-3">
-              <a
-                href={`/qa/${sessionId}?started=true&q=${questionIndex}&pause=true`}
-                className="block rounded-2xl bg-muted px-4 py-4 text-center text-sm font-semibold text-foreground"
-              >
-                Pause for 30 seconds
-              </a>
-
-              <a
-                href={`/qa/${sessionId}?started=true&finished=true&decision=pass`}
-                className="block rounded-2xl border border-border bg-card px-4 py-4 text-center text-sm font-semibold text-foreground"
-              >
-                End Q&amp;A privately
-              </a>
-
-              <a
-                href="/discover"
-                className="block rounded-2xl border border-border bg-card px-4 py-4 text-center text-sm font-semibold text-foreground"
-              >
-                Report concern
-              </a>
-
-              <a
-                href={`/qa/${sessionId}?started=true&q=${questionIndex}`}
-                className="block rounded-2xl bg-accent px-4 py-4 text-center text-sm font-semibold text-accent-foreground"
-              >
-                Cancel
-              </a>
-            </div>
-          </section>
-        ) : null}
-
-        <section className="rounded-[2rem] border bg-background p-3 shadow-sm">
-          {isDemoSession ? (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="min-h-56 rounded-[1.5rem] bg-[linear-gradient(to_bottom,_#2f322c,_#151713)] p-3 text-white">
-                <div className="flex items-center justify-between">
-                  <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-black">
-                    You
-                  </span>
-                  <span className="rounded-full bg-accent px-2.5 py-1 text-[10px] font-semibold uppercase text-accent-foreground">
-                    {isPaused ? "Paused" : "Answering"}
-                  </span>
-                </div>
-
-                <div className="mt-10 flex flex-col items-center">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/15 text-2xl font-semibold">
-                    Y
-                  </div>
-                  <p className="mt-5 text-center text-xs leading-5 text-white/70">
-                    Take your time. Short, honest answers are enough.
-                  </p>
-                </div>
-              </div>
-
-              <div className="min-h-56 rounded-[1.5rem] bg-[linear-gradient(to_bottom,_#343434,_#1b1b1b)] p-3 text-white">
-                <div className="flex items-center justify-between">
-                  <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-black">
-                    Maya
-                  </span>
-                  <span className="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-semibold uppercase text-white/70">
-                    Listening
-                  </span>
-                </div>
-
-                <div className="mt-10 flex flex-col items-center">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/15 text-2xl font-semibold">
-                    M
-                  </div>
-                  <p className="mt-5 text-center text-xs leading-5 text-white/70">
-                    Their view stays calm while you answer.
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : session?.daily_room_url ? (
-            <div className="overflow-hidden rounded-[1.5rem] bg-neutral-950">
-              <iframe
-                src={session.daily_room_url}
-                title="Guided Q&A video room"
-                allow="camera; microphone; fullscreen; speaker; display-capture"
-                className="h-[420px] w-full border-0"
-              />
-            </div>
-          ) : (
-            <div className="rounded-[1.5rem] bg-neutral-950 p-5 text-sm leading-6 text-white/70">
-              Your video room is being prepared. If this continues, return to
-              scheduling and confirm your Q&amp;A time again.
-            </div>
-          )}
-
-          <div className="mt-4 rounded-[1.25rem] bg-muted/60 p-4">
-            <p className="text-sm font-semibold text-foreground">
-              Comfort note
-            </p>
-            <p className="mt-1 text-sm leading-6 text-muted-foreground">
-              This is not an interview. It is a guided first moment to see if
-              the conversation feels natural.
-            </p>
-          </div>
-        </section>
-
-        {!finished ? (
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-            <a
-              href={nextHref}
-              className="rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-center text-sm font-semibold text-white"
-            >
-              Skip
-            </a>
-
-            <button
-              type="button"
-              className="flex h-14 w-14 items-center justify-center rounded-full bg-[#eadcc8] text-2xl text-[#241c17] shadow-sm"
-              aria-label="Microphone"
-            >
-              🎙
-            </button>
-
-            <a
-              href={nextHref}
-              className="rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-center text-sm font-semibold text-white"
-            >
-              {isLastQuestion ? "Finish" : "Next"}
-            </a>
-          </div>
-        ) : (
-          <section className="rounded-[1.75rem] border bg-background p-5 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+  if (finished) {
+    return (
+      <main className="min-h-[calc(100vh-57px)] bg-[#151611] px-4 py-5 text-white">
+        <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center">
+          <section className="w-full rounded-[2rem] border border-white/10 bg-[#20211b] p-6 shadow-2xl">
+            <p className="text-xs uppercase tracking-[0.24em] text-white/45">
               Private decision
             </p>
 
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+            <h1 className="mt-4 text-3xl font-semibold tracking-tight">
               Do you want to keep talking?
-            </h2>
+            </h1>
 
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Chat only opens if both people choose to continue.
+            <p className="mt-3 text-sm leading-6 text-white/65">
+              Chat only opens if both people choose to continue. Your choice is
+              private.
             </p>
 
             {decision ? (
-              <div className="mt-5 rounded-2xl bg-muted p-4 text-sm">
+              <div className="mt-6 rounded-2xl bg-white/10 p-4 text-sm leading-6 text-white/75">
                 {decision === "continue"
-                  ? "You chose to continue. In the real app, we would wait for Maya’s private choice before opening chat."
+                  ? "You chose to continue. In the real app, we would wait for the other person&apos;s private choice before opening chat."
                   : "You passed privately. In the real app, the match would close quietly."}
               </div>
             ) : (
-              <div className="mt-6 grid grid-cols-1 gap-3">
+              <div className="mt-6 grid gap-3">
                 <form action={saveQaOutcome}>
                   <input type="hidden" name="sessionId" value={sessionId} />
                   <input type="hidden" name="decision" value="continue" />
                   <button
                     type="submit"
-                    className="w-full rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
+                    className="w-full rounded-2xl bg-accent px-4 py-4 text-base font-semibold text-accent-foreground"
                   >
                     Continue
                   </button>
@@ -355,7 +170,7 @@ export default async function QaSessionPage({
                   <input type="hidden" name="decision" value="pass" />
                   <button
                     type="submit"
-                    className="w-full rounded-2xl border border-border bg-card px-4 py-4 text-center text-base font-semibold text-foreground"
+                    className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-base font-semibold text-white"
                   >
                     Pass privately
                   </button>
@@ -363,14 +178,155 @@ export default async function QaSessionPage({
               </div>
             )}
           </section>
-        )}
+        </div>
+      </main>
+    );
+  }
 
-        <a
-          href="/discover"
-          className="block rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
-        >
-          Back to Discover
-        </a>
+  return (
+    <main className="min-h-[calc(100vh-57px)] bg-[#11120f] px-4 py-5 text-white">
+      <div className="mx-auto w-full max-w-md">
+        <section className="overflow-hidden rounded-[2.25rem] border border-white/10 bg-[#181915] p-4 shadow-2xl">
+          <header className="flex items-center justify-between border-b border-white/10 pb-4">
+            <a
+              href="/discover"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-xl text-white/75"
+              aria-label="Exit Q&A"
+            >
+              ×
+            </a>
+
+            <div className="rounded-full border border-white/15 px-4 py-1.5 text-sm font-semibold text-white/85">
+              Q&amp;A Room
+            </div>
+
+            <button
+              type="button"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-lg"
+              aria-label="Safety options"
+            >
+              🛡
+            </button>
+          </header>
+
+          <div className="pt-5">
+            <div className="flex items-center justify-between">
+              <div className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/75">
+                Question {questionIndex + 1} of {questions.length}
+              </div>
+
+              <div className="rounded-full bg-white/8 px-3 py-1.5 text-sm text-white/70">
+                08:42 left
+              </div>
+            </div>
+
+            <h1 className="mt-7 text-center text-3xl font-semibold leading-10 tracking-tight">
+              {currentQuestion}
+            </h1>
+
+            <div className="mx-auto mt-5 h-6 w-6 text-center text-xl text-accent">
+              ✦
+            </div>
+
+            <p className="mx-auto mt-3 max-w-xs text-center text-sm leading-6 text-white/65">
+              No perfect answer. Just be honest and speak from your experience.
+            </p>
+
+            {isDemoSession ? (
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <div className="relative min-h-64 overflow-hidden rounded-[1.5rem] bg-[linear-gradient(to_bottom,_#313829,_#11130f)] p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
+                      You
+                    </span>
+                    <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">
+                      Answering
+                    </span>
+                  </div>
+
+                  <div className="flex min-h-44 flex-col items-center justify-center">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/15 text-2xl font-semibold">
+                      Y
+                    </div>
+                  </div>
+
+                  <div className="absolute inset-x-3 bottom-3 rounded-2xl bg-black/25 px-3 py-2 text-center text-xs leading-5 text-white/70">
+                    Take your time. Short, honest answers are enough.
+                  </div>
+                </div>
+
+                <div className="relative min-h-64 overflow-hidden rounded-[1.5rem] bg-[linear-gradient(to_bottom,_#343434,_#131313)] p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-black">
+                      Maya
+                    </span>
+                    <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/60">
+                      Listening
+                    </span>
+                  </div>
+
+                  <div className="flex min-h-44 flex-col items-center justify-center">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/15 text-2xl font-semibold">
+                      M
+                    </div>
+                  </div>
+
+                  <div className="absolute inset-x-3 bottom-3 rounded-2xl bg-black/25 px-3 py-2 text-center text-xs leading-5 text-white/70">
+                    Their view stays calm while you answer.
+                  </div>
+                </div>
+              </div>
+            ) : session?.daily_room_url ? (
+              <div className="mt-6 overflow-hidden rounded-[1.5rem] bg-black">
+                <iframe
+                  src={session.daily_room_url}
+                  title="Guided Q&A video room"
+                  allow="camera; microphone; fullscreen; speaker; display-capture"
+                  className="h-[420px] w-full border-0"
+                />
+              </div>
+            ) : (
+              <div className="mt-6 rounded-[1.5rem] bg-white/5 p-5 text-sm leading-6 text-white/70">
+                Your video room is being prepared. If this continues, return to
+                scheduling and confirm your Q&amp;A time again.
+              </div>
+            )}
+
+            <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+              <a
+                href={nextHref}
+                className="rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-center text-sm font-semibold text-white"
+              >
+                Skip question
+              </a>
+
+              <button
+                type="button"
+                className="flex h-16 w-16 items-center justify-center rounded-full bg-[#eadcc8] text-3xl text-[#241c17] shadow-sm"
+                aria-label="Microphone"
+              >
+                🎙
+              </button>
+
+              <a
+                href={nextHref}
+                className="rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-center text-sm font-semibold text-white"
+              >
+                {isLastQuestion ? "Finish" : "Next question →"}
+              </a>
+            </div>
+
+            <div className="mt-4 rounded-[1.25rem] bg-white/7 p-4">
+              <div className="flex gap-3">
+                <span className="text-lg">🔒</span>
+                <p className="text-sm leading-6 text-white/70">
+                  Chat opens only if you both choose to continue. Your
+                  conversation is private and secure.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   );
