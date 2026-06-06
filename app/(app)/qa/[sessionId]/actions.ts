@@ -14,6 +14,14 @@ export async function saveQaOutcome(formData: FormData) {
     redirect("/discover");
   }
 
+  if (sessionId === "demo-demo-match") {
+    if (decision === "continue") {
+      redirect("/chat/demo-demo-match");
+    }
+
+    redirect("/qa/demo-demo-match?started=true&finished=true&decision=pass");
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
