@@ -29,13 +29,7 @@ function firstName(name: string) {
   return name.split(" ")[0] ?? name;
 }
 
-function InitialAvatar({ label }: { label: string }) {
-  return (
-    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-background text-sm font-semibold text-foreground">
-      {label}
-    </div>
-  );
-}
+
 
 export function DiscoverDeck({
   cards,
