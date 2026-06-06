@@ -18,26 +18,29 @@ function safeQuestionIndex(value: string | string[] | undefined) {
 }
 
 export default async function QaSessionPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ sessionId: string }>;
   searchParams: Promise<{
     q?: string;
     finished?: string;
     decision?: string;
   }>;
 }) {
-  const params = await searchParams;
+  const { sessionId } = await params;
+  const query = await searchParams;
 
-  const questionIndex = safeQuestionIndex(params.q);
-  const finished = params.finished === "true";
-  const decision = params.decision;
+  const questionIndex = safeQuestionIndex(query.q);
+  const finished = query.finished === "true";
+  const decision = query.decision;
 
   const currentQuestion = QUESTIONS[questionIndex];
   const isLastQuestion = questionIndex === QUESTIONS.length - 1;
 
   const nextHref = isLastQuestion
-    ? "/qa/demo-demo-match?finished=true"
-    : `/qa/demo-demo-match?q=${questionIndex + 1}`;
+    ? `/qa/${sessionId}?finished=true`
+    : `/qa/${sessionId}?q=${questionIndex + 1}`;
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
@@ -183,7 +186,7 @@ export default async function QaSessionPage({
                   </a>
 
                   <a
-                    href="/qa/demo-demo-match?finished=true&decision=pass"
+                    href={`/qa/${sessionId}?finished=true&decision=pass`}
                     className="block rounded-2xl border border-border bg-card px-4 py-4 text-center text-base font-semibold text-foreground"
                   >
                     Pass privately
