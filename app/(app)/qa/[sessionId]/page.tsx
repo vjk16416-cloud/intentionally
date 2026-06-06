@@ -1,5 +1,9 @@
 /* eslint-disable @next/next/no-html-link-for-pages */
 
+import { redirect } from "next/navigation";
+
+import { createClient } from "@/lib/supabase/server";
+
 const QUESTIONS = [
   "What is something you value in how someone communicates?",
   "What does effort look like to you in early dating?",
@@ -31,12 +35,32 @@ export default async function QaSessionPage({
   const { sessionId } = await params;
   const query = await searchParams;
 
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: session } = await supabase
+    .from("qa_sessions")
+    .select("id, questions, match_id")
+    .eq("id", sessionId)
+    .maybeSingle();
+
+  const questions =
+    Array.isArray(session?.questions) && session.questions.length > 0
+      ? session.questions.map(String)
+      : QUESTIONS;
+
   const questionIndex = safeQuestionIndex(query.q);
   const finished = query.finished === "true";
   const decision = query.decision;
 
-  const currentQuestion = QUESTIONS[questionIndex];
-  const isLastQuestion = questionIndex === QUESTIONS.length - 1;
+  const currentQuestion = questions[questionIndex] ?? questions[0];
+  const isLastQuestion = questionIndex === questions.length - 1;
 
   const nextHref = isLastQuestion
     ? `/qa/${sessionId}?finished=true`
@@ -48,7 +72,7 @@ export default async function QaSessionPage({
         <header className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="rounded-full border bg-background px-3 py-1 text-xs text-muted-foreground">
-              Demo Q&amp;A room
+              Guided Q&amp;A room
             </span>
             <span className="rounded-full bg-black px-3 py-1 text-xs text-white">
               10 min
@@ -116,7 +140,7 @@ export default async function QaSessionPage({
             <>
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-                  Question {questionIndex + 1} of {QUESTIONS.length}
+                  Question {questionIndex + 1} of {questions.length}
                 </p>
                 <span className="rounded-full bg-muted px-3 py-1 text-xs">
                   2:00
@@ -131,7 +155,7 @@ export default async function QaSessionPage({
                 <div
                   className="h-full rounded-full bg-black transition-all"
                   style={{
-                    width: `${((questionIndex + 1) / QUESTIONS.length) * 100}%`,
+                    width: `${((questionIndex + 1) / questions.length) * 100}%`,
                   }}
                 />
               </div>
