@@ -49,6 +49,28 @@ export default async function QaWaitingPage({
   const bothContinue =
     bothDecided && (outcomes ?? []).every((row) => row.decision === "continue");
 
+  if (bothContinue) {
+    const { data: existingChat } = await supabase
+      .from("chats")
+      .select("id")
+      .eq("match_id", session.match_id)
+      .maybeSingle();
+
+    if (existingChat) {
+      redirect(`/chat/${existingChat.id}`);
+    }
+
+    const { data: newChat, error } = await supabase
+      .from("chats")
+      .insert({ match_id: session.match_id })
+      .select("id")
+      .single();
+
+    if (!error && newChat) {
+      redirect(`/chat/${newChat.id}`);
+    }
+  }
+
   return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
       <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center">
