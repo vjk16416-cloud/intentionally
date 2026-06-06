@@ -36,6 +36,8 @@ export default async function QaSessionPage({
   const { sessionId } = await params;
   const query = await searchParams;
 
+  const isDemoSession = sessionId.startsWith("demo-");
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -45,24 +47,28 @@ export default async function QaSessionPage({
     redirect("/login");
   }
 
-  const { data: session } = await supabase
-    .from("qa_sessions")
-    .select("id, questions, match_id, daily_room_url")
-    .eq("id", sessionId)
-    .maybeSingle();
+  const { data: session } = isDemoSession
+    ? { data: null }
+    : await supabase
+        .from("qa_sessions")
+        .select("id, questions, match_id, daily_room_url")
+        .eq("id", sessionId)
+        .maybeSingle();
 
-  if (!session) {
+  if (!isDemoSession && !session) {
     redirect("/discover");
   }
 
-  const { data: match } = await supabase
-    .from("matches")
-    .select("id, user_a, user_b")
-    .eq("id", session.match_id)
-    .maybeSingle();
+  if (!isDemoSession && session) {
+    const { data: match } = await supabase
+      .from("matches")
+      .select("id, user_a, user_b")
+      .eq("id", session.match_id)
+      .maybeSingle();
 
-  if (!match || (match.user_a !== user.id && match.user_b !== user.id)) {
-    redirect("/discover");
+    if (!match || (match.user_a !== user.id && match.user_b !== user.id)) {
+      redirect("/discover");
+    }
   }
 
   const questions =
@@ -147,7 +153,39 @@ export default async function QaSessionPage({
         </header>
 
         <section className="overflow-hidden rounded-[2rem] bg-neutral-950 text-white shadow-xl">
-          {session.daily_room_url ? (
+          {isDemoSession ? (
+            <div className="grid grid-cols-2 gap-3 p-3">
+              <div className="flex min-h-48 flex-col justify-between rounded-[1.5rem] bg-neutral-800 p-3">
+                <span className="w-fit rounded-full bg-white px-3 py-1 text-xs font-medium text-black">
+                  You
+                </span>
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/15 text-xl font-semibold">
+                  Y
+                </div>
+                <div className="rounded-2xl bg-white p-3 text-black">
+                  <p className="text-xs font-semibold">Speaking now</p>
+                  <p className="mt-1 text-xs leading-5 text-black/60">
+                    Short, honest answers work best.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex min-h-48 flex-col justify-between rounded-[1.5rem] bg-neutral-800/80 p-3">
+                <span className="w-fit rounded-full bg-white px-3 py-1 text-xs font-medium text-black">
+                  Maya
+                </span>
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/15 text-xl font-semibold">
+                  M
+                </div>
+                <div className="rounded-2xl bg-white p-3 text-black">
+                  <p className="text-xs font-semibold">Listening mode</p>
+                  <p className="mt-1 text-xs leading-5 text-black/60">
+                    Softened while you answer.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : session?.daily_room_url ? (
             <iframe
               src={session.daily_room_url}
               title="Guided Q&A video room"
