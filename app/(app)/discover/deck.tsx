@@ -315,46 +315,58 @@ export function DiscoverDeck({
         </section>
 
         <section className="mt-8">
-          <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-            Messages
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                Messages
+              </p>
+              <h2 className="mt-1 text-xl font-semibold tracking-tight">
+                Conversations unlocked
+              </h2>
+            </div>
+
+            <p className="text-xs font-medium text-muted-foreground">
+              After Q&amp;A
+            </p>
+          </div>
+
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            These chats opened after both people chose to continue.
           </p>
-          <h2 className="mt-1 text-xl font-semibold tracking-tight">
-            Unlocked Conversations
-          </h2>
 
           <div className="mt-4 space-y-3">
             <Link
               href="/chat/demo-demo-match"
-              className="flex items-center gap-3 rounded-[1.5rem] border border-border bg-card p-4 shadow-sm"
+              className="group flex items-center gap-3 rounded-[1.5rem] border border-border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
             >
               <InitialAvatar label="R" />
 
               <div className="min-w-0 flex-1">
-                <p className="font-semibold">Rachel, 28</p>
+                <p className="font-semibold text-foreground">Rachel, 28</p>
                 <p className="text-sm text-muted-foreground">
                   Q&amp;A completed yesterday
                 </p>
               </div>
 
-              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-border">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-sm font-semibold text-muted-foreground transition group-hover:bg-accent group-hover:text-accent-foreground">
                 →
               </span>
             </Link>
 
             <Link
               href="/chat/demo-demo-match"
-              className="flex items-center gap-3 rounded-[1.5rem] border border-border bg-card p-4 shadow-sm"
+              className="group flex items-center gap-3 rounded-[1.5rem] border border-border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
             >
               <InitialAvatar label="J" />
 
               <div className="min-w-0 flex-1">
-                <p className="font-semibold">James, 31</p>
+                <p className="font-semibold text-foreground">James, 31</p>
                 <p className="text-sm text-muted-foreground">
                   Q&amp;A completed 2 days ago
                 </p>
               </div>
 
-              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-border">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-sm font-semibold text-muted-foreground transition group-hover:bg-accent group-hover:text-accent-foreground">
                 →
               </span>
             </Link>
