@@ -26,6 +26,7 @@ export default async function QaSessionPage({
   params: Promise<{ sessionId: string }>;
   searchParams: Promise<{
     q?: string;
+    started?: string;
     finished?: string;
     decision?: string;
   }>;
@@ -67,6 +68,7 @@ export default async function QaSessionPage({
       ? session.questions.map(String)
       : QUESTIONS;
 
+  const started = query.started === "true";
   const questionIndex = safeQuestionIndex(query.q);
   const finished = query.finished === "true";
   const decision = query.decision;
@@ -75,8 +77,48 @@ export default async function QaSessionPage({
   const isLastQuestion = questionIndex === questions.length - 1;
 
   const nextHref = isLastQuestion
-    ? `/qa/${sessionId}?finished=true`
-    : `/qa/${sessionId}?q=${questionIndex + 1}`;
+    ? `/qa/${sessionId}?started=true&finished=true`
+    : `/qa/${sessionId}?started=true&q=${questionIndex + 1}`;
+
+  if (!started && !finished) {
+    return (
+      <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
+        <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center">
+          <section className="rounded-[2rem] border bg-background p-6 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+              Guided Q&amp;A
+            </p>
+            <h1 className="mt-4 text-3xl font-semibold tracking-tight">
+              Before we begin
+            </h1>
+            <p className="mt-4 text-sm leading-6 text-muted-foreground">
+              This conversation is an opportunity to get to know someone beyond
+              a profile. There are no perfect answers and nothing you need to
+              prove.
+            </p>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              Simply listen, be curious, and answer honestly.
+            </p>
+            <div className="mt-6 space-y-3 rounded-[1.5rem] bg-muted/60 p-4 text-sm leading-6 text-muted-foreground">
+              <p>• Three thoughtful questions</p>
+              <p>• Move on when you&apos;re both ready</p>
+              <p>• Your conversation stays private</p>
+              <p>• Chat only opens if you both choose to continue afterwards</p>
+            </div>
+            <p className="mt-5 text-sm font-medium text-foreground">
+              Estimated time: 10 minutes
+            </p>
+            <a
+              href={`/qa/${sessionId}?started=true`}
+              className="mt-6 block rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
+            >
+              Start conversation
+            </a>
+          </section>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
