@@ -46,7 +46,7 @@ export default async function QaSessionPage({
 
   const { data: session } = await supabase
     .from("qa_sessions")
-    .select("id, questions, match_id")
+    .select("id, questions, match_id, daily_room_url")
     .eq("id", sessionId)
     .maybeSingle();
 
@@ -104,49 +104,20 @@ export default async function QaSessionPage({
           </div>
         </header>
 
-        <section className="rounded-[2rem] bg-neutral-950 p-3 text-white shadow-xl">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex min-h-48 flex-col justify-between rounded-[1.5rem] bg-neutral-800 p-3">
-              <div className="flex items-center justify-between">
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-black">
-                  You
-                </span>
-                <span className="rounded-full bg-red-500 px-2.5 py-1 text-[10px] font-semibold uppercase text-white">
-                  Live
-                </span>
-              </div>
-
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/15 text-xl font-semibold">
-                Y
-              </div>
-
-              <div className="rounded-2xl bg-white p-3 text-black">
-                <p className="text-xs font-semibold">Speaking now</p>
-                <p className="mt-1 text-xs leading-5 text-black/60">
-                  Short, honest answers work best.
-                </p>
-              </div>
+        <section className="overflow-hidden rounded-[2rem] bg-neutral-950 text-white shadow-xl">
+          {session.daily_room_url ? (
+            <iframe
+              src={session.daily_room_url}
+              title="Guided Q&A video room"
+              allow="camera; microphone; fullscreen; speaker; display-capture"
+              className="h-[420px] w-full border-0"
+            />
+          ) : (
+            <div className="p-5 text-sm leading-6 text-white/70">
+              Your video room is being prepared. If this continues, return to
+              scheduling and confirm your Q&amp;A time again.
             </div>
-
-            <div className="flex min-h-48 flex-col justify-between rounded-[1.5rem] bg-neutral-800/80 p-3">
-              <div>
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-black">
-                  Maya
-                </span>
-              </div>
-
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/15 text-xl font-semibold">
-                M
-              </div>
-
-              <div className="rounded-2xl bg-white p-3 text-black">
-                <p className="text-xs font-semibold">Listening mode</p>
-                <p className="mt-1 text-xs leading-5 text-black/60">
-                  Softened while you answer.
-                </p>
-              </div>
-            </div>
-          </div>
+          )}
         </section>
 
         <section className="rounded-[1.75rem] border bg-background p-5 shadow-sm">
