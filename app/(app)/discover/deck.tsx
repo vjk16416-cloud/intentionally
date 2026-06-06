@@ -31,7 +31,22 @@ function firstName(name: string) {
 
 function InitialAvatar({ label }: { label: string }) {
   return (
-    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-background text-sm font-semibold text-foreground">
+  <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 py-3 backdrop-blur">
+  <div className="mx-auto grid w-full max-w-lg grid-cols-4 rounded-[1.5rem] border border-border bg-card p-2 text-center text-xs shadow-lg">
+    <Link href="/discover" className="rounded-2xl bg-accent px-2 py-3 font-semibold text-accent-foreground">
+      Discover
+    </Link>
+    <Link href="/qa/demo-demo-match" className="rounded-2xl px-2 py-3 text-muted-foreground">
+      Q&amp;A
+    </Link>
+    <Link href="/chat/demo-demo-match" className="rounded-2xl px-2 py-3 text-muted-foreground">
+      Messages
+    </Link>
+    <Link href="/onboarding/profile" className="rounded-2xl px-2 py-3 text-muted-foreground">
+      Profile
+    </Link>
+  </div>
+</nav>border-border bg-background text-sm font-semibold text-foreground">
       {label}
     </div>
   );
