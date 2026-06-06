@@ -258,17 +258,33 @@ export function DiscoverDeck({
         <UpcomingQaSection />
 
         <section className="mt-8">
-          <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-            Matches
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                Matches
+              </p>
+              <h2 className="mt-1 text-xl font-semibold tracking-tight">
+                New people waiting
+              </h2>
+            </div>
+
+            <p className="text-xs font-medium text-muted-foreground">
+              Ready to schedule
+            </p>
+          </div>
+
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            You matched. Now choose who you want to meet through a guided
+            Q&amp;A.
           </p>
-          <h2 className="mt-1 text-xl font-semibold tracking-tight">
-            New Matches
-          </h2>
 
           <div className="-mx-4 mt-4 flex gap-3 overflow-x-auto px-4 pb-3 sm:-mx-5 sm:px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {visibleNewMatches.map((matchCard) => (
-              <article key={matchCard.id} className="w-36 shrink-0">
-                <div className="relative overflow-hidden rounded-2xl border border-border bg-muted">
+              <article
+                key={matchCard.id}
+                className="w-36 shrink-0 rounded-[1.5rem] border border-border bg-card p-2 shadow-sm"
+              >
+                <div className="relative overflow-hidden rounded-[1.15rem] bg-muted">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={matchCard.photo_urls[0]}
@@ -276,7 +292,9 @@ export function DiscoverDeck({
                     className="h-44 w-full object-cover grayscale"
                   />
 
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 text-primary-foreground">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
+
+                  <div className="absolute inset-x-0 bottom-0 p-3 text-primary-foreground">
                     <p className="text-sm font-semibold">
                       {firstName(matchCard.display_name)},{" "}
                       {ageFromDate(matchCard.date_of_birth)}
@@ -287,7 +305,7 @@ export function DiscoverDeck({
                 <button
                   type="button"
                   onClick={() => openDemoMatch(matchCard)}
-                  className="mt-2 w-full rounded-xl bg-accent px-3 py-3 text-sm font-semibold text-accent-foreground"
+                  className="mt-2 w-full rounded-2xl bg-accent px-3 py-3 text-sm font-semibold text-accent-foreground transition hover:opacity-90 active:scale-[0.98]"
                 >
                   Schedule
                 </button>
