@@ -50,6 +50,20 @@ export default async function QaSessionPage({
     .eq("id", sessionId)
     .maybeSingle();
 
+  if (!session) {
+    redirect("/discover");
+  }
+
+  const { data: match } = await supabase
+    .from("matches")
+    .select("id, user_a, user_b")
+    .eq("id", session.match_id)
+    .maybeSingle();
+
+  if (!match || (match.user_a !== user.id && match.user_b !== user.id)) {
+    redirect("/discover");
+  }
+
   const questions =
     Array.isArray(session?.questions) && session.questions.length > 0
       ? session.questions.map(String)
