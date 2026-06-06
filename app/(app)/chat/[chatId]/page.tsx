@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 
+import { sendMessage } from "./actions";
+
 type ChatRow = {
   id: string;
   match_id: string;
@@ -17,6 +19,13 @@ type MatchRow = {
 type ProfileRow = {
   id: string;
   display_name: string | null;
+};
+
+type MessageRow = {
+  id: string;
+  sender_id: string;
+  body: string;
+  created_at: string;
 };
 
 export default async function ChatPage({
@@ -65,6 +74,13 @@ export default async function ChatPage({
 
   const otherName = otherProfile?.display_name ?? "your match";
 
+  const { data: messages } = await supabase
+    .from("messages")
+    .select("id, sender_id, body, created_at")
+    .eq("chat_id", chatId)
+    .order("created_at", { ascending: true })
+    .returns<MessageRow[]>();
+
   return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
       <div className="mx-auto flex min-h-[calc(100vh-97px)] w-full max-w-md flex-col">
@@ -80,17 +96,64 @@ export default async function ChatPage({
           </p>
         </header>
 
-        <section className="mt-4 flex-1 rounded-[2rem] border bg-background p-4 text-center shadow-sm">
-          <div className="flex h-full min-h-64 flex-col items-center justify-center">
-            <p className="text-sm font-medium text-foreground">
-              Your chat is ready.
-            </p>
-            <p className="mt-2 max-w-xs text-sm leading-6 text-muted-foreground">
-              Real messaging is the next milestone. For now, this confirms that
-              mutual Continue can unlock a real chat record.
-            </p>
+        <section className="mt-4 flex-1 rounded-[2rem] border bg-background p-4 shadow-sm">
+          <div className="space-y-3">
+            {(messages ?? []).length === 0 ? (
+              <div className="rounded-[1.5rem] bg-muted/60 p-4 text-center">
+                <p className="text-sm font-medium text-foreground">
+                  Your chat is ready.
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  You both chose to continue after your guided conversation.
+                  Great conversations deserve another one.
+                </p>
+              </div>
+            ) : null}
+
+            {(messages ?? []).map((message) => {
+              const isMine = message.sender_id === user.id;
+
+              return (
+                <div
+                  key={message.id}
+                  className={isMine ? "flex justify-end" : "flex justify-start"}
+                >
+                  <div
+                    className={
+                      isMine
+                        ? "max-w-[80%] rounded-[1.25rem] bg-accent px-4 py-3 text-sm leading-6 text-accent-foreground"
+                        : "max-w-[80%] rounded-[1.25rem] bg-muted px-4 py-3 text-sm leading-6 text-foreground"
+                    }
+                  >
+                    {message.body}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
+
+        <form action={sendMessage} className="mt-4 rounded-[1.5rem] border bg-background p-3 shadow-sm">
+          <input type="hidden" name="chatId" value={chatId} />
+          <label htmlFor="message" className="sr-only">
+            Message
+          </label>
+          <textarea
+            id="message"
+            name="body"
+            required
+            rows={2}
+            maxLength={1000}
+            placeholder={`Message ${otherName}`}
+            className="w-full resize-none bg-transparent px-2 py-2 text-sm outline-none placeholder:text-muted-foreground"
+          />
+          <button
+            type="submit"
+            className="mt-2 w-full rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground"
+          >
+            Send
+          </button>
+        </form>
 
         <Link
           href="/discover"
