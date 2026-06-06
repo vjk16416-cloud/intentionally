@@ -142,8 +142,8 @@ export function DiscoverDeck({
   }
 
   return (
-    <main className="min-h-[calc(100vh-57px)] bg-background pb-10 text-foreground">
-      <div className="mx-auto w-full max-w-md px-5 py-5">
+ <main className="min-h-[calc(100vh-57px)] bg-background pb-28 text-foreground">
+  <div className="mx-auto w-full max-w-md px-4 py-5 sm:px-5 lg:max-w-lg">
         <header className="mb-5 flex items-center justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.28em] text-neutral-500">
