@@ -226,7 +226,7 @@ export default async function QaSessionPage({
               </div>
 
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                Tap Next to move through the demo questions.
+                Tap Next when you&apos;re ready to move to the next question.
               </p>
 
               <div className="mt-6 grid grid-cols-2 gap-3">
