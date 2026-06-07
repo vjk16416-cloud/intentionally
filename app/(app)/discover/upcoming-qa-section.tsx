@@ -73,6 +73,13 @@ export function UpcomingQaSection() {
               Join Q&amp;A
             </Link>
           </div>
+
+          <button
+            type="button"
+            className="mt-3 w-full rounded-2xl border border-dashed border-border bg-background px-3 py-3 text-sm font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"
+          >
+            Running late?
+          </button>
         </article>
 
         <article className="rounded-[1.5rem] border border-border bg-card/80 p-4 shadow-sm">
