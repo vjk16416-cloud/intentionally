@@ -14,25 +14,18 @@ import {
 } from "lucide-react";
 import type { ComponentType } from "react";
 
+import {
+  getPostHogDashboardCounts,
+  type DashboardEventKey,
+  type PostHogDashboardCounts,
+  type PostHogDashboardResult,
+} from "@/lib/posthog/server";
 import { cn } from "@/lib/utils";
 
-type AnalyticsMetricKey =
-  | "loginClicked"
-  | "onboardingStarted"
-  | "onboardingCompleted"
-  | "profileLiked"
-  | "profilePassed"
-  | "matchCreated"
-  | "scheduleClicked"
-  | "qaStarted"
-  | "qaFinished"
-  | "qaContinueClicked"
-  | "qaPassPrivatelyClicked"
-  | "chatMessageSent"
-  | "datePlanShared";
+export const dynamic = "force-dynamic";
 
 type AnalyticsMetric = {
-  key: AnalyticsMetricKey;
+  key: DashboardEventKey;
   label: string;
   value: number;
   helper: string;
@@ -61,147 +54,125 @@ type RecommendedAction = {
   status: RagStatus;
 };
 
-const last7Days: AnalyticsRange = {
-  label: "Last 7 days",
-  caption: "Mock data until the PostHog API is connected.",
-  metrics: [
-    {
-      key: "loginClicked",
-      label: "Login clicks",
-      value: 42,
-      helper: "login_clicked",
-      icon: LogIn,
-    },
-    {
-      key: "onboardingStarted",
-      label: "Onboarding started",
-      value: 31,
-      helper: "onboarding_started",
-      icon: UserRoundCheck,
-    },
-    {
-      key: "onboardingCompleted",
-      label: "Onboarding completed",
-      value: 24,
-      helper: "onboarding_completed",
-      icon: CheckCircle2,
-    },
-    {
-      key: "profileLiked",
-      label: "Likes",
-      value: 118,
-      helper: "profile_liked",
-      icon: Heart,
-    },
-    {
-      key: "profilePassed",
-      label: "Passes",
-      value: 76,
-      helper: "profile_passed",
-      icon: XCircle,
-    },
-    {
-      key: "matchCreated",
-      label: "Matches",
-      value: 19,
-      helper: "match_created",
-      icon: UsersRound,
-    },
-    {
-      key: "scheduleClicked",
-      label: "Schedule clicks",
-      value: 15,
-      helper: "schedule_clicked",
-      icon: CalendarDays,
-    },
-    {
-      key: "qaStarted",
-      label: "Q&A started",
-      value: 10,
-      helper: "qa_started",
-      icon: Timer,
-    },
-    {
-      key: "qaFinished",
-      label: "Q&A finished",
-      value: 8,
-      helper: "qa_finished",
-      icon: Sparkles,
-    },
-    {
-      key: "qaContinueClicked",
-      label: "Continue clicked",
-      value: 5,
-      helper: "qa_continue_clicked",
-      icon: CheckCircle2,
-    },
-    {
-      key: "qaPassPrivatelyClicked",
-      label: "Pass privately clicked",
-      value: 3,
-      helper: "qa_pass_privately_clicked",
-      icon: XCircle,
-    },
-    {
-      key: "chatMessageSent",
-      label: "Chat messages sent",
-      value: 28,
-      helper: "chat_message_sent",
-      icon: MessageSquareText,
-    },
-    {
-      key: "datePlanShared",
-      label: "Date plans shared",
-      value: 4,
-      helper: "date_plan_shared",
-      icon: Send,
-    },
-  ],
-  funnel: [
-    { label: "Login clicks", value: 42 },
-    { label: "Onboarding completed", value: 24 },
-    { label: "Likes", value: 118 },
-    { label: "Matches", value: 19 },
-    { label: "Schedule clicks", value: 15 },
-    { label: "Q&A started", value: 10 },
-    { label: "Q&A finished", value: 8 },
-    { label: "Chat messages sent", value: 28 },
-    { label: "Date plans shared", value: 4 },
-  ],
-};
+const metricConfig = [
+  {
+    key: "loginClicked",
+    label: "Login clicks",
+    helper: "login_clicked",
+    icon: LogIn,
+  },
+  {
+    key: "onboardingStarted",
+    label: "Onboarding started",
+    helper: "onboarding_started",
+    icon: UserRoundCheck,
+  },
+  {
+    key: "onboardingCompleted",
+    label: "Onboarding completed",
+    helper: "onboarding_completed",
+    icon: CheckCircle2,
+  },
+  {
+    key: "profileLiked",
+    label: "Likes",
+    helper: "profile_liked",
+    icon: Heart,
+  },
+  {
+    key: "profilePassed",
+    label: "Passes",
+    helper: "profile_passed",
+    icon: XCircle,
+  },
+  {
+    key: "matchCreated",
+    label: "Matches",
+    helper: "match_created",
+    icon: UsersRound,
+  },
+  {
+    key: "scheduleClicked",
+    label: "Schedule clicks",
+    helper: "schedule_clicked",
+    icon: CalendarDays,
+  },
+  {
+    key: "qaStarted",
+    label: "Q&A started",
+    helper: "qa_started",
+    icon: Timer,
+  },
+  {
+    key: "qaFinished",
+    label: "Q&A finished",
+    helper: "qa_finished",
+    icon: Sparkles,
+  },
+  {
+    key: "qaContinueClicked",
+    label: "Continue clicked",
+    helper: "qa_continue_clicked",
+    icon: CheckCircle2,
+  },
+  {
+    key: "qaPassPrivatelyClicked",
+    label: "Pass privately clicked",
+    helper: "qa_pass_privately_clicked",
+    icon: XCircle,
+  },
+  {
+    key: "chatMessageSent",
+    label: "Chat messages sent",
+    helper: "chat_message_sent",
+    icon: MessageSquareText,
+  },
+  {
+    key: "datePlanShared",
+    label: "Date plans shared",
+    helper: "date_plan_shared",
+    icon: Send,
+  },
+] as const satisfies readonly Omit<AnalyticsMetric, "value">[];
 
-const last30Days: AnalyticsRange = {
-  label: "Last 30 days",
-  caption: "Mock data until the PostHog API is connected.",
-  metrics: [
-    { ...last7Days.metrics[0], value: 184 },
-    { ...last7Days.metrics[1], value: 136 },
-    { ...last7Days.metrics[2], value: 97 },
-    { ...last7Days.metrics[3], value: 463 },
-    { ...last7Days.metrics[4], value: 291 },
-    { ...last7Days.metrics[5], value: 64 },
-    { ...last7Days.metrics[6], value: 47 },
-    { ...last7Days.metrics[7], value: 33 },
-    { ...last7Days.metrics[8], value: 27 },
-    { ...last7Days.metrics[9], value: 18 },
-    { ...last7Days.metrics[10], value: 9 },
-    { ...last7Days.metrics[11], value: 104 },
-    { ...last7Days.metrics[12], value: 14 },
-  ],
-  funnel: [
-    { label: "Login clicks", value: 184 },
-    { label: "Onboarding completed", value: 97 },
-    { label: "Likes", value: 463 },
-    { label: "Matches", value: 64 },
-    { label: "Schedule clicks", value: 47 },
-    { label: "Q&A started", value: 33 },
-    { label: "Q&A finished", value: 27 },
-    { label: "Chat messages sent", value: 104 },
-    { label: "Date plans shared", value: 14 },
-  ],
-};
+const funnelConfig = [
+  ["loginClicked", "Login clicks"],
+  ["onboardingCompleted", "Onboarding completed"],
+  ["profileLiked", "Likes"],
+  ["matchCreated", "Matches"],
+  ["scheduleClicked", "Schedule clicks"],
+  ["qaStarted", "Q&A started"],
+  ["qaFinished", "Q&A finished"],
+  ["chatMessageSent", "Chat messages sent"],
+  ["datePlanShared", "Date plans shared"],
+] as const satisfies readonly [DashboardEventKey, string][];
 
-const analyticsRanges = [last7Days, last30Days];
+function buildAnalyticsRange({
+  label,
+  caption,
+  counts,
+  countKey,
+}: {
+  label: string;
+  caption: string;
+  counts: PostHogDashboardCounts;
+  countKey: "last7Days" | "last30Days";
+}): AnalyticsRange {
+  const metrics = metricConfig.map((metric) => ({
+    ...metric,
+    value: counts[metric.key][countKey],
+  }));
+
+  return {
+    label,
+    caption,
+    metrics,
+    funnel: funnelConfig.map(([key, stepLabel]) => ({
+      label: stepLabel,
+      value: counts[key][countKey],
+    })),
+  };
+}
 
 function isEmptyRange(range: AnalyticsRange) {
   return range.metrics.every((metric) => metric.value === 0);
@@ -540,6 +511,29 @@ function EmptyAnalyticsState({ label }: { label: string }) {
   );
 }
 
+function AnalyticsUnavailableState({
+  result,
+}: {
+  result: Extract<PostHogDashboardResult, { status: "unavailable" }>;
+}) {
+  return (
+    <section className="rounded-[1.75rem] border border-dashed border-border bg-card/70 p-8 text-center shadow-sm">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+        <MousePointerClick className="h-5 w-5" />
+      </div>
+      <h2 className="mt-4 text-xl font-semibold tracking-tight">
+        Live analytics unavailable
+      </h2>
+      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+        {result.message}
+      </p>
+      <p className="mt-4 rounded-full bg-muted px-4 py-2 text-xs font-semibold text-muted-foreground sm:inline-flex">
+        Status: {result.reason.replace(/_/g, " ")}
+      </p>
+    </section>
+  );
+}
+
 function FunnelPanel({ steps }: { steps: FunnelStep[] }) {
   const baseline = Math.max(...steps.map((step) => step.value), 1);
 
@@ -627,7 +621,29 @@ function RangeSection({ range }: { range: AnalyticsRange }) {
   );
 }
 
-export default function AdminAnalyticsPage() {
+export default async function AdminAnalyticsPage() {
+  const posthogResult = await getPostHogDashboardCounts();
+  const analyticsRanges =
+    posthogResult.status === "ok"
+      ? [
+          buildAnalyticsRange({
+            label: "Last 7 days",
+            caption: "Live aggregate event counts from PostHog.",
+            counts: posthogResult.counts,
+            countKey: "last7Days",
+          }),
+          buildAnalyticsRange({
+            label: "Last 30 days",
+            caption: "Live aggregate event counts from PostHog.",
+            counts: posthogResult.counts,
+            countKey: "last30Days",
+          }),
+        ]
+      : [];
+  const summaryRange = analyticsRanges[0];
+  const unavailableResult =
+    posthogResult.status === "unavailable" ? posthogResult : null;
+
   return (
     <main className="min-h-screen bg-background px-4 py-6 text-foreground sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-7xl space-y-8">
@@ -642,8 +658,7 @@ export default function AdminAnalyticsPage() {
               </h1>
               <p className="mt-4 text-sm leading-6 text-muted-foreground sm:text-base">
                 A focused MVP view of the action events currently tracked in
-                PostHog. Values shown here are static placeholders until the
-                PostHog API is connected.
+                PostHog. Values shown here are aggregate event counts only.
               </p>
             </div>
 
@@ -668,8 +683,11 @@ export default function AdminAnalyticsPage() {
           {[
             {
               label: "Data source",
-              value: "Mock",
-              helper: "No PostHog API secrets are used in this page.",
+              value: posthogResult.status === "ok" ? "PostHog" : "Unavailable",
+              helper:
+                posthogResult.status === "ok"
+                  ? "Fetched server-side through the private Query API."
+                  : "Live counts are hidden until the server connection works.",
             },
             {
               label: "Privacy",
@@ -699,7 +717,11 @@ export default function AdminAnalyticsPage() {
           ))}
         </section>
 
-        <FounderSummary range={last7Days} />
+        {summaryRange ? (
+          <FounderSummary range={summaryRange} />
+        ) : unavailableResult ? (
+          <AnalyticsUnavailableState result={unavailableResult} />
+        ) : null}
 
         {analyticsRanges.map((range) => (
           <div
