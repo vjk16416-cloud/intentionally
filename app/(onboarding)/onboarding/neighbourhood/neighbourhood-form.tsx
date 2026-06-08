@@ -21,16 +21,24 @@ const NEIGHBOURHOODS_BY_CITY: Record<string, string[]> = {
     "Angel",
     "Barking",
     "Barnet",
+    "Balham",
     "Battersea",
     "Beckenham",
+    "Bermondsey",
     "Bethnal Green",
     "Bexley",
+    "Borough",
+    "Bow",
     "Brixton",
+    "Camberwell",
     "Camden",
     "Canary Wharf",
     "Chelsea",
+    "Chingford",
     "Chiswick",
     "Clapham",
+    "Clerkenwell",
+    "Crouch End",
     "Croydon",
     "Dagenham",
     "Dalston",
@@ -39,35 +47,62 @@ const NEIGHBOURHOODS_BY_CITY: Record<string, string[]> = {
     "East Ham",
     "Edgware",
     "Enfield",
+    "Fitzrovia",
     "Finsbury Park",
+    "Forest Gate",
     "Fulham",
     "Greenwich",
     "Hackney",
+    "Hackney Wick",
     "Hammersmith",
+    "Haringey",
+    "Harringay",
     "Harrow",
+    "Hampstead",
     "Highbury",
+    "Highgate",
+    "Holloway",
+    "Homerton",
+    "Hoxton",
     "Hounslow",
     "Ilford",
     "Islington",
+    "Kentish Town",
+    "King's Cross",
     "Kingston",
     "Lewisham",
     "Leyton",
+    "Leytonstone",
+    "London Fields",
     "Mile End",
     "Newham",
+    "Notting Hill",
     "Peckham",
+    "Poplar",
     "Putney",
+    "Redbridge",
     "Richmond",
     "Romford",
+    "Seven Sisters",
     "Shoreditch",
+    "South Woodford",
     "Southall",
     "Southwark",
+    "Stamford Hill",
+    "Stepney",
     "Stratford",
+    "Stoke Newington",
+    "Tooting",
     "Tottenham",
     "Tower Hamlets",
+    "Victoria Park",
+    "Wanstead",
     "Walthamstow",
     "Wembley",
     "Westminster",
     "Whitechapel",
+    "Wood Green",
+    "Woodford",
     "Woolwich",
   ],
   Manchester: [
@@ -104,23 +139,23 @@ const NEIGHBOURHOODS_BY_CITY: Record<string, string[]> = {
 const DISTANCE_OPTIONS = [
   {
     label: "Local",
-    value: "5 miles",
-    helper: "Closest matches",
+    value: "10 miles",
+    helper: "Around 10 miles",
   },
   {
     label: "Nearby",
-    value: "10 miles",
-    helper: "Balanced",
-  },
-  {
-    label: "Flexible",
     value: "25 miles",
-    helper: "More options",
+    helper: "Around 25 miles",
   },
   {
     label: "Wider",
     value: "50 miles",
-    helper: "Maximum reach",
+    helper: "Around 50 miles",
+  },
+  {
+    label: "Anywhere",
+    value: "50+ miles",
+    helper: "Open to distance",
   },
 ];
 
@@ -263,7 +298,7 @@ export function NeighbourhoodForm({
           </div>
 
           <div className="rounded-2xl bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground">
-            {selectedDistance.value}
+            {selectedDistance.label}
           </div>
         </div>
 
@@ -295,7 +330,7 @@ export function NeighbourhoodForm({
               >
                 <span className="block font-semibold">{option.label}</span>
                 <span className="mt-0.5 block text-[11px] opacity-80">
-                  {option.value}
+                  {option.helper}
                 </span>
               </button>
             ))}
