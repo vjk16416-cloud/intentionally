@@ -31,9 +31,9 @@ export default async function PhoneStepPage() {
           Add your phone number
         </h1>
         <p className="text-sm text-muted-foreground">
-          We need a phone on file for the contact reveal — three hours
-          before any confirmed date, both of you get each other&apos;s
-          number. We&apos;ll text a 6-digit code to verify this one.
+          We use this to confirm you can receive texts and to support date
+          safety later. Your number is not shown on your profile. If you both
+          confirm a date, phone numbers unlock three hours beforehand.
         </p>
       </header>
       <PhoneForm />

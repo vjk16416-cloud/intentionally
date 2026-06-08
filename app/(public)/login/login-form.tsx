@@ -195,6 +195,8 @@ export function LoginForm() {
               <p className="text-xs leading-5 text-muted-foreground">
                 Enter it normally. We&apos;ll format it as{" "}
                 {localNumber ? phoneIdentifier : `${countryCode}...`}.
+                We&apos;ll text a 6-digit code to sign you in. Your number
+                is not shown on your profile.
               </p>
             </div>
           </div>
@@ -217,7 +219,7 @@ export function LoginForm() {
             ? "Sending…"
             : method === "email"
               ? "Send secure sign-in link"
-              : "Send SMS code"}
+              : "Text me a sign-in code"}
         </Button>
       </form>
     );
@@ -230,7 +232,7 @@ export function LoginForm() {
 
       <div className="space-y-1.5">
         <label htmlFor="token" className="text-sm font-semibold">
-          6-digit SMS code
+          Enter the 6-digit SMS code
         </label>
         <Input
           id="token"
@@ -245,7 +247,7 @@ export function LoginForm() {
           className="h-12 rounded-2xl text-center text-lg tracking-[0.3em]"
         />
         <p className="text-xs leading-5 text-muted-foreground">
-          Sent to {identifier}.{" "}
+          Sent to {identifier}. This confirms the phone you use to sign in.
           <button
             type="button"
             className="font-semibold underline underline-offset-4"
@@ -268,7 +270,7 @@ export function LoginForm() {
         disabled={verifyPending}
         className="w-full rounded-2xl"
       >
-        {verifyPending ? "Verifying…" : "Verify"}
+        {verifyPending ? "Verifying…" : "Verify phone"}
       </Button>
     </form>
   );
