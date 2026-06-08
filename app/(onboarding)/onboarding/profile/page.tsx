@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { ProfileCompleteness } from "@/components/onboarding/profile-completeness";
 import { getPreviousStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -8,6 +9,18 @@ import { ProfileForm } from "./profile-form";
 type ProfileFields = {
   display_name: string | null;
   date_of_birth: string | null;
+  intention: string | null;
+  bio_prompt_key: string | null;
+  bio_answer: string | null;
+  photos: string[] | null;
+  city: string | null;
+  neighbourhood: string | null;
+  availability: number[] | null;
+};
+
+type TrustedContactFields = {
+  name: string | null;
+  phone_e164: string | null;
 };
 
 export default async function ProfileStepPage({
@@ -29,9 +42,17 @@ export default async function ProfileStepPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name, date_of_birth")
+    .select(
+      "display_name, date_of_birth, intention, bio_prompt_key, bio_answer, photos, city, neighbourhood, availability",
+    )
     .eq("id", user.id)
     .maybeSingle<ProfileFields>();
+
+  const { data: trustedContact } = await supabase
+    .from("trusted_contacts")
+    .select("name, phone_e164")
+    .eq("user_id", user.id)
+    .maybeSingle<TrustedContactFields>();
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-background px-5 py-8 text-foreground">
@@ -49,6 +70,13 @@ export default async function ProfileStepPage({
               to potential matches.
             </p>
           </header>
+
+          <div className="mt-5">
+            <ProfileCompleteness
+              profile={profile ?? null}
+              trustedContact={trustedContact ?? null}
+            />
+          </div>
 
           <div className="mt-6">
             <ProfileForm

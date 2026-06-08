@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { ProfileCompleteness } from "@/components/onboarding/profile-completeness";
 import { buttonVariants } from "@/components/ui/button";
 import { computeAge } from "@/lib/age";
 import { summariseAvailability } from "@/lib/onboarding/availability";
@@ -136,6 +137,8 @@ export default async function OnboardingReviewPage() {
           section and come back here.
         </p>
       </header>
+
+      <ProfileCompleteness profile={profile} trustedContact={contact} />
 
       <div className="space-y-2.5">
         <ReviewSection
