@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import { ClarityProvider } from "@/components/analytics/clarity-provider";
 import { PostHogProvider } from "@/components/analytics/posthog-provider";
 import "./globals.css";
 
@@ -24,6 +25,7 @@ export default function RootLayout({
       className={`${plusJakartaSans.variable} h-full antialiased`}
     >
       <body className="font-sans min-h-full flex flex-col bg-background text-foreground">
+        <ClarityProvider />
         <PostHogProvider>{children}</PostHogProvider>
       </body>
     </html>
