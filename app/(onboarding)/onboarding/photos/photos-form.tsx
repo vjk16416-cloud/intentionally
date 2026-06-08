@@ -16,6 +16,8 @@ import { savePhotos, type SavePhotosState } from "./actions";
 const INITIAL_STATE: SavePhotosState = {};
 const MIN_PHOTOS = 2;
 const MAX_PHOTOS = 6;
+const UNSUPPORTED_PHOTO_MESSAGE =
+  "Use a JPEG, PNG or WebP image. If an iPhone HEIC/HEIF photo fails, export or share it as JPEG and upload that version.";
 
 export function PhotosForm({
   userId,
@@ -43,12 +45,12 @@ export function PhotosForm({
   async function onPickFile(file: File) {
     setUploadError(null);
     if (!isAllowedPhotoMime(file.type)) {
-      setUploadError("Use a JPEG, PNG or WebP image.");
+      setUploadError(UNSUPPORTED_PHOTO_MESSAGE);
       return;
     }
     const ext = getPhotoExtension(file.type);
     if (!ext) {
-      setUploadError("Use a JPEG, PNG or WebP image.");
+      setUploadError(UNSUPPORTED_PHOTO_MESSAGE);
       return;
     }
     if (paths.length >= MAX_PHOTOS) {
@@ -157,6 +159,9 @@ export function PhotosForm({
           {paths.length} of {MAX_PHOTOS} added · at least {MIN_PHOTOS} required.
         </p>
         <p>JPEG, PNG or WebP. Max 5 MB per photo.</p>
+        <p>
+          If an iPhone HEIC/HEIF photo fails, export or share it as JPEG first.
+        </p>
       </div>
 
       {uploadError ? (
