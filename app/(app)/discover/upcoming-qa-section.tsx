@@ -1,4 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
+
+const lateOptions = ["10 minutes", "15 minutes", "30 minutes", "Reschedule"];
 
 function InitialAvatar({ label }: { label: string }) {
   return (
@@ -9,6 +14,8 @@ function InitialAvatar({ label }: { label: string }) {
 }
 
 export function UpcomingQaSection() {
+  const [lateSheetOpen, setLateSheetOpen] = useState(false);
+
   return (
     <section className="mt-8">
       <div className="flex items-end justify-between gap-4">
@@ -76,6 +83,7 @@ export function UpcomingQaSection() {
 
           <button
             type="button"
+            onClick={() => setLateSheetOpen(true)}
             className="mt-3 w-full rounded-2xl border border-dashed border-border bg-background px-3 py-3 text-sm font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"
           >
             Running late?
@@ -115,6 +123,50 @@ export function UpcomingQaSection() {
           </div>
         </article>
       </div>
+
+      {lateSheetOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-end bg-foreground/30 px-3 pb-3"
+          role="presentation"
+          onClick={() => setLateSheetOpen(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="running-late-title"
+            className="mx-auto w-full max-w-md rounded-t-[2rem] border border-border bg-card p-4 shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border" />
+            <h3
+              id="running-late-title"
+              className="text-center text-lg font-semibold tracking-tight"
+            >
+              Running late?
+            </h3>
+
+            <div className="mt-4 space-y-2">
+              {lateOptions.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
+                >
+                  {option}
+                </button>
+              ))}
+
+              <button
+                type="button"
+                onClick={() => setLateSheetOpen(false)}
+                className="w-full rounded-2xl bg-muted px-4 py-3 text-sm font-semibold text-muted-foreground transition hover:bg-background hover:text-foreground"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
