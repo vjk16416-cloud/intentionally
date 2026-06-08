@@ -41,7 +41,8 @@ export default async function IdentityStepPage({
         </p>
         <h1 className="text-2xl font-semibold tracking-tight">You and them</h1>
         <p className="text-sm text-muted-foreground">
-          Used to choose which profiles we show you, and which you appear in.
+          We use this to personalise the people we recommend to you, and who
+          you&apos;re shown to.
         </p>
       </header>
       <IdentityForm
