@@ -36,7 +36,7 @@ export default async function PhotosStepPage({
         </p>
         <h1 className="text-2xl font-semibold tracking-tight">Photos</h1>
         <p className="text-sm leading-6 text-muted-foreground">
-          Add photos that feel like you in real life. Clear, recent photos help
+          Add clear, recent photos that show you naturally. Recent photos help
           people recognise you and feel more confident before a guided Q&amp;A.
         </p>
       </header>
