@@ -12,7 +12,7 @@ Status key:
 
 ## Next Fix Checklist
 
-- [ ] Fix `/date-plan/demo-demo-match` `Share this plan` visual-only buttons.
+- [x] Fix `/date-plan/demo-demo-match` `Share this plan` visual-only buttons.
 - [ ] Fix `/qa/demo-demo-match` safety shield button.
 - [ ] Fix `/qa/demo-demo-match` microphone button.
 - [ ] Fix `/qa/demo-demo-match` outcome `Continue` and `Pass privately` demo behaviour.
@@ -22,7 +22,6 @@ Status key:
 ## Summary
 
 High priority fixes:
-- `/date-plan/demo-demo-match`: each `Share this plan` button is dead. Add a local confirmation/bottom sheet now, then wire to real date proposal backend later.
 - `/qa/demo-demo-match` and real `/qa/[sessionId]`: microphone and safety controls are visual-only. They should open local UI states or be disabled until the live Daily integration/safety flow is ready.
 - `/onboarding/neighbourhood`: `Choose from list for now` is visual-only and should either focus/scroll the existing list or be removed.
 
@@ -152,7 +151,7 @@ Low priority fixes:
 
 | Page/route | Button/link label | Current behaviour | Status | Recommended action | Priority |
 |---|---|---|---|---|---|
-| `/date-plan/demo-demo-match` | `Share this plan` | No click handler; visual-only on all date option cards. | Needs fix | Open a local confirmation/bottom sheet now; later wire to date proposal backend. | High |
+| `/date-plan/demo-demo-match` | `Share this plan` | Opens a local confirmation bottom sheet saying the plan was shared. | Working | Later wire to real date proposal backend. | Low |
 | `/date-plan/demo-demo-match` | `Back to Chat` | Navigates to `/chat/demo-demo-match`. | Working | Keep. | Low |
 
 ## `/verify` and `/verify/return`

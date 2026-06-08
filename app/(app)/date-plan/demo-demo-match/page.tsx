@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 
 const DATE_OPTIONS = [
   {
@@ -22,6 +25,8 @@ const DATE_OPTIONS = [
 ];
 
 export default function DemoDatePlanPage() {
+  const [sharedPlan, setSharedPlan] = useState<string | null>(null);
+
   return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
       <div className="mx-auto w-full max-w-md space-y-5">
@@ -78,6 +83,7 @@ export default function DemoDatePlanPage() {
 
               <button
                 type="button"
+                onClick={() => setSharedPlan(option.title)}
                 className="mt-4 w-full rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground"
               >
                 Share this plan
@@ -101,6 +107,43 @@ export default function DemoDatePlanPage() {
           Back to Chat
         </Link>
       </div>
+
+      {sharedPlan ? (
+        <div
+          className="fixed inset-0 z-50 flex items-end bg-foreground/30 px-3 pb-3"
+          role="presentation"
+          onClick={() => setSharedPlan(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="plan-shared-title"
+            className="mx-auto w-full max-w-md rounded-t-[2rem] border border-border bg-card p-5 shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border" />
+            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+              {sharedPlan}
+            </p>
+            <h2
+              id="plan-shared-title"
+              className="mt-2 text-2xl font-semibold tracking-tight"
+            >
+              Plan shared
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              We&apos;ll let your match know this is your preferred date plan.
+            </p>
+            <button
+              type="button"
+              onClick={() => setSharedPlan(null)}
+              className="mt-5 w-full rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
