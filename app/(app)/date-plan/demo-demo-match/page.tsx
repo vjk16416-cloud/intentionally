@@ -66,7 +66,9 @@ export default function DemoDatePlanPage() {
               <button
                 type="button"
                 onClick={() => {
-                  trackAnalyticsEvent("datePlanShared");
+                  trackAnalyticsEvent("datePlanShared", {
+                    sendInstantly: true,
+                  });
                   setSharedPlan(option.title);
                 }}
                 className="mt-4 w-full rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground"

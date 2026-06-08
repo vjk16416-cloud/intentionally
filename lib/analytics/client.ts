@@ -27,11 +27,17 @@ export function initAnalytics() {
   initialized = true;
 }
 
-export function trackAnalyticsEvent(eventKey: AnalyticsEventKey) {
+export function trackAnalyticsEvent(
+  eventKey: AnalyticsEventKey,
+  options: { sendInstantly?: boolean } = {},
+) {
   if (typeof window === "undefined") return;
 
   initAnalytics();
   if (!initialized) return;
 
-  posthog.capture(ANALYTICS_EVENT_NAMES[eventKey]);
+  posthog.capture(ANALYTICS_EVENT_NAMES[eventKey], null, {
+    send_instantly: options.sendInstantly,
+    transport: options.sendInstantly ? "sendBeacon" : undefined,
+  });
 }

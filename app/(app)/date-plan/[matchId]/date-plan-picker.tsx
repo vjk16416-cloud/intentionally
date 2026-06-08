@@ -103,7 +103,11 @@ export function DatePlanPicker({
                   <button
                     type="submit"
                     disabled={pending}
-                    onClick={() => trackAnalyticsEvent("datePlanShared")}
+                    onClick={() =>
+                      trackAnalyticsEvent("datePlanShared", {
+                        sendInstantly: true,
+                      })
+                    }
                     className="mt-4 w-full rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground disabled:opacity-50"
                   >
                     {selected ? "Shared" : "Share this plan"}
