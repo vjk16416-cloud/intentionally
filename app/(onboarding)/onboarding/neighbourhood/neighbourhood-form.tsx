@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useMemo, useRef, useState } from "react";
 
 import { StepNav } from "@/components/onboarding/step-nav";
 import { saveNeighbourhood, type NeighbourhoodActionState } from "./actions";
@@ -152,6 +152,8 @@ export function NeighbourhoodForm({
 
   const [neighbourhood, setNeighbourhood] = useState(defaultNeighbourhood);
   const [distanceIndex, setDistanceIndex] = useState(1);
+  const locationFieldsRef = useRef<HTMLDivElement>(null);
+  const citySelectRef = useRef<HTMLSelectElement>(null);
 
   const selectedDistance = DISTANCE_OPTIONS[distanceIndex];
 
@@ -168,6 +170,14 @@ export function NeighbourhoodForm({
     setNeighbourhood(nextNeighbourhoods[0]);
   }
 
+  function focusLocationFields() {
+    locationFieldsRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+    citySelectRef.current?.focus({ preventScroll: true });
+  }
+
   return (
     <form action={action} className="space-y-5">
       <div className="rounded-3xl border border-border/70 bg-card/60 p-4 shadow-sm">
@@ -181,13 +191,14 @@ export function NeighbourhoodForm({
 
         <button
           type="button"
+          onClick={focusLocationFields}
           className="mt-4 w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
         >
           Choose from list for now
         </button>
       </div>
 
-      <div className="grid gap-4">
+      <div ref={locationFieldsRef} className="grid gap-4">
         <div className="space-y-1.5">
           <label
             htmlFor="city"
@@ -196,6 +207,7 @@ export function NeighbourhoodForm({
             City or town
           </label>
           <select
+            ref={citySelectRef}
             id="city"
             name="city"
             value={city}

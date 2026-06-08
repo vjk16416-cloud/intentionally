@@ -16,14 +16,13 @@ Status key:
 - [x] Fix `/qa/demo-demo-match` safety shield button.
 - [x] Fix `/qa/demo-demo-match` microphone button.
 - [x] Fix `/qa/demo-demo-match` outcome `Continue` and `Pass privately` demo behaviour.
-- [ ] Fix `/onboarding/neighbourhood` `Choose from list for now`.
+- [x] Fix `/onboarding/neighbourhood` `Choose from list for now`.
 - [ ] Fix `/schedule/demo-demo-match` demo slot routing issue.
 
 ## Summary
 
 High priority fixes:
 - Real `/qa/[sessionId]`: microphone and safety controls are still visual-only outside the demo route. They should open local UI states or be disabled until the live Daily integration/safety flow is ready.
-- `/onboarding/neighbourhood`: `Choose from list for now` is visual-only and should either focus/scroll the existing list or be removed.
 
 Medium priority fixes:
 - `/discover`: `View all` in the Q&A queue navigates to a single demo Q&A rather than a queue/all view. Route to the most useful current destination or open a simple queue sheet.
@@ -69,7 +68,7 @@ Low priority fixes:
 | `/onboarding/photos` | `Continue` | Disabled until 2-6 photos are present and upload is idle. | Disabled | Keep. | Low |
 | `/onboarding/intention` | Intention option cards | Native radio labels update form state. | Working | Keep. | Low |
 | `/onboarding/prompt` | `Continue` | Saves selected prompt and answer. | Working | Keep. | Low |
-| `/onboarding/neighbourhood` | `Choose from list for now` | No click handler; visual-only. | Needs fix | Make it focus/scroll the city/neighbourhood selectors, or remove it. | High |
+| `/onboarding/neighbourhood` | `Choose from list for now` | Scrolls to the city/neighbourhood selector section and focuses the city select. | Working | Keep. | Low |
 | `/onboarding/neighbourhood` | Distance slider | Updates distance UI/local form value. | Working | Keep, but note distance is not currently part of the locked discover filter. | Low |
 | `/onboarding/neighbourhood` | Distance chips (`Local`, `Nearby`, `Flexible`, `Wider`) | Update distance UI/local form value. | Working | Keep or demote if distance remains non-functional in matching. | Low |
 | `/onboarding/availability` | `Clear` | Clears selected availability. | Working | Keep. | Low |
