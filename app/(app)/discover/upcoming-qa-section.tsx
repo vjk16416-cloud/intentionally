@@ -15,9 +15,29 @@ function InitialAvatar({ label }: { label: string }) {
 
 export function UpcomingQaSection() {
   const [lateSheetOpen, setLateSheetOpen] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  function showNotice(message: string) {
+    setNotice(message);
+  }
+
+  function chooseLateOption(option: string) {
+    setLateSheetOpen(false);
+    showNotice(`We'll let Michael know you're running ${option} late.`);
+  }
 
   return (
     <section className="mt-8">
+      {notice ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className="mb-4 rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground shadow-sm"
+        >
+          {notice}
+        </div>
+      ) : null}
+
       <div className="flex items-end justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
@@ -109,6 +129,11 @@ export function UpcomingQaSection() {
           <div className="mt-4 grid grid-cols-2 gap-3">
             <button
               type="button"
+              onClick={() =>
+                showNotice(
+                  "Rescheduling Sophia's Q&A will open the slot picker once live sessions are connected.",
+                )
+              }
               className="rounded-2xl border border-border bg-background px-3 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
             >
               Reschedule
@@ -116,6 +141,11 @@ export function UpcomingQaSection() {
 
             <button
               type="button"
+              onClick={() =>
+                showNotice(
+                  "We'll remind you on the morning of the Q&A and one hour before.",
+                )
+              }
               className="rounded-2xl bg-muted px-3 py-3 text-sm font-semibold text-muted-foreground"
             >
               Remind me
@@ -147,13 +177,24 @@ export function UpcomingQaSection() {
 
             <div className="mt-4 space-y-2">
               {lateOptions.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
-                >
-                  {option}
-                </button>
+                option === "Reschedule" ? (
+                  <Link
+                    key={option}
+                    href="/schedule/demo-demo-match"
+                    className="block w-full rounded-2xl border border-border bg-background px-4 py-3 text-center text-sm font-semibold text-foreground transition hover:bg-muted"
+                  >
+                    {option}
+                  </Link>
+                ) : (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => chooseLateOption(option)}
+                    className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
+                  >
+                    {option}
+                  </button>
+                )
               ))}
 
               <button
