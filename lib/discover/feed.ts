@@ -13,10 +13,7 @@ export type DiscoverCard = {
   intention: string;
   bio_prompt_key: string;
   bio_answer: string;
-  city?: string | null;
   neighbourhood: string;
-  availability?: number[] | null;
-  id_verified?: boolean | null;
   photo_urls: string[];
 };
 
@@ -35,10 +32,7 @@ type RawProfile = {
   intention: string | null;
   bio_prompt_key: string | null;
   bio_answer: string | null;
-  city: string | null;
   neighbourhood: string | null;
-  availability: number[] | null;
-  id_verified: boolean | null;
   photos: string[] | null;
 };
 
@@ -93,7 +87,7 @@ export async function getDiscoverFeed(
   let query = supabase
     .from("profiles")
     .select(
-      "id, display_name, date_of_birth, intention, bio_prompt_key, bio_answer, city, neighbourhood, availability, id_verified, photos",
+      "id, display_name, date_of_birth, intention, bio_prompt_key, bio_answer, neighbourhood, photos",
     )
     .neq("id", viewer.id)
     .eq("paused", false)
@@ -143,10 +137,7 @@ export async function getDiscoverFeed(
         intention: p.intention,
         bio_prompt_key: p.bio_prompt_key,
         bio_answer: p.bio_answer,
-        city: p.city,
         neighbourhood: p.neighbourhood,
-        availability: p.availability,
-        id_verified: p.id_verified,
         photo_urls: photoUrls,
       },
     ];

@@ -5,7 +5,6 @@ import { useMemo, useState, useTransition } from "react";
 
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import type { DiscoverCard } from "@/lib/discover/feed";
-import { BIO_PROMPTS } from "@/lib/onboarding/constants";
 
 import { likeProfile, passProfile, type MatchedCard } from "./actions";
 import { MatchModal } from "./match-modal";
@@ -29,61 +28,6 @@ function ageFromDate(dateOfBirth: string) {
 
 function firstName(name: string) {
   return name.split(" ")[0] ?? name;
-}
-
-const INTENTION_LABELS: Record<string, string> = {
-  "long-term": "Long-term",
-  "short-term": "Short-term",
-  "figuring-it-out": "Figuring it out",
-};
-
-function intentionLabel(intention: string) {
-  return INTENTION_LABELS[intention] ?? "Still completing this section";
-}
-
-function promptText(promptKey: string) {
-  return (
-    BIO_PROMPTS.find((prompt) => prompt.key === promptKey)?.text ??
-    "Still completing this section"
-  );
-}
-
-function locationLabel(card: DiscoverCard) {
-  if (card.neighbourhood && card.city) {
-    return `${card.neighbourhood}, ${card.city}`;
-  }
-
-  return card.neighbourhood || "Still completing this section";
-}
-
-function availabilityLabel(availability: number[] | null | undefined) {
-  if (!availability || availability.length === 0) {
-    return "Still completing this section";
-  }
-
-  const hours = availability.length / 2;
-  const formattedHours = Number.isInteger(hours)
-    ? hours.toFixed(0)
-    : hours.toFixed(1);
-  const days = new Set(availability.map((slot) => Math.floor(slot / 48))).size;
-
-  return `${formattedHours} hrs/week across ${days} day${days === 1 ? "" : "s"}`;
-}
-
-function photoLabel(photoUrls: string[]) {
-  if (photoUrls.length === 0) {
-    return "Photos updating";
-  }
-
-  return `${photoUrls.length} photo${photoUrls.length === 1 ? "" : "s"}`;
-}
-
-function verificationLabel(isVerified: boolean | null | undefined) {
-  if (isVerified) {
-    return "ID verified";
-  }
-
-  return "ID check before Q&A";
 }
 
 
@@ -135,11 +79,6 @@ export function DiscoverDeck({
   }
 
   const age = ageFromDate(card.date_of_birth);
-  const prompt = promptText(card.bio_prompt_key);
-  const location = locationLabel(card);
-  const availability = availabilityLabel(card.availability);
-  const photos = photoLabel(card.photo_urls);
-  const verification = verificationLabel(card.id_verified);
 
   function openDemoMatch(matchCard = card) {
     setActiveMatch({
@@ -233,10 +172,10 @@ export function DiscoverDeck({
 
             <div className="absolute left-4 top-4 flex items-center gap-2">
               <span className="rounded-full bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm backdrop-blur">
-                {intentionLabel(card.intention)}
+                Video profile
               </span>
               <span className="rounded-full bg-background/80 px-3 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm backdrop-blur">
-                {photos}
+                Intentional
               </span>
             </div>
 
@@ -251,60 +190,28 @@ export function DiscoverDeck({
                 </h2>
 
                 <p className="text-sm text-primary-foreground/75">
-                  {location}
+                  {card.neighbourhood} · 3 miles away
                 </p>
               </div>
 
               <div className="mt-4 rounded-[1.5rem] border border-white/15 bg-white/15 p-4 shadow-sm backdrop-blur-xl">
                 <p className="text-xs uppercase tracking-[0.18em] text-primary-foreground/65">
-                  Prompt
-                </p>
-                <p className="mt-2 text-sm font-semibold leading-5 text-primary-foreground/80">
-                  {prompt}
+                  Ask me about
                 </p>
                 <p className="mt-2 text-base font-semibold leading-6">
-                  “{card.bio_answer || "Still completing this section"}”
+                  “{card.bio_answer}”
                 </p>
               </div>
             </div>
           </div>
 
           <div className="space-y-4 p-4">
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-[1.25rem] border border-border bg-background p-3">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Availability
-                </p>
-                <p className="mt-1 text-sm font-semibold leading-5 text-foreground">
-                  {availability}
-                </p>
-              </div>
-
-              <div className="rounded-[1.25rem] border border-border bg-background p-3">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Safety
-                </p>
-                <p className="mt-1 text-sm font-semibold leading-5 text-foreground">
-                  {verification}
-                </p>
-              </div>
-
-              <div className="rounded-[1.25rem] border border-border bg-background p-3">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Profile
-                </p>
-                <p className="mt-1 text-sm font-semibold leading-5 text-foreground">
-                  {photos}
-                </p>
-              </div>
-            </div>
-
             <div className="flex flex-wrap gap-2">
               <span className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-                {intentionLabel(card.intention)}
+                Video first
               </span>
               <span className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-                {verification}
+                Low pressure
               </span>
               <span className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground">
                 Q&amp;A before chat
