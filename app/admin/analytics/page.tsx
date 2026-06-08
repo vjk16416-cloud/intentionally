@@ -1,6 +1,7 @@
 import {
   CalendarDays,
   CheckCircle2,
+  Eye,
   Heart,
   LogIn,
   MessageSquareText,
@@ -51,6 +52,22 @@ type RecommendedAction = {
   title: string;
   why: string;
   suggestedAction: string;
+  status: RagStatus;
+};
+
+type FunnelTransition = {
+  from: string;
+  to: string;
+  previousValue: number;
+  currentValue: number;
+  conversion: number;
+  dropOff: number;
+};
+
+type HealthMetric = {
+  label: string;
+  value: number;
+  detail: string;
   status: RagStatus;
 };
 
@@ -194,17 +211,6 @@ function dropOffRate(current: number, previous: number) {
   return Math.max(0, 100 - conversionRate(current, previous));
 }
 
-function metricStatus(metric: AnalyticsMetric): RagStatus {
-  if (metric.key === "datePlanShared" || metric.key === "qaPassPrivatelyClicked") {
-    return metric.value > 0 ? "Watch" : "Needs attention";
-  }
-
-  if (metric.value >= 20) return "Good";
-  if (metric.value >= 8) return "Watch";
-
-  return "Needs attention";
-}
-
 function statusClassName(status: RagStatus) {
   if (status === "Good") {
     return "bg-[#e2e8dc] text-[#2f3a2b]";
@@ -217,23 +223,57 @@ function statusClassName(status: RagStatus) {
   return "bg-[#efd0ca] text-[#7a2118]";
 }
 
+function getMetricValue(range: AnalyticsRange, key: DashboardEventKey) {
+  return range.metrics.find((metric) => metric.key === key)?.value ?? 0;
+}
+
+function rateStatus(value: number, good: number, watch: number): RagStatus {
+  if (value >= good) return "Good";
+  if (value >= watch) return "Watch";
+
+  return "Needs attention";
+}
+
+function productHealthStatus(metrics: HealthMetric[]): RagStatus {
+  if (metrics.some((metric) => metric.status === "Needs attention")) {
+    return "Needs attention";
+  }
+
+  if (metrics.some((metric) => metric.status === "Watch")) {
+    return "Watch";
+  }
+
+  return "Good";
+}
+
+function getFunnelTransitions(steps: FunnelStep[]): FunnelTransition[] {
+  return steps.slice(1).map((step, index) => {
+    const previous = steps[index];
+    const conversion = conversionRate(step.value, previous.value);
+
+    return {
+      from: previous.label,
+      to: step.label,
+      previousValue: previous.value,
+      currentValue: step.value,
+      conversion,
+      dropOff: Math.max(0, 100 - conversion),
+    };
+  });
+}
+
 function getBiggestDropOff(steps: FunnelStep[]) {
-  return steps.slice(1).reduce(
-    (biggest, step, index) => {
-      const previous = steps[index];
-      const dropOff = dropOffRate(step.value, previous.value);
-
-      if (dropOff > biggest.dropOff) {
-        return {
-          from: previous.label,
-          to: step.label,
-          dropOff,
-        };
-      }
-
-      return biggest;
+  return getFunnelTransitions(steps).reduce(
+    (biggest, transition) =>
+      transition.dropOff > biggest.dropOff ? transition : biggest,
+    {
+      from: steps[0]?.label ?? "Start",
+      to: steps[1]?.label ?? "Next",
+      previousValue: steps[0]?.value ?? 0,
+      currentValue: steps[1]?.value ?? 0,
+      conversion: 0,
+      dropOff: 0,
     },
-    { from: steps[0]?.label ?? "Start", to: steps[1]?.label ?? "Next", dropOff: 0 },
   );
 }
 
@@ -270,10 +310,75 @@ function getStrongestEngagementSignal(range: AnalyticsRange) {
   };
 }
 
-function MetricCard({ metric }: { metric: AnalyticsMetric }) {
-  const Icon = metric.icon;
-  const status = metricStatus(metric);
+function getHealthMetrics(range: AnalyticsRange): HealthMetric[] {
+  const loginClicks = getMetricValue(range, "loginClicked");
+  const onboardingCompleted = getMetricValue(range, "onboardingCompleted");
+  const likes = getMetricValue(range, "profileLiked");
+  const matches = getMetricValue(range, "matchCreated");
+  const scheduleClicks = getMetricValue(range, "scheduleClicked");
+  const qaStarted = getMetricValue(range, "qaStarted");
+  const qaFinished = getMetricValue(range, "qaFinished");
+  const chatMessages = getMetricValue(range, "chatMessageSent");
+  const datePlans = getMetricValue(range, "datePlanShared");
 
+  const onboarding = conversionRate(onboardingCompleted, loginClicks);
+  const likeToMatch = conversionRate(matches, likes);
+  const matchToSchedule = conversionRate(scheduleClicks, matches);
+  const qaCompletion = conversionRate(qaFinished, qaStarted);
+  const chatActivation = conversionRate(chatMessages, qaFinished);
+  const datePlanShare = conversionRate(datePlans, chatMessages);
+
+  return [
+    {
+      label: "Onboarding completion",
+      value: onboarding,
+      detail: `${formatNumber(onboardingCompleted)} completed from ${formatNumber(
+        loginClicks,
+      )} login clicks.`,
+      status: rateStatus(onboarding, 75, 55),
+    },
+    {
+      label: "Like to match rate",
+      value: likeToMatch,
+      detail: `${formatNumber(matches)} matches from ${formatNumber(likes)} likes.`,
+      status: rateStatus(likeToMatch, 25, 12),
+    },
+    {
+      label: "Match to schedule rate",
+      value: matchToSchedule,
+      detail: `${formatNumber(scheduleClicks)} schedule clicks from ${formatNumber(
+        matches,
+      )} matches.`,
+      status: rateStatus(matchToSchedule, 65, 40),
+    },
+    {
+      label: "Q&A completion rate",
+      value: qaCompletion,
+      detail: `${formatNumber(qaFinished)} finished from ${formatNumber(
+        qaStarted,
+      )} Q&As started.`,
+      status: rateStatus(qaCompletion, 75, 55),
+    },
+    {
+      label: "Chat activation rate",
+      value: chatActivation,
+      detail: `${formatNumber(chatMessages)} chat messages after ${formatNumber(
+        qaFinished,
+      )} finished Q&As.`,
+      status: rateStatus(chatActivation, 100, 40),
+    },
+    {
+      label: "Date plan share rate",
+      value: datePlanShare,
+      detail: `${formatNumber(datePlans)} date plans from ${formatNumber(
+        chatMessages,
+      )} chat messages.`,
+      status: rateStatus(datePlanShare, 20, 8),
+    },
+  ];
+}
+
+function HealthCard({ metric }: { metric: HealthMetric }) {
   return (
     <article className="rounded-[1.5rem] border border-border bg-card p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
@@ -282,26 +387,21 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
             {metric.label}
           </p>
           <p className="mt-2 text-3xl font-semibold tracking-tight">
-            {formatNumber(metric.value)}
+            {metric.value}%
           </p>
         </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
-          <Icon className="h-5 w-5" />
-        </div>
-      </div>
-      <div className="mt-4 flex flex-wrap items-center gap-2">
         <span
           className={cn(
-            "rounded-full px-3 py-1.5 text-xs font-semibold",
-            statusClassName(status),
+            "rounded-full px-3 py-1 text-xs font-semibold",
+            statusClassName(metric.status),
           )}
         >
-          {status}
-        </span>
-        <span className="rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground">
-          {metric.helper}
+          {metric.status}
         </span>
       </div>
+      <p className="mt-4 text-sm leading-6 text-muted-foreground">
+        {metric.detail}
+      </p>
     </article>
   );
 }
@@ -309,6 +409,8 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
 function FounderSummary({ range }: { range: AnalyticsRange }) {
   const biggestDropOff = getBiggestDropOff(range.funnel);
   const engagementSignal = getStrongestEngagementSignal(range);
+  const healthMetrics = getHealthMetrics(range);
+  const healthStatus = productHealthStatus(healthMetrics);
   const loginClicks =
     range.metrics.find((metric) => metric.key === "loginClicked")?.value ?? 0;
   const onboardingCompleted =
@@ -333,46 +435,26 @@ function FounderSummary({ range }: { range: AnalyticsRange }) {
     `${formatNumber(qaFinished)} Q&As were finished; this is the core quality signal to watch before adding features.`,
     `Biggest leak: ${biggestDropOff.from} → ${biggestDropOff.to} has ${biggestDropOff.dropOff}% drop-off.`,
   ];
-  const recommendedActions: RecommendedAction[] = [
-    {
-      label: "Highest priority fix",
-      title: "Reduce the Q&A scheduling leak",
-      why: "Users are showing interest through likes and matches, but fewer are making it into a booked Q&A.",
-      suggestedAction:
-        "Review the scheduling screen copy and default slot choices before adding new funnel steps.",
-      status: "Needs attention",
-    },
-    {
-      label: "Best growth opportunity",
-      title: "Turn completed onboarding into first likes",
-      why: "Completed profiles are the closest audience to activation, and profile likes are the first visible intent signal.",
-      suggestedAction:
-        "Prompt newly onboarded users to like three profiles during their first discover session.",
-      status: "Watch",
-    },
-    {
-      label: "Best product learning question",
-      title: "Do finished Q&As create enough post-call intent?",
-      why: "The MVP thesis depends on completed Q&As leading to chat depth and date planning.",
-      suggestedAction:
-        "Ask beta users who finished a Q&A what made them continue, pass, or hesitate.",
-      status: "Good",
-    },
-  ];
+  const recommendedAction = getRecommendedExperiments(range)[0];
 
   return (
     <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm sm:p-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            Founder summary
+            Executive summary
           </p>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight">
             What is happening right now
           </h2>
         </div>
-        <span className="rounded-full bg-muted px-4 py-2 text-sm font-semibold text-muted-foreground">
-          {range.label}
+        <span
+          className={cn(
+            "rounded-full px-4 py-2 text-sm font-semibold",
+            statusClassName(healthStatus),
+          )}
+        >
+          Product health: {healthStatus}
         </span>
       </div>
 
@@ -407,30 +489,51 @@ function FounderSummary({ range }: { range: AnalyticsRange }) {
         />
       </div>
 
-      <div className="mt-5">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-              Recommended next actions
-            </p>
-            <h3 className="mt-2 text-xl font-semibold tracking-tight">
-              What to do next
-            </h3>
-          </div>
-          <p className="max-w-sm text-sm leading-6 text-muted-foreground">
-            Static recommendations for now, designed to become data-driven when
-            the PostHog API is connected.
-          </p>
-        </div>
-
-        <div className="mt-4 grid gap-3 lg:grid-cols-3">
-          {recommendedActions.map((action) => (
-            <RecommendedActionCard key={action.label} action={action} />
-          ))}
-        </div>
-      </div>
+      <SummarySignalCard
+        title="Recommended next action"
+        label={recommendedAction.title}
+        detail={recommendedAction.suggestedAction}
+        status={recommendedAction.status}
+        className="mt-3"
+      />
     </section>
   );
+}
+
+function getRecommendedExperiments(range: AnalyticsRange): RecommendedAction[] {
+  const biggestDropOff = getBiggestDropOff(range.funnel);
+  const healthMetrics = getHealthMetrics(range);
+  const weakestHealth =
+    healthMetrics.find((metric) => metric.status === "Needs attention") ??
+    healthMetrics.find((metric) => metric.status === "Watch") ??
+    healthMetrics[0];
+
+  return [
+    {
+      label: "Experiment 1",
+      title: `Repair ${biggestDropOff.from} → ${biggestDropOff.to}`,
+      why: `This is the weakest funnel stage at ${biggestDropOff.dropOff}% drop-off.`,
+      suggestedAction:
+        "Test tighter page copy, a clearer CTA, and one less decision at this exact step.",
+      status: biggestDropOff.dropOff >= 55 ? "Needs attention" : "Watch",
+    },
+    {
+      label: "Experiment 2",
+      title: `Lift ${weakestHealth.label.toLowerCase()}`,
+      why: `${weakestHealth.detail} This metric is currently marked ${weakestHealth.status.toLowerCase()}.`,
+      suggestedAction:
+        "Run a one-week variant focused only on this metric and compare the next 30-day view.",
+      status: weakestHealth.status,
+    },
+    {
+      label: "Experiment 3",
+      title: "Increase post-Q&A momentum",
+      why: "The MVP thesis depends on finished Q&As turning into chat depth and date intent.",
+      suggestedAction:
+        "After Q&A completion, test a single lightweight prompt that nudges users toward one concrete next message or date plan.",
+      status: "Watch",
+    },
+  ];
 }
 
 function RecommendedActionCard({ action }: { action: RecommendedAction }) {
@@ -469,14 +572,16 @@ function SummarySignalCard({
   label,
   detail,
   status,
+  className,
 }: {
   title: string;
   label: string;
   detail: string;
   status: RagStatus;
+  className?: string;
 }) {
   return (
-    <article className="rounded-[1.25rem] bg-background p-4">
+    <article className={cn("rounded-[1.25rem] bg-background p-4", className)}>
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm font-semibold">{title}</p>
         <span
@@ -536,6 +641,7 @@ function AnalyticsUnavailableState({
 
 function FunnelPanel({ steps }: { steps: FunnelStep[] }) {
   const baseline = Math.max(...steps.map((step) => step.value), 1);
+  const weakest = getBiggestDropOff(steps);
 
   return (
     <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm">
@@ -558,15 +664,33 @@ function FunnelPanel({ steps }: { steps: FunnelStep[] }) {
           const previous = steps[index - 1];
           const width = Math.max(6, Math.round((step.value / baseline) * 100));
           const dropOff = previous ? dropOffRate(step.value, previous.value) : 0;
+          const isWeakest =
+            previous?.label === weakest.from && step.label === weakest.to;
 
           return (
-            <div key={step.label} className="space-y-2">
+            <div
+              key={step.label}
+              className={cn(
+                "space-y-2 rounded-2xl p-3",
+                isWeakest ? "bg-[#efd0ca]/55" : "bg-background/60",
+              )}
+            >
               <div className="flex items-baseline justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold">{step.label}</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold">{step.label}</p>
+                    {isWeakest ? (
+                      <span className="rounded-full bg-[#efd0ca] px-2 py-1 text-[11px] font-semibold text-[#7a2118]">
+                        Weakest stage
+                      </span>
+                    ) : null}
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     {previous
-                      ? `${dropOff}% drop-off from ${previous.label}`
+                      ? `${conversionRate(
+                          step.value,
+                          previous.value,
+                        )}% conversion · ${dropOff}% drop-off from ${previous.label}`
                       : "Funnel entry"}
                   </p>
                 </div>
@@ -610,13 +734,85 @@ function RangeSection({ range }: { range: AnalyticsRange }) {
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {range.metrics.map((metric) => (
-          <MetricCard key={metric.key} metric={metric} />
+      <FunnelPanel steps={range.funnel} />
+    </section>
+  );
+}
+
+function ProductHealthCards({ range }: { range: AnalyticsRange }) {
+  return (
+    <section className="space-y-4">
+      <div>
+        <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+          Product health cards
+        </p>
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+          Rates that matter
+        </h2>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {getHealthMetrics(range).map((metric) => (
+          <HealthCard key={metric.label} metric={metric} />
         ))}
       </div>
+    </section>
+  );
+}
 
-      <FunnelPanel steps={range.funnel} />
+function RecommendedExperiments({ range }: { range: AnalyticsRange }) {
+  return (
+    <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+            Recommended experiments
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+            Small tests with clear learning value
+          </h2>
+        </div>
+        <p className="max-w-sm text-sm leading-6 text-muted-foreground">
+          Generated from aggregate funnel weaknesses only.
+        </p>
+      </div>
+
+      <div className="mt-5 grid gap-3 lg:grid-cols-3">
+        {getRecommendedExperiments(range).map((action) => (
+          <RecommendedActionCard key={action.label} action={action} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ClarityReviewPrompt({ range }: { range: AnalyticsRange }) {
+  const biggestDropOff = getBiggestDropOff(range.funnel);
+
+  return (
+    <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
+            <Eye className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+              Clarity review prompt
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+              Watch the {biggestDropOff.from} to {biggestDropOff.to} journey
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+              This is the biggest aggregate drop-off in PostHog. Review Clarity
+              recordings for friction, hesitation, confusing copy, or broken
+              layout around this stage.
+            </p>
+          </div>
+        </div>
+        <span className="rounded-full bg-[#f1dfbd] px-4 py-2 text-sm font-semibold text-[#6a4b16]">
+          {biggestDropOff.dropOff}% drop-off
+        </span>
+      </div>
     </section>
   );
 }
@@ -718,12 +914,18 @@ export default async function AdminAnalyticsPage() {
         </section>
 
         {summaryRange ? (
-          <FounderSummary range={summaryRange} />
+          <>
+            <FounderSummary range={summaryRange} />
+            <RangeSection range={summaryRange} />
+            <ProductHealthCards range={summaryRange} />
+            <RecommendedExperiments range={summaryRange} />
+            <ClarityReviewPrompt range={summaryRange} />
+          </>
         ) : unavailableResult ? (
           <AnalyticsUnavailableState result={unavailableResult} />
         ) : null}
 
-        {analyticsRanges.map((range) => (
+        {analyticsRanges.slice(1).map((range) => (
           <div
             key={range.label}
             id={range.label === "Last 7 days" ? "last-7-days" : "last-30-days"}
