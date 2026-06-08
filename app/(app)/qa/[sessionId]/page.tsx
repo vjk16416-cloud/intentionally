@@ -1,8 +1,10 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 
 import { saveQaOutcome } from "./actions";
+import { DemoMicrophoneButton, DemoSafetyButton } from "./demo-qa-controls";
 
 const QUESTIONS = [
   "What is something you value in how someone communicates?",
@@ -152,6 +154,21 @@ export default async function QaSessionPage({
                   ? "You chose to continue. In the real app, we would wait for the other person&apos;s private choice before opening chat."
                   : "You passed privately. In the real app, the match would close quietly."}
               </div>
+            ) : isDemoSession ? (
+              <div className="mt-6 grid gap-3">
+                <Link
+                  href="/chat/demo-demo-match"
+                  className="w-full rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
+                >
+                  Continue
+                </Link>
+                <Link
+                  href="/discover"
+                  className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-center text-base font-semibold text-white"
+                >
+                  Pass privately
+                </Link>
+              </div>
             ) : (
               <div className="mt-6 grid gap-3">
                 <form action={saveQaOutcome}>
@@ -200,13 +217,17 @@ export default async function QaSessionPage({
               Q&amp;A Room
             </div>
 
-            <button
-              type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-lg"
-              aria-label="Safety options"
-            >
-              🛡
-            </button>
+            {isDemoSession ? (
+              <DemoSafetyButton />
+            ) : (
+              <button
+                type="button"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-lg"
+                aria-label="Safety options"
+              >
+                🛡
+              </button>
+            )}
           </header>
 
           <div className="pt-5">
@@ -300,13 +321,17 @@ export default async function QaSessionPage({
                 Skip question
               </a>
 
-              <button
-                type="button"
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-[#eadcc8] text-3xl text-[#241c17] shadow-sm"
-                aria-label="Microphone"
-              >
-                🎙
-              </button>
+              {isDemoSession ? (
+                <DemoMicrophoneButton />
+              ) : (
+                <button
+                  type="button"
+                  className="flex h-16 w-16 items-center justify-center rounded-full bg-[#eadcc8] text-3xl text-[#241c17] shadow-sm"
+                  aria-label="Microphone"
+                >
+                  🎙
+                </button>
+              )}
 
               <a
                 href={nextHref}

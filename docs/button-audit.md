@@ -13,16 +13,16 @@ Status key:
 ## Next Fix Checklist
 
 - [x] Fix `/date-plan/demo-demo-match` `Share this plan` visual-only buttons.
-- [ ] Fix `/qa/demo-demo-match` safety shield button.
-- [ ] Fix `/qa/demo-demo-match` microphone button.
-- [ ] Fix `/qa/demo-demo-match` outcome `Continue` and `Pass privately` demo behaviour.
+- [x] Fix `/qa/demo-demo-match` safety shield button.
+- [x] Fix `/qa/demo-demo-match` microphone button.
+- [x] Fix `/qa/demo-demo-match` outcome `Continue` and `Pass privately` demo behaviour.
 - [ ] Fix `/onboarding/neighbourhood` `Choose from list for now`.
 - [ ] Fix `/schedule/demo-demo-match` demo slot routing issue.
 
 ## Summary
 
 High priority fixes:
-- `/qa/demo-demo-match` and real `/qa/[sessionId]`: microphone and safety controls are visual-only. They should open local UI states or be disabled until the live Daily integration/safety flow is ready.
+- Real `/qa/[sessionId]`: microphone and safety controls are still visual-only outside the demo route. They should open local UI states or be disabled until the live Daily integration/safety flow is ready.
 - `/onboarding/neighbourhood`: `Choose from list for now` is visual-only and should either focus/scroll the existing list or be removed.
 
 Medium priority fixes:
@@ -129,12 +129,12 @@ Low priority fixes:
 |---|---|---|---|---|---|
 | `/qa/demo-demo-match` intro | `Start conversation` | Navigates to `?started=true`. | Working | Keep. | Low |
 | `/qa/demo-demo-match` room | Exit `×` | Navigates to `/discover`. | Working | Keep. | Low |
-| `/qa/demo-demo-match` room | Safety shield | No click handler; visual-only. | Needs fix | Open a simple safety/options sheet or mark disabled until safety flow exists. | High |
+| `/qa/demo-demo-match` room | Safety shield | Opens a local safety bottom sheet with Report, Block, Leave Q&A, and Cancel. | Working | Later wire Report/Block to real safety backend. | Low |
 | `/qa/demo-demo-match` room | `Skip question` | Navigates to next question/finished state. | Working | Keep if skip remains in demo only; MVP spec says no skip/swap in real Q&A. | Medium |
-| `/qa/demo-demo-match` room | Microphone icon | No click handler; visual-only. | Needs fix | Toggle local muted state in demo or mark disabled until Daily controls are wired. | High |
+| `/qa/demo-demo-match` room | Microphone icon | Toggles local muted/unmuted state and changes icon/label. | Working | Later wire to Daily microphone controls. | Low |
 | `/qa/demo-demo-match` room | `Next question` / `Finish` | Navigates through demo question states. | Working | Keep. | Low |
-| `/qa/demo-demo-match` outcome | `Continue` | Submits `saveQaOutcome` on the server-rendered route; demo action path should be verified because demo sessions may not have DB rows. | Needs fix | For demo sessions, keep local query-param behaviour or route directly to demo chat; for real sessions, keep server action. | High |
-| `/qa/demo-demo-match` outcome | `Pass privately` | Submits `saveQaOutcome`; same demo caveat as Continue. | Needs fix | For demo sessions, use local state/query params or a demo-safe action. | High |
+| `/qa/demo-demo-match` outcome | `Continue` | Navigates directly to `/chat/demo-demo-match` without requiring a real `qa_sessions` row. | Working | Keep for demo; real sessions still use `saveQaOutcome`. | Low |
+| `/qa/demo-demo-match` outcome | `Pass privately` | Navigates back to `/discover` without requiring a real `qa_sessions` row. | Working | Keep for demo; real sessions still use `saveQaOutcome`. | Low |
 | `/qa/[sessionId]` real room | Daily iframe | Uses Daily room URL when present. | Working | Keep. | Low |
 | `/qa/[sessionId]/waiting` | `Back to Discover` | Navigates to `/discover`. | Working | Keep. | Low |
 
