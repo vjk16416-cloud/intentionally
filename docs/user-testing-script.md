@@ -1,6 +1,6 @@
 # Intentionally user testing script
 
-Use this for lightweight MVP usability sessions with invited testers. Keep the session focused on whether people understand the core loop: profile discovery, matching, scheduling a Q&A, chatting after unlock, and sharing a date plan.
+Use this for lightweight MVP usability sessions with invited testers. Lookback is the main moderated testing tool. Keep the session focused on whether people understand the core loop: profile discovery, matching, scheduling a Q&A, chatting after unlock, and sharing a date plan.
 
 ## Tester invite message
 
@@ -10,22 +10,84 @@ I am testing an early version of Intentionally, a video-first dating app for peo
 
 You will be asked to try a few core flows and talk through what feels clear, confusing, or awkward. This is not a test of you; it is a test of the product. The app is still early, so rough edges are expected.
 
-If you are happy for the session to be recorded for internal product review, I will ask for consent at the start. No recording will be shared publicly.
+If you are happy for the session to be recorded in Lookback for internal product review, I will ask for consent at the start. No recording or transcript will be shared publicly.
 
 Thanks,
 [Founder name]
 
-## Consent script for recording
+## How to run a Lookback session
 
-Before we start, I would like to record the screen and audio so I can review where the product is confusing. The recording is only for internal product research and will not be shared publicly.
+Use Lookback for moderated sessions where the tester shares their screen and speaks out loud while completing the task list.
+
+Before the session:
+
+1. Create one Lookback session per tester.
+2. Name the session with an anonymous tester ID, for example `T001 - MVP core loop`.
+3. Send the tester the Lookback invite link and remind them to join from the device they would naturally use for dating apps.
+4. Prepare a test account or demo path so they do not need to enter real private information.
+5. Open PostHog and Microsoft Clarity in separate tabs for post-session review, not live coaching.
+
+During the session:
+
+1. Start with the consent script.
+2. Ask the tester to think out loud.
+3. Let them drive. Do not explain the product unless they are blocked.
+4. Ask short follow-up questions when they pause, hesitate, or misinterpret a step.
+5. Mark timestamps for confusion, delight, trust concerns, and drop-off risk.
+
+After the session:
+
+1. Save the Lookback recording link.
+2. Save or export the transcript link if available.
+3. Complete the tester session log.
+4. Compare Lookback notes with PostHog events and Clarity replay.
+5. Pull out one priority insight and one next action.
+
+## What Lookback records
+
+Lookback can record:
+
+- Screen activity
+- Voice/audio
+- Optional camera video
+- Clicks and taps
+- Session transcript, when transcription is enabled
+
+Ask testers to avoid entering real names, phone numbers, emails, private answers, messages, or other sensitive details during the session.
+
+## Consent wording for recording and transcript
+
+Before we start, I would like to record this session in Lookback. Lookback may capture your screen, voice, optional camera video, clicks or taps, and a transcript if transcription is enabled.
+
+The recording and transcript are only for internal product research. They will not be shared publicly.
 
 Please avoid entering real private information during the test. Use test details where possible. You can ask me to pause or stop recording at any time.
 
-Do I have your consent to record this session?
+Do I have your consent to record this session and keep the recording and transcript for internal product review?
 
 If yes: Thanks. I am starting the recording now.
 
 If no: No problem. We will continue without recording, and I will take notes instead.
+
+## Where to store recording links and transcripts
+
+Store only links and research notes in the testing tracker. Do not copy sensitive transcript excerpts into docs, tickets, or analytics tools.
+
+Recommended storage:
+
+- Recording link: tester session log
+- Transcript link: tester session log
+- Raw recording: Lookback only
+- Raw transcript: Lookback or approved research folder only
+- Summary insights: docs, product notes, or issue tracker
+
+Use anonymous tester IDs such as `T001`, `T002`, and `T003`. Do not use full names in filenames, row titles, or ticket titles.
+
+## Tester session log template
+
+| Tester ID | Date | Recording link | Transcript link | Main confusion point | Main positive reaction | Drop-off point | PostHog events checked | Clarity recording checked | Priority insight | Next action |
+|---|---|---|---|---|---|---|---|---|---|---|
+| T001 | YYYY-MM-DD |  |  |  |  |  |  |  |  |  |
 
 ## 10-minute task list
 
@@ -120,3 +182,47 @@ Review:
 - Mobile viewport sessions: any clipped buttons, hidden CTAs, or awkward scrolling.
 
 Prioritise recordings where PostHog shows drop-off at the same journey stage. Use replay notes to explain why the drop-off happened, not just where it happened.
+
+## Compare Lookback, PostHog, and Clarity
+
+Use all three sources together. Do not let one source overrule the others without checking the full journey.
+
+Lookback shows what the user said:
+
+- Their stated expectations
+- Their confusion in their own words
+- Trust or safety concerns
+- Positive reactions and moments of interest
+- Places where the product concept did or did not make sense
+
+PostHog shows what the user did:
+
+- Which button/action events fired
+- Where the funnel advanced
+- Where the funnel stopped
+- Whether the tester completed the intended path
+- Whether reported behaviour matches tracked behaviour
+
+Clarity shows what the user visually struggled with:
+
+- Hesitation before clicks
+- Repeated clicks or taps
+- Scrolling past important CTAs
+- Form or layout confusion
+- Mobile viewport issues
+
+Comparison workflow:
+
+1. Start with the Lookback timestamp where the tester sounded confused or interested.
+2. Check PostHog to confirm which event fired before and after that moment.
+3. Check Clarity to see what was visible on screen and whether the UI caused friction.
+4. Label the issue as copy, layout, trust, task clarity, technical bug, or product concept.
+5. Write one priority insight and one next action in the tester session log.
+
+Example:
+
+- Lookback: tester says, "I do not know what happens after liking someone."
+- PostHog: `profile_liked` fires, but `schedule_clicked` does not.
+- Clarity: tester closes the match modal without noticing the schedule CTA.
+- Priority insight: the transition from match to Q&A scheduling is not clear enough.
+- Next action: make the match modal CTA and explanation more explicit.
