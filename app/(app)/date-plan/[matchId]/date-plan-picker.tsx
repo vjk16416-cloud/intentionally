@@ -1,0 +1,168 @@
+"use client";
+
+import Link from "next/link";
+import { useActionState } from "react";
+
+import { trackAnalyticsEvent } from "@/lib/analytics/client";
+import {
+  DATE_PLAN_OPTIONS,
+  getDatePlanOption,
+  type DatePlanKey,
+} from "@/lib/date-plans/options";
+
+import { shareDatePlan, type ShareDatePlanState } from "./actions";
+
+const INITIAL_STATE: ShareDatePlanState = {};
+
+export function DatePlanPicker({
+  matchId,
+  chatId,
+  otherName,
+  currentPlanKey,
+}: {
+  matchId: string;
+  chatId: string;
+  otherName: string;
+  currentPlanKey: DatePlanKey | null;
+}) {
+  const [state, action, pending] = useActionState(
+    shareDatePlan,
+    INITIAL_STATE,
+  );
+  const sharedPlan =
+    getDatePlanOption(state.sharedPlanKey) ?? getDatePlanOption(currentPlanKey);
+
+  return (
+    <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
+      <div className="mx-auto w-full max-w-md space-y-5">
+        <header className="rounded-[1.75rem] border bg-background p-5 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+            Date prompt
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+            Ready to meet {otherName}?
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Pick a simple, public first-date plan. We&apos;ll save it as your
+            preferred plan for this match.
+          </p>
+        </header>
+
+        <section className="rounded-[1.75rem] bg-accent p-5 text-accent-foreground shadow-sm">
+          <p className="text-xs uppercase tracking-[0.22em] text-accent-foreground/60">
+            Safety-first suggestion
+          </p>
+          <h2 className="mt-2 text-xl font-semibold tracking-tight">
+            Keep it public, simple and time-boxed.
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-accent-foreground/75">
+            First dates work best when both people can arrive easily, leave
+            comfortably and share the plan with someone they trust.
+          </p>
+        </section>
+
+        {state.error ? (
+          <p className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            {state.error}
+          </p>
+        ) : null}
+
+        <section className="space-y-3">
+          {DATE_PLAN_OPTIONS.map((option) => {
+            const selected =
+              option.key === state.sharedPlanKey ||
+              (!state.sharedPlanKey && option.key === currentPlanKey);
+
+            return (
+              <article
+                key={option.key}
+                className="rounded-[1.5rem] border bg-background p-4 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h2 className="text-lg font-semibold tracking-tight">
+                      {option.title}
+                    </h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {option.place}
+                    </p>
+                  </div>
+
+                  <span className="rounded-full bg-muted px-3 py-1 text-xs">
+                    {option.time}
+                  </span>
+                </div>
+
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  {option.reason}
+                </p>
+
+                <form action={action}>
+                  <input type="hidden" name="matchId" value={matchId} />
+                  <input type="hidden" name="planKey" value={option.key} />
+                  <button
+                    type="submit"
+                    disabled={pending}
+                    onClick={() => trackAnalyticsEvent("datePlanShared")}
+                    className="mt-4 w-full rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground disabled:opacity-50"
+                  >
+                    {selected ? "Shared" : "Share this plan"}
+                  </button>
+                </form>
+              </article>
+            );
+          })}
+        </section>
+
+        <section className="rounded-[1.5rem] border bg-background p-4 shadow-sm">
+          <p className="text-sm font-semibold">Before the date</p>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            Phone reveal and reminders are not part of this MVP action yet.
+            This only saves your preferred plan for the match.
+          </p>
+        </section>
+
+        <Link
+          href={`/chat/${chatId}`}
+          className="block rounded-2xl border bg-background px-4 py-4 text-center text-base font-semibold"
+        >
+          Back to Chat
+        </Link>
+      </div>
+
+      {state.sharedPlanKey && sharedPlan ? (
+        <div
+          className="fixed inset-0 z-50 flex items-end bg-foreground/30 px-3 pb-3"
+          role="presentation"
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="plan-shared-title"
+            className="mx-auto w-full max-w-md rounded-t-[2rem] border border-border bg-card p-5 shadow-xl"
+          >
+            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border" />
+            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+              {sharedPlan.title}
+            </p>
+            <h2
+              id="plan-shared-title"
+              className="mt-2 text-2xl font-semibold tracking-tight"
+            >
+              Plan shared
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              We&apos;ll let your match know this is your preferred date plan.
+            </p>
+            <Link
+              href={`/chat/${chatId}`}
+              className="mt-5 block w-full rounded-2xl bg-accent px-4 py-3 text-center text-sm font-semibold text-accent-foreground"
+            >
+              Done
+            </Link>
+          </div>
+        </div>
+      ) : null}
+    </main>
+  );
+}

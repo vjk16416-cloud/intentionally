@@ -4,27 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
-
-const DATE_OPTIONS = [
-  {
-    title: "Coffee first",
-    place: "WatchHouse, Shoreditch",
-    time: "Saturday, 2:30pm",
-    reason: "Public, relaxed and easy to keep short if needed.",
-  },
-  {
-    title: "Walk and pastries",
-    place: "Victoria Park",
-    time: "Sunday, 11:00am",
-    reason: "Low-pressure setting with space to talk naturally.",
-  },
-  {
-    title: "Casual food",
-    place: "Dishoom, Shoreditch",
-    time: "Friday, 7:00pm",
-    reason: "Public venue, lively atmosphere and easy transport nearby.",
-  },
-];
+import { DATE_PLAN_OPTIONS } from "@/lib/date-plans/options";
 
 export default function DemoDatePlanPage() {
   const [sharedPlan, setSharedPlan] = useState<string | null>(null);
@@ -59,9 +39,9 @@ export default function DemoDatePlanPage() {
         </section>
 
         <section className="space-y-3">
-          {DATE_OPTIONS.map((option) => (
+          {DATE_PLAN_OPTIONS.map((option) => (
             <article
-              key={option.title}
+              key={option.key}
               className="rounded-[1.5rem] border bg-background p-4 shadow-sm"
             >
               <div className="flex items-start justify-between gap-4">

@@ -95,6 +95,12 @@ export default async function ChatPage({
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
             The Q&amp;A helped start the conversation before chat opened.
           </p>
+          <Link
+            href={`/date-plan/${match.id}`}
+            className="mt-4 block rounded-2xl bg-accent px-4 py-3 text-center text-sm font-semibold text-accent-foreground"
+          >
+            Plan a date
+          </Link>
         </header>
 
         <section className="mt-4 flex-1 rounded-[2rem] border bg-background p-4 shadow-sm">

@@ -13,6 +13,7 @@ Status key:
 ## Next Fix Checklist
 
 - [x] Fix `/date-plan/demo-demo-match` `Share this plan` visual-only buttons.
+- [x] Add real `/date-plan/[matchId]` preferred plan sharing.
 - [x] Fix `/qa/demo-demo-match` safety shield button.
 - [x] Fix `/qa/demo-demo-match` microphone button.
 - [x] Fix `/qa/demo-demo-match` outcome `Continue` and `Pass privately` demo behaviour.
@@ -143,15 +144,20 @@ Low priority fixes:
 |---|---|---|---|---|---|
 | `/chat/demo-demo-match` | `Send` | Adds non-empty message to local demo state; empty draft is ignored. | Working | Keep for demo. | Low |
 | `/chat/demo-demo-match` | `Back to Discover` | Navigates to `/discover`. | Working | Keep. | Low |
+| `/chat/[chatId]` | `Plan a date` | Navigates to `/date-plan/{matchId}` for the unlocked match. | Working | Keep. | Low |
 | `/chat/[chatId]` | `Send` | Submits `sendMessage` server action. | Working | Keep. | Low |
 | `/chat/[chatId]` | `Back to Discover` | Navigates to `/discover`. | Working | Keep. | Low |
 
-## `/date-plan/demo-demo-match`
+## `/date-plan/demo-demo-match` and `/date-plan/[matchId]`
 
 | Page/route | Button/link label | Current behaviour | Status | Recommended action | Priority |
 |---|---|---|---|---|---|
 | `/date-plan/demo-demo-match` | `Share this plan` | Opens a local confirmation bottom sheet saying the plan was shared. | Working | Later wire to real date proposal backend. | Low |
 | `/date-plan/demo-demo-match` | `Back to Chat` | Navigates to `/chat/demo-demo-match`. | Working | Keep. | Low |
+| `/date-plan/[matchId]` | `Share this plan` | Saves the selected predefined plan as the current user's preferred plan for the match, then shows confirmation. | Working | Keep; notifications and full date proposal/confirmation remain future work. | Low |
+| `/date-plan/[matchId]` | `Shared` | Re-submits the currently selected preferred plan. | Working | Keep or disable later if repeated submits become noisy. | Low |
+| `/date-plan/[matchId]` | `Back to Chat` | Navigates back to the unlocked chat for the match. | Working | Keep. | Low |
+| `/date-plan/[matchId]` confirmation sheet | `Done` | Navigates back to the unlocked chat for the match. | Working | Keep. | Low |
 
 ## `/verify` and `/verify/return`
 
