@@ -4,6 +4,7 @@ import { useActionState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { StepNav } from "@/components/onboarding/step-nav";
+import { trackAnalyticsEvent } from "@/lib/analytics/client";
 
 import { saveProfile, type ProfileActionState } from "./actions";
 
@@ -23,7 +24,11 @@ export function ProfileForm({
   const [state, action, pending] = useActionState(saveProfile, INITIAL_STATE);
 
   return (
-    <form action={action} className="space-y-5">
+    <form
+      action={action}
+      className="space-y-5"
+      onSubmit={() => trackAnalyticsEvent("onboardingStarted")}
+    >
       <div className="space-y-1.5">
         <label htmlFor="displayName" className="text-sm font-semibold text-foreground">
           Display name

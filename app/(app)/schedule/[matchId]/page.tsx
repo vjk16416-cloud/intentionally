@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { TrackedLink } from "@/components/analytics/tracked-link";
 import { buttonVariants } from "@/components/ui/button";
 import { computeMutualSlots } from "@/lib/scheduling/slots";
 import { createClient } from "@/lib/supabase/server";
@@ -102,9 +103,10 @@ function DemoSchedulePage({ matchId }: { matchId: string }) {
 
           <div className="mt-4 space-y-2">
             {demoScheduleSlots.map((slot) => (
-              <Link
+              <TrackedLink
                 key={`${slot.label}-${slot.time}`}
                 href={`/qa/${matchId}`}
+                eventKey="scheduleClicked"
                 className="block rounded-3xl border bg-card p-4 transition hover:bg-muted"
               >
                 <div className="flex items-baseline justify-between gap-4">
@@ -116,7 +118,7 @@ function DemoSchedulePage({ matchId }: { matchId: string }) {
                   </div>
                   <p className="text-lg font-semibold">{slot.time}</p>
                 </div>
-              </Link>
+              </TrackedLink>
             ))}
           </div>
         </section>

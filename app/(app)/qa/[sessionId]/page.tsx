@@ -1,6 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { TrackedButton } from "@/components/analytics/tracked-button";
+import { TrackedLink } from "@/components/analytics/tracked-link";
 import { createClient } from "@/lib/supabase/server";
 
 import { saveQaOutcome } from "./actions";
@@ -118,12 +119,13 @@ export default async function QaSessionPage({
             <p className="mt-5 text-sm font-medium text-foreground">
               Estimated time: 10 minutes
             </p>
-            <a
+            <TrackedLink
               href={`/qa/${sessionId}?started=true`}
+              eventKey="qaStarted"
               className="mt-6 block rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
             >
               Start conversation
-            </a>
+            </TrackedLink>
           </section>
         </div>
       </main>
@@ -156,41 +158,45 @@ export default async function QaSessionPage({
               </div>
             ) : isDemoSession ? (
               <div className="mt-6 grid gap-3">
-                <Link
+                <TrackedLink
                   href="/chat/demo-demo-match"
+                  eventKey="qaContinueClicked"
                   className="w-full rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
                 >
                   Continue
-                </Link>
-                <Link
+                </TrackedLink>
+                <TrackedLink
                   href="/discover"
+                  eventKey="qaPassPrivatelyClicked"
                   className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-center text-base font-semibold text-white"
                 >
                   Pass privately
-                </Link>
+                </TrackedLink>
               </div>
             ) : (
               <div className="mt-6 grid gap-3">
                 <form action={saveQaOutcome}>
                   <input type="hidden" name="sessionId" value={sessionId} />
                   <input type="hidden" name="decision" value="continue" />
-                  <button
+                  <TrackedButton
                     type="submit"
+                    eventKey="qaContinueClicked"
                     className="w-full rounded-2xl bg-accent px-4 py-4 text-base font-semibold text-accent-foreground"
                   >
                     Continue
-                  </button>
+                  </TrackedButton>
                 </form>
 
                 <form action={saveQaOutcome}>
                   <input type="hidden" name="sessionId" value={sessionId} />
                   <input type="hidden" name="decision" value="pass" />
-                  <button
+                  <TrackedButton
                     type="submit"
+                    eventKey="qaPassPrivatelyClicked"
                     className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-base font-semibold text-white"
                   >
                     Pass privately
-                  </button>
+                  </TrackedButton>
                 </form>
               </div>
             )}
@@ -314,12 +320,22 @@ export default async function QaSessionPage({
             )}
 
             <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-              <a
-                href={nextHref}
-                className="rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-center text-sm font-semibold text-white"
-              >
-                Skip question
-              </a>
+              {isLastQuestion ? (
+                <TrackedLink
+                  href={nextHref}
+                  eventKey="qaFinished"
+                  className="rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-center text-sm font-semibold text-white"
+                >
+                  Skip question
+                </TrackedLink>
+              ) : (
+                <a
+                  href={nextHref}
+                  className="rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-center text-sm font-semibold text-white"
+                >
+                  Skip question
+                </a>
+              )}
 
               {isDemoSession ? (
                 <DemoMicrophoneButton />
@@ -333,12 +349,22 @@ export default async function QaSessionPage({
                 </button>
               )}
 
-              <a
-                href={nextHref}
-                className="rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-center text-sm font-semibold text-white"
-              >
-                {isLastQuestion ? "Finish" : "Next question →"}
-              </a>
+              {isLastQuestion ? (
+                <TrackedLink
+                  href={nextHref}
+                  eventKey="qaFinished"
+                  className="rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-center text-sm font-semibold text-white"
+                >
+                  Finish
+                </TrackedLink>
+              ) : (
+                <a
+                  href={nextHref}
+                  className="rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-center text-sm font-semibold text-white"
+                >
+                  Next question →
+                </a>
+              )}
             </div>
 
             <div className="mt-4 rounded-[1.25rem] bg-white/7 p-4">

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 
+import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import type { DiscoverCard } from "@/lib/discover/feed";
 
 import { likeProfile, passProfile, type MatchedCard } from "./actions";
@@ -93,9 +94,11 @@ export function DiscoverDeck({
 
   function handleLike() {
     setActionError(null);
+    trackAnalyticsEvent("profileLiked");
     const cardId = card.id;
 
     if (isDemoMode || cardId.startsWith("demo-")) {
+      trackAnalyticsEvent("matchCreated");
       openDemoMatch();
       return;
     }
@@ -113,6 +116,7 @@ export function DiscoverDeck({
       }
 
       if (result.matched) {
+        trackAnalyticsEvent("matchCreated");
         setActiveMatch({ matchId: result.matchId, match: result.with });
       }
 
@@ -122,6 +126,7 @@ export function DiscoverDeck({
 
   function handlePass() {
     setActionError(null);
+    trackAnalyticsEvent("profilePassed");
     const cardId = card.id;
 
     if (isDemoMode || cardId.startsWith("demo-")) {
@@ -298,7 +303,10 @@ export function DiscoverDeck({
 
                 <button
                   type="button"
-                  onClick={() => openDemoMatch(matchCard)}
+                  onClick={() => {
+                    trackAnalyticsEvent("scheduleClicked");
+                    openDemoMatch(matchCard);
+                  }}
                   className="mt-2 w-full rounded-2xl bg-accent px-3 py-3 text-sm font-semibold text-accent-foreground transition hover:opacity-90 active:scale-[0.98]"
                 >
                   Schedule

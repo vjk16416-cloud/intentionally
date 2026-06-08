@@ -4,6 +4,7 @@ import { useActionState, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { trackAnalyticsEvent } from "@/lib/analytics/client";
 
 import {
   requestOtp,
@@ -209,6 +210,7 @@ export function LoginForm() {
           type="submit"
           size="lg"
           disabled={requestPending}
+          onClick={() => trackAnalyticsEvent("loginClicked")}
           className="w-full rounded-2xl"
         >
           {requestPending

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 
+import { trackAnalyticsEvent } from "@/lib/analytics/client";
+
 type Message = {
   id: number;
   from: "maya" | "you";
@@ -45,6 +47,8 @@ export default function DemoChatPage() {
     const trimmed = draft.trim();
 
     if (!trimmed) return;
+
+    trackAnalyticsEvent("chatMessageSent");
 
     setMessages((current) => [
       ...current,

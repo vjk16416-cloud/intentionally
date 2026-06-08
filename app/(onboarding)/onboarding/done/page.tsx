@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { TrackedLink } from "@/components/analytics/tracked-link";
 import { buttonVariants } from "@/components/ui/button";
 import { getOnboardingState } from "@/lib/onboarding/state";
 import { createClient } from "@/lib/supabase/server";
@@ -71,15 +71,16 @@ export default async function OnboardingDonePage() {
           </div>
 
           <div className="mt-5">
-            <Link
+            <TrackedLink
               href="/discover"
+              eventKey="onboardingCompleted"
               className={cn(
                 buttonVariants({ size: "lg" }),
                 "w-full rounded-2xl bg-accent text-accent-foreground hover:opacity-90",
               )}
             >
               Start browsing
-            </Link>
+            </TrackedLink>
           </div>
         </section>
       </div>

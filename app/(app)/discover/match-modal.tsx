@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-
+import { TrackedLink } from "@/components/analytics/tracked-link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { computeAge } from "@/lib/age";
 import { cn } from "@/lib/utils";
@@ -49,12 +48,13 @@ export function MatchModal({
             10-minute video Q&amp;A — schedule it now or come back later.
           </p>
           <div className="flex flex-col gap-2">
-            <Link
+            <TrackedLink
               href={`/schedule/${matchId}`}
+              eventKey="scheduleClicked"
               className={cn(buttonVariants({ size: "lg" }))}
             >
               Schedule your Q&amp;A
-            </Link>
+            </TrackedLink>
             <Button
               type="button"
               variant="ghost"

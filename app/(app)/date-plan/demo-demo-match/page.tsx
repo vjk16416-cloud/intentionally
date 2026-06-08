@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 
+import { trackAnalyticsEvent } from "@/lib/analytics/client";
+
 const DATE_OPTIONS = [
   {
     title: "Coffee first",
@@ -83,7 +85,10 @@ export default function DemoDatePlanPage() {
 
               <button
                 type="button"
-                onClick={() => setSharedPlan(option.title)}
+                onClick={() => {
+                  trackAnalyticsEvent("datePlanShared");
+                  setSharedPlan(option.title);
+                }}
                 className="mt-4 w-full rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground"
               >
                 Share this plan

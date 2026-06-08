@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 
+import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import type { SlotProposal } from "@/lib/scheduling/slots";
 
 import { proposeSlot, type ProposeState } from "./actions";
@@ -74,6 +75,7 @@ function SlotForm({
       <button
         type="submit"
         disabled={pending}
+        onClick={() => trackAnalyticsEvent("scheduleClicked")}
         className="w-full rounded-2xl border bg-card p-4 text-left transition-colors hover:bg-muted disabled:opacity-50"
       >
         <div className="flex items-baseline justify-between gap-3">
