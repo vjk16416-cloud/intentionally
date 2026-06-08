@@ -5,15 +5,10 @@
 ### Positive signals
 
 - User liked the sage green and cream visual style.
-
 - User understood the guided Q&A flow.
-
 - User liked the private “continue/pass” decision.
-
 - User felt the app tone was soft, low-pressure and intentional.
-
 - User liked the AI insight / shared values idea.
-
 - User understood why video Q&A fits the intentional dating concept.
 
 ### Improvement checklist
@@ -22,7 +17,7 @@
 
 |---|---|---|---|
 
-| High | Users may run late to Q&A sessions | Add delay / reschedule option | Not started |
+| High | Users may run late to Q&A sessions | Add delay / reschedule option | Fixed|
 
 | Medium | Blur may not need to be forced | Explore optional soft blur control | Not started |
 

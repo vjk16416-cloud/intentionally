@@ -66,12 +66,12 @@ export function UpcomingQaSection() {
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <button
-              type="button"
+            <Link
+              href="/schedule/demo-demo-match"
               className="rounded-2xl border border-border bg-background px-3 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
             >
               Reschedule
-            </button>
+            </Link>
 
             <Link
               href="/qa/demo-demo-match"
