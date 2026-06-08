@@ -46,8 +46,9 @@ export default async function TrustedContactStepPage({
               One trusted person
             </h1>
             <p className="text-sm leading-6 text-muted-foreground">
-              Choose someone you trust. They will never appear on your profile
-              and are only used for safety support.
+              Choose someone we can contact if you trigger Safety SOS during a
+              date. They are not shown on your profile and are not contacted
+              about your matches.
             </p>
           </header>
 

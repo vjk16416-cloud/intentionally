@@ -91,10 +91,12 @@ export function TrustedContactForm({
     <form action={action} className="space-y-5">
       <div className="rounded-2xl border border-border bg-muted/40 px-4 py-3">
         <p className="text-sm font-semibold text-foreground">
-          Safety contact only
+          Only for date safety
         </p>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">
-          They are not shown on your profile and will not be contacted about your matches.
+          We only use this contact if you trigger Safety SOS during a date.
+          They are never shown on your profile and are not contacted about
+          matches, likes, or Q&amp;As.
         </p>
       </div>
 
@@ -176,11 +178,13 @@ export function TrustedContactForm({
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
-        <p className="text-sm font-semibold text-foreground">Privacy promise</p>
+        <p className="text-sm font-semibold text-foreground">
+          What happens if you use Safety SOS?
+        </p>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">
-          This person is only stored as a safety contact. They are not shown on
-          your profile and we will not message them unless a safety flow needs
-          it.
+          We use their phone number to help alert them that you asked for
+          safety support during a date. We do not send them your dating
+          activity or profile details.
         </p>
       </div>
 
