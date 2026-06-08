@@ -51,5 +51,5 @@ export async function saveNeighbourhood(
   }
 
   const returnTo = String(formData.get("returnTo") ?? "");
-  redirect(resolveNextStep(returnTo, "/onboarding/trusted-contact"));
+  redirect(resolveNextStep(returnTo, "/onboarding/availability"));
 }
