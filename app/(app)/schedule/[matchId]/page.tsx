@@ -104,7 +104,7 @@ function DemoSchedulePage({ matchId }: { matchId: string }) {
             {demoScheduleSlots.map((slot) => (
               <Link
                 key={`${slot.label}-${slot.time}`}
-                href={`/qa/demo-${matchId}`}
+                href={`/qa/${matchId}`}
                 className="block rounded-3xl border bg-card p-4 transition hover:bg-muted"
               >
                 <div className="flex items-baseline justify-between gap-4">

@@ -17,7 +17,7 @@ Status key:
 - [x] Fix `/qa/demo-demo-match` microphone button.
 - [x] Fix `/qa/demo-demo-match` outcome `Continue` and `Pass privately` demo behaviour.
 - [x] Fix `/onboarding/neighbourhood` `Choose from list for now`.
-- [ ] Fix `/schedule/demo-demo-match` demo slot routing issue.
+- [x] Fix `/schedule/demo-demo-match` demo slot routing issue.
 
 ## Summary
 
@@ -115,7 +115,7 @@ Low priority fixes:
 
 | Page/route | Button/link label | Current behaviour | Status | Recommended action | Priority |
 |---|---|---|---|---|---|
-| `/schedule/demo-demo-match` | Demo slot cards (`Tonight`, `Tomorrow`, `Sunday`) | Navigate to `/qa/demo-demo-demo-match` because the demo page prefixes `demo-` to an already demo-prefixed id. | Needs fix | Normalize demo session URL construction so demo schedule links go to the intended Q&A route. | High |
+| `/schedule/demo-demo-match` | Demo slot cards (`Tonight`, `Tomorrow`, `Sunday`) | Navigate to `/qa/demo-demo-match`. | Working | Keep. | Low |
 | `/schedule/demo-demo-match` | `Back to Discover` | Navigates to `/discover`. | Working | Keep. | Low |
 | `/schedule/[matchId]` confirmed state | `Go to the call` | Navigates to `/qa/{session.id}`. | Working | Keep. | Low |
 | `/schedule/[matchId]` no mutual slots | `Edit your availability` | Navigates to `/onboarding/availability?return=/schedule/{matchId}`. | Working | Keep. | Low |
