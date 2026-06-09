@@ -103,18 +103,18 @@ export default async function QaSessionPage({
               Before we begin
             </h1>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              This conversation is an opportunity to get to know someone beyond
-              a profile. There are no perfect answers and nothing you need to
-              prove.
+              Conversation comes first here. Profiles stay softly blurred so
+              there is less pressure to perform or decide too quickly.
             </p>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Simply listen, be curious, and answer honestly.
+              Simply listen, be curious, and answer honestly. After the Q&amp;A,
+              you both privately choose Continue or Pass.
             </p>
             <div className="mt-6 space-y-3 rounded-[1.5rem] bg-muted/60 p-4 text-sm leading-6 text-muted-foreground">
               <p>• Three thoughtful questions</p>
               <p>• Move on when you&apos;re both ready</p>
-              <p>• Your conversation stays private</p>
-              <p>• Chat only opens if you both choose to continue afterwards</p>
+              <p>• Your choice stays private</p>
+              <p>• Chat and profiles unlock only if you both Continue</p>
             </div>
             <p className="mt-5 text-sm font-medium text-foreground">
               Estimated time: 10 minutes
@@ -146,14 +146,14 @@ export default async function QaSessionPage({
             </h1>
 
             <p className="mt-3 text-sm leading-6 text-white/65">
-              Chat only opens if both people choose to continue. Your choice is
-              private.
+              Your choice is private. Chat and profiles unlock only if you both
+              choose Continue.
             </p>
 
             {decision ? (
               <div className="mt-6 rounded-2xl bg-white/10 p-4 text-sm leading-6 text-white/75">
                 {decision === "continue"
-                  ? "You chose to continue. In the real app, we would wait for the other person&apos;s private choice before opening chat."
+                  ? "You chose Continue. In the real app, we would wait for the other person's private choice before unlocking chat and profiles."
                   : "You passed privately. In the real app, the match would close quietly."}
               </div>
             ) : isDemoSession ? (
@@ -371,8 +371,8 @@ export default async function QaSessionPage({
               <div className="flex gap-3">
                 <span className="text-lg">🔒</span>
                 <p className="text-sm leading-6 text-white/70">
-                  Chat opens only if you both choose to continue. Your
-                  conversation is private and secure.
+                  Profiles stay softly blurred so the conversation comes first.
+                  Chat unlocks only if you both choose Continue.
                 </p>
               </div>
             </div>
