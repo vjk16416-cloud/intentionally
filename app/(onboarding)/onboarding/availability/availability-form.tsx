@@ -40,22 +40,28 @@ const TIME_BLOCKS = [
 
 const QUICK_PICKS = [
   {
+    label: "Weekday daytime",
+    helper: "Mon-Fri",
+    days: [0, 1, 2, 3, 4],
+    hours: [9, 10, 11, 12, 13, 14, 15, 16],
+  },
+  {
     label: "Weekday evenings",
-    helper: "Mon–Thu",
-    days: [0, 1, 2, 3],
+    helper: "Mon-Fri",
+    days: [0, 1, 2, 3, 4],
     hours: [18, 19, 20],
   },
   {
     label: "Weekend daytime",
-    helper: "Sat–Sun",
+    helper: "Sat-Sun",
     days: [5, 6],
-    hours: [11, 12, 13, 14, 15],
+    hours: [10, 11, 12, 13, 14, 15, 16],
   },
   {
-    label: "Sunday reset",
-    helper: "Sunday",
-    days: [6],
-    hours: [17, 18, 19, 20],
+    label: "Weekend evenings",
+    helper: "Sat-Sun",
+    days: [5, 6],
+    hours: [18, 19, 20],
   },
 ] as const;
 
@@ -219,7 +225,7 @@ export function AvailabilityForm({
           <p className="text-xs text-muted-foreground">Optional shortcuts</p>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {QUICK_PICKS.map((pick) => (
             <button
               key={pick.label}
