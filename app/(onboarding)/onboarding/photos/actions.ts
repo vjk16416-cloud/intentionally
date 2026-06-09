@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 
 import { resolveNextStep } from "@/lib/onboarding/navigation";
-import { isOwnedBy } from "@/lib/storage/photos";
+import { isOwnedBy, PROFILE_PHOTOS_BUCKET } from "@/lib/storage/photos";
 import { createClient } from "@/lib/supabase/server";
 
 export type SavePhotosState = {
@@ -40,6 +40,12 @@ export async function savePhotos(
     }
   }
 
+  const { data: currentProfile } = await supabase
+    .from("profiles")
+    .select("photos")
+    .eq("id", user.id)
+    .maybeSingle<{ photos: string[] | null }>();
+
   const { error } = await supabase
     .from("profiles")
     .update({ photos: paths })
@@ -47,6 +53,13 @@ export async function savePhotos(
 
   if (error) {
     return { error: error.message };
+  }
+
+  const removedPaths = (currentProfile?.photos ?? []).filter(
+    (path) => isOwnedBy(path, user.id) && !paths.includes(path),
+  );
+  if (removedPaths.length > 0) {
+    await supabase.storage.from(PROFILE_PHOTOS_BUCKET).remove(removedPaths);
   }
 
   const returnTo = String(formData.get("returnTo") ?? "");

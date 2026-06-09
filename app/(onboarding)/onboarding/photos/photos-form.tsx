@@ -76,15 +76,8 @@ export function PhotosForm({
     setPaths((prev) => [...prev, path]);
   }
 
-  async function removePhoto(path: string) {
+  function removePhoto(path: string) {
     setUploadError(null);
-    const { error } = await supabase.storage
-      .from(PROFILE_PHOTOS_BUCKET)
-      .remove([path]);
-    if (error) {
-      setUploadError(error.message);
-      return;
-    }
     setPaths((prev) => prev.filter((p) => p !== path));
   }
 
@@ -110,16 +103,7 @@ export function PhotosForm({
             />
             <button
               type="button"
-              onClick={() => {
-                removePhoto(path).catch((error: unknown) => {
-                  console.error("Photo removal failed:", error);
-                  setUploadError(
-                    error instanceof Error
-                      ? error.message
-                      : "Photo removal failed. Please try again.",
-                  );
-                });
-              }}
+              onClick={() => removePhoto(path)}
               className="absolute right-2 top-2 rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-semibold text-foreground shadow-sm backdrop-blur transition hover:bg-muted"
             >
               Remove
