@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { AlphaFeedbackWidget } from "@/components/feedback/alpha-feedback-widget";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { getOnboardingState } from "@/lib/onboarding/state";
 import { createClient } from "@/lib/supabase/server";
@@ -78,6 +79,7 @@ export default async function AppLayout({
       </header>
 
       {children}
+      <AlphaFeedbackWidget />
     </div>
   );
 }
