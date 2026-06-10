@@ -43,12 +43,12 @@ export default async function TrustedContactStepPage({
               Step 8 of 8
             </p>
             <h1 className="text-2xl font-semibold tracking-tight">
-              One trusted person
+              Add a trusted contact for extra peace of mind
             </h1>
             <p className="text-sm leading-6 text-muted-foreground">
-              Choose someone we can contact if you trigger Safety SOS during a
-              date. They are not shown on your profile and are not contacted
-              about your matches.
+              Choose someone you trust who could be contacted if you ever use a
+              safety feature. This is only for support and is not shown on your
+              profile.
             </p>
           </header>
 

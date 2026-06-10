@@ -91,12 +91,11 @@ export function TrustedContactForm({
     <form action={action} className="space-y-5">
       <div className="rounded-2xl border border-border bg-muted/40 px-4 py-3">
         <p className="text-sm font-semibold text-foreground">
-          Only for date safety
+          Only for safety support
         </p>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">
-          We only use this contact if you trigger Safety SOS during a date.
           They are never shown on your profile and are not contacted about
-          matches, likes, or Q&amp;As.
+          matches, likes, or Q&amp;As. You can update this later.
         </p>
       </div>
 
@@ -179,12 +178,12 @@ export function TrustedContactForm({
 
       <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
         <p className="text-sm font-semibold text-foreground">
-          What happens if you use Safety SOS?
+          What is SOS for?
         </p>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">
-          We use their phone number to help alert them that you asked for
-          safety support during a date. We do not send them your dating
-          activity or profile details.
+          SOS is there if you ever feel unsafe or need urgent support during a
+          date or interaction. We only use this contact to help with safety
+          support, not to share your dating activity or profile details.
         </p>
       </div>
 
