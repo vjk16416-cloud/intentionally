@@ -43,7 +43,7 @@ export function DemoSafetyButton() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="demo-safety-title"
-            className="mx-auto w-full max-w-md rounded-t-[2rem] border border-white/10 bg-[#20211b] p-5 text-white shadow-2xl"
+            className="mx-auto w-full max-w-md rounded-t-[2rem] border border-white/10 bg-[#20211b] p-5 text-white shadow-2xl md:max-w-lg"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-white/20" />

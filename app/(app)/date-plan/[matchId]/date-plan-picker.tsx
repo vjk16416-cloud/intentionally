@@ -34,7 +34,7 @@ export function DatePlanPicker({
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
-      <div className="mx-auto w-full max-w-md space-y-5">
+      <div className="mx-auto w-full max-w-md space-y-5 md:max-w-3xl lg:max-w-5xl">
         <header className="rounded-[1.75rem] border bg-background p-5 shadow-sm">
           <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
             Date prompt
@@ -67,7 +67,7 @@ export function DatePlanPicker({
           </p>
         ) : null}
 
-        <section className="space-y-3">
+        <section className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {DATE_PLAN_OPTIONS.map((option) => {
             const selected =
               option.key === state.sharedPlanKey ||
@@ -143,7 +143,7 @@ export function DatePlanPicker({
             role="dialog"
             aria-modal="true"
             aria-labelledby="plan-shared-title"
-            className="mx-auto w-full max-w-md rounded-t-[2rem] border border-border bg-card p-5 shadow-xl"
+            className="mx-auto w-full max-w-md rounded-t-[2rem] border border-border bg-card p-5 shadow-xl md:max-w-lg"
           >
             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border" />
             <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">

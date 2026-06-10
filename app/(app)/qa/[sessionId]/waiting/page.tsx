@@ -73,7 +73,7 @@ export default async function QaWaitingPage({
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
-      <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center">
+      <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center md:max-w-2xl">
         <section className="w-full rounded-[2rem] border bg-background p-6 text-center shadow-sm">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-accent text-2xl text-accent-foreground">
             ✓

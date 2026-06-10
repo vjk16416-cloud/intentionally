@@ -123,7 +123,7 @@ export function DiscoverDeck({
   if (cards.length === 0 || !card) {
     return (
       <main className="min-h-[calc(100vh-57px)] bg-background px-5 py-8 text-foreground">
-        <div className="mx-auto flex min-h-[70vh] w-full max-w-md items-center justify-center">
+        <div className="mx-auto flex min-h-[70vh] w-full max-w-md items-center justify-center md:max-w-2xl">
           <div className="space-y-5 text-center">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-border bg-card text-2xl shadow-sm">
               ✦
@@ -218,7 +218,7 @@ export function DiscoverDeck({
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-background pb-28 text-foreground">
-      <div className="mx-auto w-full max-w-md px-4 py-5 sm:px-5 lg:max-w-lg">
+      <div className="mx-auto w-full max-w-md px-4 py-5 sm:px-5 md:max-w-3xl lg:max-w-5xl">
         <header className="mb-5 flex items-center justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">
@@ -230,18 +230,18 @@ export function DiscoverDeck({
           </div>
         </header>
 
-        <p className="mb-5 max-w-sm text-sm leading-6 text-muted-foreground">
+        <p className="mb-5 max-w-sm text-sm leading-6 text-muted-foreground md:max-w-2xl">
           Browse slowly. If there is mutual interest, you both move into a short
           guided Q&amp;A before chat opens.
         </p>
 
-        <section className="overflow-hidden rounded-[2rem] border border-border bg-card shadow-sm">
-          <div className="relative">
+        <section className="overflow-hidden rounded-[2rem] border border-border bg-card shadow-sm lg:grid lg:grid-cols-[minmax(0,1fr)_420px]">
+          <div className="relative lg:min-h-[680px]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={card.photo_urls[0]}
               alt=""
-              className="h-[430px] w-full object-cover grayscale"
+              className="h-[430px] w-full object-cover grayscale lg:h-full"
             />
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/5" />
@@ -284,7 +284,7 @@ export function DiscoverDeck({
             </div>
           </div>
 
-          <div className="space-y-4 p-4">
+          <div className="space-y-4 p-4 lg:flex lg:flex-col lg:justify-center lg:p-5">
             <div className="rounded-[1.5rem] border border-border bg-background p-4">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Intention
@@ -473,7 +473,7 @@ export function DiscoverDeck({
           </div>
         </section>
 
-        <nav className="fixed inset-x-4 bottom-4 z-40 mx-auto grid max-w-md grid-cols-4 rounded-[1.5rem] border border-border bg-card/95 p-2 text-center text-xs shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur lg:max-w-lg">
+        <nav className="fixed inset-x-4 bottom-4 z-40 mx-auto grid max-w-md grid-cols-4 rounded-[1.5rem] border border-border bg-card/95 p-2 text-center text-xs shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur md:max-w-3xl lg:max-w-5xl">
           <Link
             href="/discover"
             className="rounded-2xl bg-accent px-2 py-3 font-semibold text-accent-foreground"

@@ -80,7 +80,7 @@ function DemoSchedulePage({ matchId }: { matchId: string }) {
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-[radial-gradient(circle_at_top,_rgba(0,0,0,0.08),_transparent_34%),linear-gradient(to_bottom,_hsl(var(--background)),_hsl(var(--muted)))] px-4 py-6">
-      <div className="mx-auto w-full max-w-md space-y-5">
+      <div className="mx-auto w-full max-w-md space-y-5 md:max-w-3xl">
         <header className="space-y-2">
           <div className="inline-flex rounded-full border bg-background/80 px-3 py-1 text-xs text-muted-foreground shadow-sm">
             Demo Q&amp;A scheduling
@@ -101,7 +101,7 @@ function DemoSchedulePage({ matchId }: { matchId: string }) {
             people choose to continue.
           </p>
 
-          <div className="mt-4 space-y-2">
+          <div className="mt-4 grid gap-2 md:grid-cols-3">
             {demoScheduleSlots.map((slot) => (
               <TrackedLink
                 key={`${slot.label}-${slot.time}`}
@@ -189,7 +189,7 @@ export default async function SchedulePage({
   if (match.status !== "pending_qa" && match.status !== "qa_scheduled") {
     return (
       <main className="flex flex-1 items-center justify-center px-6 py-12">
-        <div className="w-full max-w-md space-y-3 text-center">
+        <div className="w-full max-w-md space-y-3 text-center md:max-w-xl">
           <h1 className="text-2xl font-semibold tracking-tight">
             This match isn&apos;t open for scheduling.
           </h1>
@@ -205,7 +205,7 @@ export default async function SchedulePage({
     const when = dateFormatter.format(new Date(session.scheduled_at));
     return (
       <main className="flex flex-1 items-center justify-center px-6 py-12">
-        <div className="w-full max-w-md space-y-4 text-center">
+        <div className="w-full max-w-md space-y-4 text-center md:max-w-xl">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">
             Scheduled
           </p>
@@ -244,7 +244,7 @@ export default async function SchedulePage({
     const when = dateFormatter.format(new Date(session.scheduled_at));
     return (
       <main className="flex flex-1 items-center justify-center px-6 py-12">
-        <div className="w-full max-w-md space-y-4">
+        <div className="w-full max-w-md space-y-4 md:max-w-2xl">
           <header className="space-y-1 text-center">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">
               Waiting on {otherName}
@@ -267,7 +267,7 @@ export default async function SchedulePage({
     const when = dateFormatter.format(new Date(session.scheduled_at));
     return (
       <main className="flex flex-1 items-center justify-center px-6 py-12">
-        <div className="w-full max-w-md space-y-5">
+        <div className="w-full max-w-md space-y-5 md:max-w-2xl">
           <header className="space-y-1 text-center">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">
               Their proposal
@@ -294,7 +294,7 @@ export default async function SchedulePage({
 
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-12">
-      <div className="w-full max-w-md space-y-4">
+      <div className="w-full max-w-md space-y-4 md:max-w-2xl">
         <header className="space-y-1 text-center">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">
             Schedule your Q&amp;A

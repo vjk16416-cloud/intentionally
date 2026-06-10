@@ -165,7 +165,7 @@ export function UpcomingQaSection() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="running-late-title"
-            className="mx-auto w-full max-w-md rounded-t-[2rem] border border-border bg-card p-4 shadow-xl"
+            className="mx-auto w-full max-w-md rounded-t-[2rem] border border-border bg-card p-4 shadow-xl md:max-w-lg"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border" />

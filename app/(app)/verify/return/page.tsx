@@ -38,7 +38,7 @@ export default async function VerifyReturnPage({
   if (verified) {
     return (
       <main className="flex flex-1 items-center justify-center px-6 py-12">
-        <div className="w-full max-w-md space-y-6 text-center">
+        <div className="w-full max-w-md space-y-6 text-center md:max-w-xl">
           <header className="space-y-2">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">
               All set
@@ -67,7 +67,7 @@ export default async function VerifyReturnPage({
   const startOverHref = `/verify?return=${encodeURIComponent(returnTo)}`;
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-12">
-      <div className="w-full max-w-md space-y-6 text-center">
+      <div className="w-full max-w-md space-y-6 text-center md:max-w-xl">
         <header className="space-y-2">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">
             Hang tight

@@ -24,7 +24,7 @@ export function PendingMatchesBanner({
 
   return (
     <>
-      <div className="mx-auto w-full max-w-md p-4 pb-0">
+      <div className="mx-auto w-full max-w-md p-4 pb-0 md:max-w-3xl lg:max-w-5xl">
         <div className="flex items-center justify-between gap-3 rounded-2xl border bg-muted px-4 py-3">
           <p className="text-sm">
             <span className="font-medium">{count}</span> {label} waiting

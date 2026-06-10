@@ -50,7 +50,7 @@ export function SlotPicker({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="grid gap-2 sm:grid-cols-2">
       {slots.map((slot) => (
         <SlotForm key={slot.scheduledAtIso} matchId={matchId} slot={slot} />
       ))}

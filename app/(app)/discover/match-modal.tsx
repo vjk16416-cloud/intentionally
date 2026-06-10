@@ -27,7 +27,7 @@ export function MatchModal({
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 px-4 py-6 backdrop-blur-sm"
     >
-      <div className="w-full max-w-md rounded-[2rem] border bg-card p-5 shadow-lg sm:p-7">
+      <div className="w-full max-w-md rounded-[2rem] border bg-card p-5 shadow-lg sm:p-7 md:max-w-2xl">
         <div className="space-y-6 text-center">
           <header className="space-y-3">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">

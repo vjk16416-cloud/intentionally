@@ -17,7 +17,7 @@ export default async function OnboardingLayout({
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <header className="border-b border-border/70 bg-background/95 px-4 py-4 sm:px-6">
-        <div className="mx-auto flex w-full max-w-lg flex-col gap-1">
+        <div className="mx-auto flex w-full max-w-lg flex-col gap-1 md:max-w-2xl">
           <span className="text-sm font-semibold tracking-tight">
             Intentionally
           </span>
@@ -27,7 +27,8 @@ export default async function OnboardingLayout({
         </div>
       </header>
 
-<main className="flex flex-1 justify-center px-4 pb-28 pt-6 sm:px-6 sm:pb-32 sm:pt-10">        <div className="w-full max-w-lg">{children}</div>
+      <main className="flex flex-1 justify-center px-4 pb-28 pt-6 sm:px-6 sm:pb-32 sm:pt-10">
+        <div className="w-full max-w-lg md:max-w-2xl">{children}</div>
       </main>
     </div>
   );

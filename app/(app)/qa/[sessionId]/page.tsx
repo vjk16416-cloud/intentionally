@@ -127,7 +127,7 @@ export default async function QaSessionPage({
   if (!started && !finished) {
     return (
       <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
-        <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center">
+        <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center md:max-w-2xl">
           <section className="rounded-[2rem] border bg-background p-6 shadow-sm">
             <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
               Guided Q&amp;A
@@ -167,7 +167,7 @@ export default async function QaSessionPage({
   if (finished) {
     return (
       <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
-        <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center">
+        <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center md:max-w-2xl">
           <section className="w-full rounded-[2rem] border border-border bg-card p-6 shadow-sm">
             <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
               Private decision

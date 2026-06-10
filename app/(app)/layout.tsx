@@ -42,8 +42,11 @@ export default async function AppLayout({
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-border bg-background/90 px-5 py-3 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-md items-center justify-between">
-          <Link href="/discover" className="text-base font-semibold tracking-tight">
+        <div className="mx-auto flex w-full max-w-md items-center justify-between md:max-w-4xl lg:max-w-6xl xl:max-w-7xl">
+          <Link
+            href="/discover"
+            className="text-base font-semibold tracking-tight"
+          >
             Intentionally
           </Link>
 

@@ -64,47 +64,49 @@ export default function DemoChatPage() {
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
-      <div className="mx-auto flex min-h-[calc(100vh-97px)] w-full max-w-md flex-col">
-        <header className="rounded-[1.75rem] border bg-background p-4 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            Chat unlocked
-          </p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-            You and Maya both chose to continue.
-          </h1>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            The Q&amp;A helped start the conversation before chat opened.
-          </p>
-        </header>
+      <div className="mx-auto flex min-h-[calc(100vh-97px)] w-full max-w-md flex-col md:max-w-3xl lg:max-w-5xl">
+        <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+          <header className="rounded-[1.75rem] border bg-background p-4 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+              Chat unlocked
+            </p>
+            <h1 className="mt-2 text-2xl font-semibold tracking-tight">
+              You and Maya both chose to continue.
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              The Q&amp;A helped start the conversation before chat opened.
+            </p>
+          </header>
 
-        <section className="mt-4 rounded-[1.75rem] border bg-accent p-4 text-accent-foreground shadow-sm">
-          <p className="text-xs uppercase tracking-[0.22em] text-accent-foreground/60">
-            Q&amp;A insight
-          </p>
-          <h2 className="mt-2 text-xl font-semibold tracking-tight">
-            You both value honest, low-pressure communication.
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-accent-foreground/75">
-            Your answers suggest you both prefer effort that feels consistent,
-            thoughtful and natural, not forced.
-          </p>
+          <section className="rounded-[1.75rem] border bg-accent p-4 text-accent-foreground shadow-sm">
+            <p className="text-xs uppercase tracking-[0.22em] text-accent-foreground/60">
+              Q&amp;A insight
+            </p>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight">
+              You both value honest, low-pressure communication.
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-accent-foreground/75">
+              Your answers suggest you both prefer effort that feels consistent,
+              thoughtful and natural, not forced.
+            </p>
 
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <div className="rounded-2xl bg-white/10 px-3 py-3">
-              <p className="text-xs font-semibold">Shared value</p>
-              <p className="mt-1 text-[11px] leading-4 text-accent-foreground/70">
-                Clear communication
-              </p>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <div className="rounded-2xl bg-white/10 px-3 py-3">
+                <p className="text-xs font-semibold">Shared value</p>
+                <p className="mt-1 text-[11px] leading-4 text-accent-foreground/70">
+                  Clear communication
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-white/10 px-3 py-3">
+                <p className="text-xs font-semibold">Conversation style</p>
+                <p className="mt-1 text-[11px] leading-4 text-accent-foreground/70">
+                  Calm and intentional
+                </p>
+              </div>
             </div>
-
-            <div className="rounded-2xl bg-white/10 px-3 py-3">
-              <p className="text-xs font-semibold">Conversation style</p>
-              <p className="mt-1 text-[11px] leading-4 text-accent-foreground/70">
-                Calm and intentional
-              </p>
-            </div>
-          </div>
-        </section>
+          </section>
+        </div>
 
         <section className="mt-4 flex-1 space-y-3 rounded-[2rem] border bg-background p-4 shadow-sm">
           {messages.map((message) => (
@@ -112,8 +114,8 @@ export default function DemoChatPage() {
               key={message.id}
               className={
                 message.from === "you"
-                  ? "ml-auto max-w-[82%] rounded-2xl bg-accent px-4 py-3 text-sm leading-5 text-accent-foreground"
-                  : "max-w-[82%] rounded-2xl bg-muted px-4 py-3 text-sm leading-5"
+                  ? "ml-auto max-w-[82%] rounded-2xl bg-accent px-4 py-3 text-sm leading-5 text-accent-foreground md:max-w-[68%]"
+                  : "max-w-[82%] rounded-2xl bg-muted px-4 py-3 text-sm leading-5 md:max-w-[68%]"
               }
             >
               {message.text}

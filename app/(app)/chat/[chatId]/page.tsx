@@ -84,7 +84,7 @@ export default async function ChatPage({
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
-      <div className="mx-auto flex min-h-[calc(100vh-97px)] w-full max-w-md flex-col">
+      <div className="mx-auto flex min-h-[calc(100vh-97px)] w-full max-w-md flex-col md:max-w-3xl lg:max-w-5xl">
         <header className="rounded-[1.75rem] border bg-background p-4 shadow-sm">
           <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
             Chat unlocked
@@ -128,8 +128,8 @@ export default async function ChatPage({
                   <div
                     className={
                       isMine
-                        ? "max-w-[80%] rounded-[1.25rem] bg-accent px-4 py-3 text-sm leading-6 text-accent-foreground"
-                        : "max-w-[80%] rounded-[1.25rem] bg-muted px-4 py-3 text-sm leading-6 text-foreground"
+                        ? "max-w-[80%] rounded-[1.25rem] bg-accent px-4 py-3 text-sm leading-6 text-accent-foreground md:max-w-[68%]"
+                        : "max-w-[80%] rounded-[1.25rem] bg-muted px-4 py-3 text-sm leading-6 text-foreground md:max-w-[68%]"
                     }
                   >
                     {message.body}

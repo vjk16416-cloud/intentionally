@@ -56,7 +56,7 @@ export default async function QaVisibilityPage({
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
-      <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center">
+      <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center md:max-w-3xl">
         <section className="w-full rounded-[2rem] border border-border bg-card p-6 shadow-sm">
           <Link
             href={`/qa/${sessionId}`}
@@ -78,7 +78,10 @@ export default async function QaVisibilityPage({
             if you both choose Continue.
           </p>
 
-          <form action={`/qa/${sessionId}`} className="mt-6 space-y-3">
+          <form
+            action={`/qa/${sessionId}`}
+            className="mt-6 grid gap-3 md:grid-cols-3"
+          >
             <input type="hidden" name="started" value="true" />
 
             {VISIBILITY_MODES.map((mode) => {
@@ -116,7 +119,7 @@ export default async function QaVisibilityPage({
             <TrackedButton
               type="submit"
               eventKey="qaStarted"
-              className="w-full rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
+              className="w-full rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground md:col-span-3"
             >
               Enter Q&amp;A Room
             </TrackedButton>
