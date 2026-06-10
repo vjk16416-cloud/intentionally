@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 
 import { saveQaOutcome } from "./actions";
 import { DemoMicrophoneButton, DemoSafetyButton } from "./demo-qa-controls";
+import { LocalMediaPreview } from "./local-media-preview";
 
 const QUESTIONS = [
   "What is something you value in how someone communicates?",
@@ -208,7 +209,9 @@ export default async function QaSessionPage({
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-[#11120f] px-4 py-5 text-white">
-      <div className="mx-auto w-full max-w-md">
+      <div className="mx-auto w-full max-w-md space-y-4">
+        <LocalMediaPreview />
+
         <section className="overflow-hidden rounded-[2.25rem] border border-white/10 bg-[#181915] p-4 shadow-2xl">
           <header className="flex items-center justify-between border-b border-white/10 pb-4">
             <a
