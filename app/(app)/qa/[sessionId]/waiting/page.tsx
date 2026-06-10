@@ -82,22 +82,23 @@ export default async function QaWaitingPage({
           <h1 className="mt-5 text-2xl font-semibold tracking-tight">
             {bothDecided
               ? bothContinue
-                ? "You both chose to continue"
-                : "This conversation has now come to a close"
+                ? "You both chose Continue."
+                : "No problem."
               : "Decision saved"}
           </h1>
 
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
             {bothDecided
               ? bothContinue
-                ? "Great conversations deserve another one. Your chat will open soon."
-                : "Thank you for sharing your time today."
-              : "Thanks for taking the time to connect. We&apos;re waiting for the other person&apos;s decision."}
+                ? "Your full profiles are now unlocked and chat is open."
+                : "We&apos;ll quietly close this match. They won&apos;t be told you passed."
+              : "Your choice stays private. They&apos;ll only know if you both choose Continue."}
           </p>
 
           {!bothDecided ? (
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              We&apos;ll only unlock chat if you both choose to continue.
+              No awkward notifications. No pressure. Full profiles unlock only
+              if you both choose Continue.
             </p>
           ) : null}
 

@@ -166,72 +166,98 @@ export default async function QaSessionPage({
 
   if (finished) {
     return (
-      <main className="min-h-[calc(100vh-57px)] bg-[#151611] px-4 py-5 text-white">
+      <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
         <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center">
-          <section className="w-full rounded-[2rem] border border-white/10 bg-[#20211b] p-6 shadow-2xl">
-            <p className="text-xs uppercase tracking-[0.24em] text-white/45">
+          <section className="w-full rounded-[2rem] border border-border bg-card p-6 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
               Private decision
             </p>
 
             <h1 className="mt-4 text-3xl font-semibold tracking-tight">
-              Do you want to keep talking?
+              Choose what feels right
             </h1>
 
-            <p className="mt-3 text-sm leading-6 text-white/65">
-              Your choice is private. Chat and profiles unlock only if you both
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              Your choice stays private. They&apos;ll only know if you both
               choose Continue.
             </p>
 
             {decision ? (
-              <div className="mt-6 rounded-2xl bg-white/10 p-4 text-sm leading-6 text-white/75">
-                {decision === "continue"
-                  ? "You chose Continue. In the real app, we would wait for the other person's private choice before unlocking chat and profiles."
-                  : "You passed privately. In the real app, the match would close quietly."}
+              <div className="mt-6 rounded-[1.5rem] bg-secondary p-4 text-sm leading-6 text-muted-foreground">
+                <p className="font-semibold text-foreground">
+                  {decision === "continue"
+                    ? "You both chose Continue."
+                    : "No problem."}
+                </p>
+                <p className="mt-1">
+                  {decision === "continue"
+                    ? "Your full profiles are now unlocked and chat is open."
+                    : "We&apos;ll quietly close this match. They won&apos;t be told you passed."}
+                </p>
               </div>
             ) : isDemoSession ? (
-              <div className="mt-6 grid gap-3">
-                <TrackedLink
-                  href="/chat/demo-demo-match"
-                  eventKey="qaContinueClicked"
-                  className="w-full rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
-                >
-                  Continue
-                </TrackedLink>
-                <TrackedLink
-                  href="/discover"
-                  eventKey="qaPassPrivatelyClicked"
-                  className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-center text-base font-semibold text-white"
-                >
-                  Pass privately
-                </TrackedLink>
-              </div>
-            ) : (
-              <div className="mt-6 grid gap-3">
-                <form action={saveQaOutcome}>
-                  <input type="hidden" name="sessionId" value={sessionId} />
-                  <input type="hidden" name="decision" value="continue" />
-                  <TrackedButton
-                    type="submit"
+              <div className="mt-6 space-y-4">
+                <div className="grid gap-3 rounded-[1.5rem] bg-background p-4 text-sm leading-6 text-muted-foreground">
+                  <p>Choose Continue if you&apos;d like to keep talking.</p>
+                  <p>Choose Pass privately if it doesn&apos;t feel right.</p>
+                </div>
+
+                <div className="grid gap-3">
+                  <TrackedLink
+                    href="/chat/demo-demo-match"
                     eventKey="qaContinueClicked"
-                    className="w-full rounded-2xl bg-accent px-4 py-4 text-base font-semibold text-accent-foreground"
+                    className="w-full rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
                   >
                     Continue
-                  </TrackedButton>
-                </form>
-
-                <form action={saveQaOutcome}>
-                  <input type="hidden" name="sessionId" value={sessionId} />
-                  <input type="hidden" name="decision" value="pass" />
-                  <TrackedButton
-                    type="submit"
+                  </TrackedLink>
+                  <TrackedLink
+                    href="/discover"
                     eventKey="qaPassPrivatelyClicked"
-                    className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-base font-semibold text-white"
+                    className="w-full rounded-2xl border border-[#d9a6a0]/40 bg-[#f3d8d3] px-4 py-4 text-center text-base font-semibold text-[#5a2d2a]"
                   >
                     Pass privately
-                  </TrackedButton>
-                </form>
+                  </TrackedLink>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-6 space-y-4">
+                <div className="grid gap-3 rounded-[1.5rem] bg-background p-4 text-sm leading-6 text-muted-foreground">
+                  <p>Choose Continue if you&apos;d like to keep talking.</p>
+                  <p>Choose Pass privately if it doesn&apos;t feel right.</p>
+                </div>
+
+                <div className="grid gap-3">
+                  <form action={saveQaOutcome}>
+                    <input type="hidden" name="sessionId" value={sessionId} />
+                    <input type="hidden" name="decision" value="continue" />
+                    <TrackedButton
+                      type="submit"
+                      eventKey="qaContinueClicked"
+                      className="w-full rounded-2xl bg-accent px-4 py-4 text-base font-semibold text-accent-foreground"
+                    >
+                      Continue
+                    </TrackedButton>
+                  </form>
+
+                  <form action={saveQaOutcome}>
+                    <input type="hidden" name="sessionId" value={sessionId} />
+                    <input type="hidden" name="decision" value="pass" />
+                    <TrackedButton
+                      type="submit"
+                      eventKey="qaPassPrivatelyClicked"
+                      className="w-full rounded-2xl border border-[#d9a6a0]/40 bg-[#f3d8d3] px-4 py-4 text-base font-semibold text-[#5a2d2a]"
+                    >
+                      Pass privately
+                    </TrackedButton>
+                  </form>
+                </div>
               </div>
             )}
+
+            <div className="mt-6 rounded-[1.5rem] bg-secondary p-4 text-sm leading-6 text-muted-foreground">
+              No awkward notifications. No pressure. Full profiles unlock only
+              if you both choose Continue.
+            </div>
           </section>
         </div>
       </main>

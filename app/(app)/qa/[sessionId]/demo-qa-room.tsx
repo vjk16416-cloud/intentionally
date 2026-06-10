@@ -290,36 +290,56 @@ export default function DemoQaRoom() {
               </p>
 
               <h2 className="mt-3 text-2xl font-semibold tracking-tight">
-                Do you want to keep talking?
+                Choose what feels right
               </h2>
 
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Chat only opens if both people choose to continue.
+                Your choice stays private. They&apos;ll only know if you both
+                choose Continue.
               </p>
 
               {decision ? (
-                <div className="mt-5 rounded-2xl bg-muted p-4 text-sm">
-                  {decision === "continue"
-                    ? "You chose to continue. In the real app, we would wait for Maya’s private choice before opening chat."
-                    : "You passed privately. In the real app, the match would close quietly."}
+                <div className="mt-5 rounded-[1.5rem] bg-secondary p-4 text-sm leading-6 text-muted-foreground">
+                  <p className="font-semibold text-foreground">
+                    {decision === "continue"
+                      ? "You both chose Continue."
+                      : "No problem."}
+                  </p>
+                  <p className="mt-1">
+                    {decision === "continue"
+                      ? "Your full profiles are now unlocked and chat is open."
+                      : "We&apos;ll quietly close this match. They won&apos;t be told you passed."}
+                  </p>
                 </div>
               ) : (
-                <div className="mt-6 grid grid-cols-1 gap-3">
+                <div className="mt-6 space-y-4">
+                  <div className="grid gap-3 rounded-[1.5rem] bg-background p-4 text-sm leading-6 text-muted-foreground">
+                    <p>Choose Continue if you&apos;d like to keep talking.</p>
+                    <p>Choose Pass privately if it doesn&apos;t feel right.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3">
                   <a
                     href="/qa/demo-demo-match?finished=true&decision=continue"
-                    className="block rounded-2xl bg-black px-4 py-4 text-center text-base font-semibold text-white"
+                    className="block rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
                   >
                     Continue
                   </a>
 
                   <a
                     href="/qa/demo-demo-match?finished=true&decision=pass"
-                    className="block rounded-2xl border border-black bg-white px-4 py-4 text-center text-base font-semibold text-black"
+                    className="block rounded-2xl border border-[#d9a6a0]/40 bg-[#f3d8d3] px-4 py-4 text-center text-base font-semibold text-[#5a2d2a]"
                   >
                     Pass privately
                   </a>
+                  </div>
                 </div>
               )}
+
+              <div className="mt-6 rounded-[1.5rem] bg-secondary p-4 text-sm leading-6 text-muted-foreground">
+                No awkward notifications. No pressure. Full profiles unlock
+                only if you both choose Continue.
+              </div>
             </>
           )}
         </section>
