@@ -34,7 +34,7 @@ export function SlotPicker({
       <div className="space-y-2 rounded-2xl border bg-muted p-4 text-center text-sm">
         <p className="font-medium">No mutual times in the next 7 days.</p>
         <p className="text-xs text-muted-foreground">
-          One of you needs to widen availability — either widening helps.
+          One of you needs to widen availability. Either of you can do that.
           You can update yours and try again.
         </p>
         <p>

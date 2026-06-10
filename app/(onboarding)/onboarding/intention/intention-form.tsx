@@ -22,7 +22,7 @@ const OPTIONS = [
   {
     value: "figuring-it-out",
     label: "Figuring it out",
-    hint: "I'm not sure yet — I'll know when I meet someone.",
+    hint: "I'm not sure yet. I'll know when I meet someone.",
   },
 ] as const;
 

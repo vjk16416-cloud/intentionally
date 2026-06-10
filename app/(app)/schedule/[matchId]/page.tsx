@@ -213,7 +213,7 @@ export default async function SchedulePage({
             Q&amp;A with {otherName} is on.
           </h1>
           <p className="text-sm text-muted-foreground">
-            {when} — London time. Open the call when it&apos;s time to start.
+            {when}. London time. Open the call when it&apos;s time to start.
           </p>
           <div>
             <Link
@@ -254,7 +254,7 @@ export default async function SchedulePage({
             </h1>
             <p className="text-sm text-muted-foreground">
               We&apos;ll surface this on their /discover so they see it on
-              their next visit. Or replace with a different time:
+              their next visit. Or replace it with a different time:
             </p>
           </header>
           <SlotPicker matchId={matchId} slots={slots} />
@@ -304,7 +304,7 @@ export default async function SchedulePage({
           </h1>
           <p className="text-sm text-muted-foreground">
             Here&apos;s when you&apos;re both free in the next week. Pick
-            one — they&apos;ll get to confirm or counter.
+            one, and they&apos;ll get to confirm or counter.
           </p>
         </header>
         <SlotPicker matchId={matchId} slots={slots} />

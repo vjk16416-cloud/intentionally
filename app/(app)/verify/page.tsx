@@ -70,7 +70,7 @@ export default async function VerifyPage({
           <p className="text-sm text-muted-foreground">
             Before your first video call, we need to confirm you are who you
             say you are. This is a one-time step that takes about two
-            minutes — you&apos;ll be redirected to Stripe Identity to scan
+            minutes. You&apos;ll be redirected to Stripe Identity to scan
             your driving licence or passport.
           </p>
         </header>

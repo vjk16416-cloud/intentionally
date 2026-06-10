@@ -15,7 +15,7 @@ const INITIAL_MESSAGES: Message[] = [
   {
     id: 1,
     from: "maya",
-    text: "That was actually a nice way to start — less awkward than a blank chat.",
+    text: "That was actually a nice way to start. Less awkward than a blank chat.",
   },
   {
     id: 2,
@@ -86,7 +86,7 @@ export default function DemoChatPage() {
           </h2>
           <p className="mt-2 text-sm leading-6 text-accent-foreground/75">
             Your answers suggest you both prefer effort that feels consistent,
-            thoughtful and natural — not forced.
+            thoughtful and natural, not forced.
           </p>
 
           <div className="mt-4 grid grid-cols-2 gap-2">

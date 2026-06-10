@@ -10,7 +10,7 @@ export default function LandingPage() {
         </h1>
         <p className="text-lg text-muted-foreground">
           Video-first dating. Ten minutes of structured Q&amp;A before chat
-          unlocks — designed for higher-signal matches.
+          unlocks, designed for higher-signal matches.
         </p>
         <div className="flex justify-center">
           <Link href="/login" className={buttonVariants({ size: "lg" })}>

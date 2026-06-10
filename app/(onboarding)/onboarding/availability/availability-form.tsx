@@ -18,22 +18,22 @@ const INITIAL_STATE: AvailabilityActionState = {};
 const TIME_BLOCKS = [
   {
     label: "Morning",
-    helper: "8am–12pm",
+    helper: "8am to 12pm",
     hours: [8, 9, 10, 11],
   },
   {
     label: "Afternoon",
-    helper: "12pm–5pm",
+    helper: "12pm to 5pm",
     hours: [12, 13, 14, 15, 16],
   },
   {
     label: "Evening",
-    helper: "5pm–9pm",
+    helper: "5pm to 9pm",
     hours: [17, 18, 19, 20],
   },
   {
     label: "Night",
-    helper: "9pm–12am",
+    helper: "9pm to 12am",
     hours: [21, 22, 23],
   },
 ] as const;
@@ -276,7 +276,7 @@ export function AvailabilityForm({
                       : "text-muted-foreground",
                   )}
                 >
-                  {count > 0 ? `${count}h` : "—"}
+                  {count > 0 ? `${count}h` : "0h"}
                 </span>
               </button>
             );

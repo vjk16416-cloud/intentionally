@@ -39,7 +39,7 @@ export default async function PhotosStepPage({
         </h1>
         <p className="text-sm leading-6 text-muted-foreground">
           Choose recent photos where your face is clear and the lighting is
-          natural. Avoid heavy filters — the aim is to help someone recognise
+          natural. Avoid heavy filters. The aim is to help someone recognise
           the real you before a guided Q&amp;A.
         </p>
       </header>
