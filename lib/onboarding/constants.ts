@@ -18,6 +18,12 @@ export const BIO_PROMPTS = [
   { key: "neighbourhood-spot", text: "The spot in London I'd take you to…" },
   { key: "in-five-years", text: "In five years, I'd love to…" },
   { key: "two-truths", text: "Two true things about me…" },
+  { key: "small-care", text: "A small thing that makes me feel cared for is…" },
+  { key: "kind-of-connection", text: "The kind of connection I'm looking for is…" },
+  {
+    key: "more-intentional-about",
+    text: "One thing I want to be more intentional about is…",
+  },
 ] as const;
 
 export type BioPromptKey = (typeof BIO_PROMPTS)[number]["key"];
