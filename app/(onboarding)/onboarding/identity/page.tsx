@@ -39,10 +39,12 @@ export default async function IdentityStepPage({
         <p className="text-xs uppercase tracking-wider text-muted-foreground">
           Step 2 of 8
         </p>
-        <h1 className="text-2xl font-semibold tracking-tight">You and them</h1>
-        <p className="text-sm text-muted-foreground">
-          We use this to personalise the people we recommend to you, and who
-          you&apos;re shown to.
+        <h1 className="text-2xl font-semibold tracking-tight">
+          How would you describe yourself?
+        </h1>
+        <p className="text-sm leading-6 text-muted-foreground">
+          Choose the option that feels right for you. This helps us shape a more
+          respectful dating experience.
         </p>
       </header>
       <IdentityForm

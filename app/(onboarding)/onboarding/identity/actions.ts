@@ -22,12 +22,12 @@ export async function saveIdentity(
 ): Promise<IdentityActionState> {
   const gender = String(formData.get("gender") ?? "");
   if (!isGender(gender)) {
-    return { error: "Pick a gender." };
+    return { error: "Choose how you describe yourself." };
   }
 
   const seeking = formData.getAll("seeking").map(String);
   if (seeking.length === 0) {
-    return { error: "Pick at least one option to see." };
+    return { error: "Choose at least one option you are open to meeting." };
   }
   for (const value of seeking) {
     if (!isGender(value)) {

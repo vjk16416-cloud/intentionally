@@ -30,7 +30,12 @@ export function IdentityForm({
   return (
     <form action={action} className="space-y-6">
       <fieldset className="space-y-2">
-        <legend className="text-sm font-medium">I am a…</legend>
+        <legend className="text-sm font-medium">
+          How you describe yourself
+        </legend>
+        <p className="text-xs leading-5 text-muted-foreground">
+          You can update this later.
+        </p>
         <div className="space-y-2">
           {OPTIONS.map((opt) => (
             <label
@@ -52,8 +57,13 @@ export function IdentityForm({
       </fieldset>
 
       <fieldset className="space-y-2">
-        <legend className="text-sm font-medium">Show me…</legend>
-        <p className="text-xs text-muted-foreground">Pick one or more.</p>
+        <legend className="text-sm font-medium">
+          Who are you open to meeting?
+        </legend>
+        <p className="text-xs leading-5 text-muted-foreground">
+          This helps shape your discovery experience. Pick one or more, and you
+          can update it later.
+        </p>
         <div className="space-y-2">
           {OPTIONS.map((opt) => (
             <label
