@@ -60,11 +60,12 @@ export function MatchModal({
                 "h-12 w-full rounded-2xl text-base font-semibold",
               )}
             >
-              Start guided Q&amp;A
+              Start with questions
             </TrackedLink>
 
             <p className="text-xs leading-5 text-muted-foreground">
-              You can pause or leave at any time.
+              You&apos;ll choose how you appear before the Q&amp;A. Full
+              profiles unlock only if you both continue.
             </p>
 
             <Button

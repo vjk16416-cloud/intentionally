@@ -81,7 +81,8 @@ export function UpcomingQaSection() {
             </p>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
               A short 10-minute Q&amp;A to see if the conversation feels right
-              before chat opens.
+              before chat opens. You&apos;ll choose how you appear before
+              entering.
             </p>
           </div>
 
@@ -97,7 +98,7 @@ export function UpcomingQaSection() {
               href="/qa/demo-demo-match"
               className="rounded-2xl bg-accent px-3 py-3 text-center text-sm font-semibold text-accent-foreground transition hover:opacity-90"
             >
-              Join Q&amp;A
+              Enter Q&amp;A
             </Link>
           </div>
 

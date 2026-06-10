@@ -33,19 +33,29 @@ function firstName(name: string) {
 }
 
 const INTENTION_LABELS: Record<string, string> = {
-  "long-term": "Long-term",
-  "short-term": "Short-term",
-  "figuring-it-out": "Figuring it out",
+  "long-term": "intentional dating",
+  "short-term": "something lighter, honestly held",
+  "figuring-it-out": "clarity through conversation",
+};
+
+const OPEN_TO_LABELS: Record<string, string> = {
+  "long-term": "something serious, slowly built",
+  "short-term": "a thoughtful connection without rushing",
+  "figuring-it-out": "seeing what feels real, one step at a time",
 };
 
 function intentionLabel(intention: string) {
-  return INTENTION_LABELS[intention] ?? "Still completing this section";
+  return INTENTION_LABELS[intention] ?? "intentional connection";
+}
+
+function openToLabel(intention: string) {
+  return OPEN_TO_LABELS[intention] ?? "a clearer conversation before deciding";
 }
 
 function promptText(promptKey: string) {
   return (
     BIO_PROMPTS.find((prompt) => prompt.key === promptKey)?.text ??
-    "Still completing this section"
+    "A small thing that makes me feel cared for is…"
   );
 }
 
@@ -59,7 +69,7 @@ function locationLabel(card: DiscoverCard) {
 
 function availabilityLabel(availability: number[] | null | undefined) {
   if (!availability || availability.length === 0) {
-    return "Still completing this section";
+    return "Availability being added";
   }
 
   const summary = summariseAvailability(availability);
@@ -74,17 +84,22 @@ function availabilityLabel(availability: number[] | null | undefined) {
 
 function photoLabel(photoUrls: string[]) {
   if (photoUrls.length === 0) {
-    return "Photos updating";
+    return "Photos being added";
   }
 
   return `${photoUrls.length} photo${photoUrls.length === 1 ? "" : "s"}`;
 }
 
 function verificationLabel(isVerified: boolean | null | undefined) {
-  return isVerified ? "ID verified" : "ID check before Q&A";
+  return isVerified ? "Verified basics" : "Q&A ready";
 }
 
-
+function promptAnswer(answer: string | null | undefined) {
+  return (
+    answer?.trim() ||
+    "They have not answered this one yet, so start with the guided Q&A."
+  );
+}
 
 export function DiscoverDeck({
   cards,
@@ -134,6 +149,7 @@ export function DiscoverDeck({
 
   const age = ageFromDate(card.date_of_birth);
   const intention = intentionLabel(card.intention);
+  const openTo = openToLabel(card.intention);
   const prompt = promptText(card.bio_prompt_key);
   const location = locationLabel(card);
   const availability = availabilityLabel(card.availability);
@@ -232,10 +248,10 @@ export function DiscoverDeck({
 
             <div className="absolute left-4 top-4 flex max-w-[calc(100%-6rem)] flex-wrap items-center gap-2">
               <span className="rounded-full bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm backdrop-blur">
-                {intention}
+                Q&amp;A ready
               </span>
               <span className="rounded-full bg-background/80 px-3 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm backdrop-blur">
-                {photos}
+                {trustCue}
               </span>
             </div>
 
@@ -256,20 +272,52 @@ export function DiscoverDeck({
 
               <div className="mt-4 rounded-[1.5rem] border border-white/15 bg-white/15 p-4 shadow-sm backdrop-blur-xl">
                 <p className="text-xs uppercase tracking-[0.18em] text-primary-foreground/65">
-                  Selected prompt
+                  Prompt preview
                 </p>
                 <p className="mt-2 text-sm font-semibold leading-5 text-primary-foreground/80">
                   {prompt}
                 </p>
                 <p className="mt-2 text-base font-semibold leading-6">
-                  “{card.bio_answer || "Still completing this section"}”
+                  “{promptAnswer(card.bio_answer)}”
                 </p>
               </div>
             </div>
           </div>
 
           <div className="space-y-4 p-4">
+            <div className="rounded-[1.5rem] border border-border bg-background p-4">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Intention
+              </p>
+              <div className="mt-3 space-y-2 text-sm leading-6">
+                <p>
+                  <span className="font-semibold text-foreground">
+                    Looking for:
+                  </span>{" "}
+                  <span className="text-muted-foreground">{intention}</span>
+                </p>
+                <p>
+                  <span className="font-semibold text-foreground">
+                    Open to:
+                  </span>{" "}
+                  <span className="text-muted-foreground">{openTo}</span>
+                </p>
+              </div>
+            </div>
+
             <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-[1.25rem] border border-border bg-secondary/70 p-3">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  Trust cue
+                </p>
+                <div className="mt-1 flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-accent" />
+                  <p className="text-sm font-semibold leading-5 text-foreground">
+                    {trustCue}
+                  </p>
+                </div>
+              </div>
+
               <div className="rounded-[1.25rem] border border-border bg-background p-3">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                   Availability
@@ -281,32 +329,23 @@ export function DiscoverDeck({
 
               <div className="rounded-[1.25rem] border border-border bg-background p-3">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Trust
+                  Completeness
                 </p>
                 <p className="mt-1 text-sm font-semibold leading-5 text-foreground">
-                  {trustCue}
-                </p>
-              </div>
-
-              <div className="rounded-[1.25rem] border border-border bg-background p-3">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Photos
-                </p>
-                <p className="mt-1 text-sm font-semibold leading-5 text-foreground">
-                  {photos}
+                  {photos} · prompt added
                 </p>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-2">
               <span className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-                {intention}
-              </span>
-              <span className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-                {trustCue}
-              </span>
-              <span className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground">
                 Q&amp;A before chat
+              </span>
+              <span className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground">
+                Private mutual reveal
+              </span>
+              <span className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground">
+                Choose visibility first
               </span>
             </div>
 
@@ -338,10 +377,15 @@ export function DiscoverDeck({
                 onClick={handleLike}
                 disabled={pending || limitReached}
                 className="h-14 rounded-2xl bg-accent text-sm font-semibold text-accent-foreground shadow-sm transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
-                aria-label="Like"
+                aria-label="Start with questions"
               >
-                Like
+                Start with questions
               </button>
+            </div>
+
+            <div className="rounded-[1.25rem] bg-secondary/70 px-4 py-3 text-center text-xs leading-5 text-muted-foreground">
+              Start with questions if you&apos;re curious. You&apos;ll choose
+              how you appear before the Q&amp;A.
             </div>
           </div>
         </section>
