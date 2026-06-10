@@ -1,6 +1,23 @@
+import { redirect } from "next/navigation";
+
+import { getOnboardingState } from "@/lib/onboarding/state";
+import { createClient } from "@/lib/supabase/server";
+
 import { LoginForm } from "./login-form";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    const onboarding = await getOnboardingState(supabase, user);
+    redirect(
+      onboarding.status === "complete" ? "/discover" : onboarding.nextStep,
+    );
+  }
+
   return (
     <main className="flex flex-1 items-center justify-center bg-background px-6 py-16">
       <div className="w-full max-w-md space-y-5">
