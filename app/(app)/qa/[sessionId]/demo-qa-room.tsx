@@ -2,6 +2,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 const QUESTIONS = [
   "What is something you value in how someone communicates?",
@@ -27,28 +28,50 @@ function safeQuestionIndex(value: string | null, total: number) {
 
 export default function DemoQaRoom() {
   const searchParams = useSearchParams();
-  const extraQuestionsAccepted = searchParams.get("extra") === "true";
+  const [extraQuestionsAccepted, setExtraQuestionsAccepted] = useState(
+    searchParams.get("extra") === "true",
+  );
   const questions = extraQuestionsAccepted
     ? [...QUESTIONS, ...EXTRA_QUESTIONS]
     : QUESTIONS;
 
-  const questionIndex = safeQuestionIndex(searchParams.get("q"), questions.length);
-  const finished = searchParams.get("finished") === "true";
+  const [questionIndex, setQuestionIndex] = useState(() =>
+    safeQuestionIndex(searchParams.get("q"), questions.length),
+  );
+  const [finished, setFinished] = useState(
+    searchParams.get("finished") === "true",
+  );
   const decision = searchParams.get("decision");
-  const extraRequest = searchParams.get("extraRequest");
+  const [extraRequest, setExtraRequest] = useState(
+    searchParams.get("extraRequest") ?? "",
+  );
 
   const currentQuestion = questions[questionIndex];
   const isLastQuestion = questionIndex === questions.length - 1;
   const showExtraQuestionOption =
     !extraQuestionsAccepted && questionIndex >= QUESTIONS.length - 1;
 
-  const nextHref = isLastQuestion
-    ? "/qa/demo-demo-match?finished=true"
-    : `/qa/demo-demo-match?q=${questionIndex + 1}${
-        extraQuestionsAccepted ? "&extra=true&extraRequest=accepted" : ""
-      }`;
-  const extraStartHref = `/qa/demo-demo-match?q=${QUESTIONS.length}&extra=true&extraRequest=accepted`;
-  const extraNotNowHref = "/qa/demo-demo-match?finished=true&extraRequest=declined";
+  function goToNextQuestion() {
+    if (isLastQuestion) {
+      setFinished(true);
+      return;
+    }
+
+    setQuestionIndex((current) =>
+      safeQuestionIndex(String(current + 1), questions.length),
+    );
+  }
+
+  function acceptExtraQuestions() {
+    setExtraQuestionsAccepted(true);
+    setExtraRequest("accepted");
+    setQuestionIndex(QUESTIONS.length);
+  }
+
+  function declineExtraQuestions() {
+    setExtraRequest("declined");
+    setFinished(true);
+  }
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
@@ -169,18 +192,20 @@ export default function DemoQaRoom() {
                       </p>
                       <p>We&apos;ll only add more if you both agree.</p>
                       <div className="mt-3 grid grid-cols-2 gap-2">
-                        <a
-                          href={extraStartHref}
+                        <button
+                          type="button"
+                          onClick={acceptExtraQuestions}
                           className="rounded-2xl bg-accent px-3 py-3 text-center text-sm font-semibold text-accent-foreground"
                         >
                           They accept
-                        </a>
-                        <a
-                          href={extraNotNowHref}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={declineExtraQuestions}
                           className="rounded-2xl border border-border bg-card px-3 py-3 text-center text-sm font-semibold text-foreground"
                         >
                           Not now
-                        </a>
+                        </button>
                       </div>
                     </>
                   ) : extraRequest === "incoming" ? (
@@ -190,18 +215,20 @@ export default function DemoQaRoom() {
                       </p>
                       <p>Only continue if you both want to.</p>
                       <div className="mt-3 grid grid-cols-2 gap-2">
-                        <a
-                          href={extraStartHref}
+                        <button
+                          type="button"
+                          onClick={acceptExtraQuestions}
                           className="rounded-2xl bg-accent px-3 py-3 text-center text-sm font-semibold text-accent-foreground"
                         >
                           Accept
-                        </a>
-                        <a
-                          href={extraNotNowHref}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={declineExtraQuestions}
                           className="rounded-2xl border border-border bg-card px-3 py-3 text-center text-sm font-semibold text-foreground"
                         >
                           Not now
-                        </a>
+                        </button>
                       </div>
                     </>
                   ) : (
@@ -211,18 +238,20 @@ export default function DemoQaRoom() {
                       </p>
                       <p>Add more questions only if you both agree.</p>
                       <div className="mt-3 grid grid-cols-2 gap-2">
-                        <a
-                          href={`/qa/demo-demo-match?q=${questionIndex}&extraRequest=sent`}
+                        <button
+                          type="button"
+                          onClick={() => setExtraRequest("sent")}
                           className="rounded-2xl bg-accent px-3 py-3 text-center text-sm font-semibold text-accent-foreground"
                         >
                           Add more questions
-                        </a>
-                        <a
-                          href={`/qa/demo-demo-match?q=${questionIndex}&extraRequest=incoming`}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setExtraRequest("incoming")}
                           className="rounded-2xl border border-border bg-card px-3 py-3 text-center text-sm font-semibold text-foreground"
                         >
                           Maya asks
-                        </a>
+                        </button>
                       </div>
                     </>
                   )}
@@ -237,19 +266,21 @@ export default function DemoQaRoom() {
               ) : null}
 
               <div className="mt-6 grid grid-cols-2 gap-3">
-                <a
-                  href={nextHref}
+                <button
+                  type="button"
+                  onClick={goToNextQuestion}
                   className="block rounded-2xl border border-black bg-white px-4 py-4 text-center text-base font-semibold text-black"
                 >
                   Skip
-                </a>
+                </button>
 
-                <a
-                  href={nextHref}
+                <button
+                  type="button"
+                  onClick={goToNextQuestion}
                   className="block rounded-2xl bg-black px-4 py-4 text-center text-base font-semibold text-white"
                 >
                   {isLastQuestion ? "Finish" : "Next"}
-                </a>
+                </button>
               </div>
             </>
           ) : (
