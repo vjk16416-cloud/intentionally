@@ -195,8 +195,11 @@ export function LoginForm() {
               <p className="text-xs leading-5 text-muted-foreground">
                 Enter it normally. We&apos;ll format it as{" "}
                 {localNumber ? phoneIdentifier : `${countryCode}...`}.
-                We&apos;ll text a 6-digit code to sign you in. Your number
-                is not shown on your profile.
+                We&apos;ll text a 6-digit code to sign you in and help keep
+                Intentionally safer. Your number is not shown on your profile.
+              </p>
+              <p className="text-xs leading-5 text-muted-foreground">
+                This is for verification and safety only.
               </p>
             </div>
           </div>
@@ -247,7 +250,8 @@ export function LoginForm() {
           className="h-12 rounded-2xl text-center text-lg tracking-[0.3em]"
         />
         <p className="text-xs leading-5 text-muted-foreground">
-          Sent to {identifier}. This confirms the phone you use to sign in.
+          Sent to {identifier}. This confirms the phone you use to sign in and
+          helps reduce fake profiles.{" "}
           <button
             type="button"
             className="font-semibold underline underline-offset-4"

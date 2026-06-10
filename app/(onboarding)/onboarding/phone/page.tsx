@@ -28,12 +28,11 @@ export default async function PhoneStepPage() {
     <div className="space-y-6">
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">
-          Add your phone number
+          Verify your phone number
         </h1>
-        <p className="text-sm text-muted-foreground">
-          We use this to confirm you can receive texts and to support date
-          safety later. Your number is not shown on your profile. If you both
-          confirm a date, phone numbers unlock three hours beforehand.
+        <p className="text-sm leading-6 text-muted-foreground">
+          We use your phone number to help keep Intentionally safer and reduce
+          fake profiles. Your number is not shown on your profile.
         </p>
       </header>
       <PhoneForm />

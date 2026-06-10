@@ -102,6 +102,9 @@ export function PhoneForm() {
             Enter your number normally. We&apos;ll format it as{" "}
             {localNumber ? fullPhoneNumber : `${countryCode}...`}.
           </p>
+          <p className="text-xs leading-5 text-muted-foreground">
+            This is for verification and safety only.
+          </p>
         </div>
 
         {requestState.error ? (
@@ -148,7 +151,8 @@ export function PhoneForm() {
           autoFocus
         />
         <p className="text-xs text-muted-foreground">
-          Sent to {phone}.{" "}
+          Sent to {phone}. This confirms your number for verification and
+          safety.{" "}
           <button
             type="button"
             className="underline"
