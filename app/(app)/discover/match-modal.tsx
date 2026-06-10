@@ -17,6 +17,7 @@ export function MatchModal({
   onDismiss: () => void;
 }) {
   const age = computeAge(match.date_of_birth);
+
   return (
     <div
       // Full-screen overlay above the deck. Fixed + flex centres the
@@ -24,42 +25,54 @@ export function MatchModal({
       // on the modal without needing a portal in MVP.
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 px-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 px-4 py-6 backdrop-blur-sm"
     >
-      <div className="w-full max-w-sm rounded-3xl border bg-card p-6 shadow-lg">
-        <div className="space-y-5 text-center">
-          <header className="space-y-1">
+      <div className="w-full max-w-md rounded-[2rem] border bg-card p-5 shadow-lg sm:p-7">
+        <div className="space-y-6 text-center">
+          <header className="space-y-3">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              It&apos;s a match
+              Match
             </p>
-            <h2 className="text-3xl font-semibold tracking-tight">
-              You and {match.display_name}
+            <h2 className="text-3xl font-semibold leading-tight tracking-tight">
+              You both chose to connect
             </h2>
           </header>
+
           {/* Raw <img> for the same reasons as the discover card. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={match.photo_urls[0]}
-            alt=""
-            className="mx-auto aspect-square w-32 rounded-full border object-cover"
+            alt={`${match.display_name}, ${age}`}
+            className="mx-auto aspect-square w-32 rounded-[2rem] border object-cover shadow-sm sm:w-36"
           />
-          <p className="text-sm text-muted-foreground">
-            {match.display_name}, {age} liked you back. The next step is a
-            10-minute video Q&amp;A — schedule it now or come back later.
+
+          <p className="mx-auto max-w-sm text-sm leading-6 text-muted-foreground">
+            There&apos;s mutual interest. Start with a guided Q&amp;A to see if
+            the conversation feels right before opening chat.
           </p>
-          <div className="flex flex-col gap-2">
+
+          <div className="space-y-3">
             <TrackedLink
               href={`/schedule/${matchId}`}
               eventKey="scheduleClicked"
-              className={cn(buttonVariants({ size: "lg" }))}
+              className={cn(
+                buttonVariants({ size: "lg" }),
+                "h-12 w-full rounded-2xl text-base font-semibold",
+              )}
             >
-              Schedule your Q&amp;A
+              Start guided Q&amp;A
             </TrackedLink>
+
+            <p className="text-xs leading-5 text-muted-foreground">
+              You can pause or leave at any time.
+            </p>
+
             <Button
               type="button"
               variant="ghost"
               size="lg"
               onClick={onDismiss}
+              className="w-full rounded-2xl text-muted-foreground"
             >
               Continue browsing
             </Button>
