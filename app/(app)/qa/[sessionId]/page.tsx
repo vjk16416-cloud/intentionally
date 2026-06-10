@@ -209,9 +209,7 @@ export default async function QaSessionPage({
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-[#11120f] px-4 py-5 text-white">
-      <div className="mx-auto w-full max-w-md space-y-4">
-        <LocalMediaPreview />
-
+      <div className="mx-auto w-full max-w-md">
         <section className="overflow-hidden rounded-[2.25rem] border border-white/10 bg-[#181915] p-4 shadow-2xl">
           <header className="flex items-center justify-between border-b border-white/10 pb-4">
             <a
@@ -264,26 +262,7 @@ export default async function QaSessionPage({
 
             {isDemoSession ? (
               <div className="mt-6 grid grid-cols-2 gap-3">
-                <div className="relative min-h-64 overflow-hidden rounded-[1.5rem] bg-[linear-gradient(to_bottom,_#313829,_#11130f)] p-3">
-                  <div className="flex items-center justify-between">
-                    <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
-                      You
-                    </span>
-                    <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">
-                      Answering
-                    </span>
-                  </div>
-
-                  <div className="flex min-h-44 flex-col items-center justify-center">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/15 text-2xl font-semibold">
-                      Y
-                    </div>
-                  </div>
-
-                  <div className="absolute inset-x-3 bottom-3 rounded-2xl bg-black/25 px-3 py-2 text-center text-xs leading-5 text-white/70">
-                    Take your time. Short, honest answers are enough.
-                  </div>
-                </div>
+                <LocalMediaPreview />
 
                 <div className="relative min-h-64 overflow-hidden rounded-[1.5rem] bg-[linear-gradient(to_bottom,_#343434,_#131313)] p-3">
                   <div className="flex items-center justify-between">
