@@ -172,24 +172,34 @@ const NEIGHBOURHOODS_BY_CITY: Record<string, string[]> = {
 
 const DISTANCE_OPTIONS = [
   {
-    label: "Local",
-    value: "10 miles",
-    helper: "Around 10 miles",
+    label: "Within 3 miles",
+    value: "Within 3 miles",
+    helper: "Very local",
   },
   {
-    label: "Nearby",
-    value: "25 miles",
-    helper: "Around 25 miles",
+    label: "Within 5 miles",
+    value: "Within 5 miles",
+    helper: "Short trip",
   },
   {
-    label: "Wider",
-    value: "50 miles",
-    helper: "Around 50 miles",
+    label: "Within 10 miles",
+    value: "Within 10 miles",
+    helper: "Across town",
   },
   {
-    label: "Anywhere",
-    value: "50+ miles",
-    helper: "Open to distance",
+    label: "Within 15 miles",
+    value: "Within 15 miles",
+    helper: "Outer London too",
+  },
+  {
+    label: "Within 25 miles",
+    value: "Within 25 miles",
+    helper: "Big London radius",
+  },
+  {
+    label: "Anywhere in London",
+    value: "Anywhere in London",
+    helper: "Open across London",
   },
 ];
 
@@ -220,7 +230,7 @@ export function NeighbourhoodForm({
       : neighbourhoodOptions[0];
 
   const [neighbourhood, setNeighbourhood] = useState(defaultNeighbourhood);
-  const [distanceIndex, setDistanceIndex] = useState(1);
+  const [distanceIndex, setDistanceIndex] = useState(2);
   const locationFieldsRef = useRef<HTMLDivElement>(null);
   const citySelectRef = useRef<HTMLSelectElement>(null);
 
@@ -324,10 +334,11 @@ export function NeighbourhoodForm({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm font-semibold text-foreground">
-              Matching distance
+              How far would you travel?
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Move between local and wider matches.
+              Choose how far you&apos;d usually be open to travelling for
+              someone worth meeting. You can update this later.
             </p>
           </div>
 
@@ -350,7 +361,7 @@ export function NeighbourhoodForm({
             aria-label="Matching distance"
           />
 
-          <div className="mt-3 grid grid-cols-4 gap-2 text-center">
+          <div className="mt-3 grid grid-cols-2 gap-2 text-center sm:grid-cols-3">
             {DISTANCE_OPTIONS.map((option, index) => (
               <button
                 key={option.value}
