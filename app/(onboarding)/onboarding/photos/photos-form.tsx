@@ -142,6 +142,8 @@ export function PhotosForm({
         <p>
           {paths.length} of {MAX_PHOTOS} added · at least {MIN_PHOTOS} required.
         </p>
+        <p>Start with at least one clear face photo.</p>
+        <p>Natural photos with good lighting work best.</p>
         <p>JPEG, PNG or WebP. Max 5 MB per photo.</p>
         <p>
           If an iPhone HEIC/HEIF photo fails, export or share it as JPEG first.

@@ -34,10 +34,13 @@ export default async function PhotosStepPage({
         <p className="text-xs uppercase tracking-wider text-muted-foreground">
           Step 3 of 8
         </p>
-        <h1 className="text-2xl font-semibold tracking-tight">Photos</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Add photos that feel like you
+        </h1>
         <p className="text-sm leading-6 text-muted-foreground">
-          Add clear, recent photos that show you naturally. Recent photos help
-          people recognise you and feel more confident before a guided Q&amp;A.
+          Choose recent photos where your face is clear and the lighting is
+          natural. Avoid heavy filters — the aim is to help someone recognise
+          the real you before a guided Q&amp;A.
         </p>
       </header>
       <PhotosForm
