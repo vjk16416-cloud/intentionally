@@ -27,7 +27,7 @@ export function DemoSafetyButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-lg"
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-lg shadow-sm"
         aria-label="Safety options"
       >
         🛡
@@ -102,14 +102,14 @@ export function DemoMicrophoneButton() {
       onClick={() => setMuted((current) => !current)}
       className={
         muted
-          ? "flex h-16 w-16 flex-col items-center justify-center rounded-full border border-white/15 bg-white/10 text-xs font-semibold text-white shadow-sm"
-          : "flex h-16 w-16 flex-col items-center justify-center rounded-full bg-[#eadcc8] text-xs font-semibold text-[#241c17] shadow-sm"
+          ? "flex h-16 w-16 flex-col items-center justify-center rounded-full border border-border bg-background text-xs font-semibold text-muted-foreground shadow-sm"
+          : "flex h-16 w-16 flex-col items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground shadow-sm"
       }
       aria-pressed={muted}
-      aria-label={muted ? "Microphone muted" : "Microphone on"}
+      aria-label={muted ? "Microphone muted" : "Tap to speak"}
     >
       <span className="text-2xl">{muted ? "🔇" : "🎙"}</span>
-      <span className="mt-0.5">{muted ? "Muted" : "Live"}</span>
+      <span className="mt-0.5">{muted ? "Muted" : "Speak"}</span>
     </button>
   );
 }

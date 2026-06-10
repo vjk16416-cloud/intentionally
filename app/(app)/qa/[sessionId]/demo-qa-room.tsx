@@ -35,7 +35,7 @@ export default function DemoQaRoom() {
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
-      <div className="mx-auto w-full max-w-md space-y-5">
+      <div className="mx-auto w-full max-w-md space-y-5 md:max-w-4xl lg:max-w-6xl xl:max-w-7xl">
         <header className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="rounded-full border bg-background px-3 py-1 text-xs text-muted-foreground">
@@ -58,8 +58,8 @@ export default function DemoQaRoom() {
         </header>
 
         <section className="rounded-[2rem] bg-neutral-950 p-3 text-white shadow-xl">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex min-h-48 flex-col justify-between rounded-[1.5rem] bg-neutral-800 p-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_minmax(280px,360px)_minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_minmax(340px,440px)_minmax(0,1fr)]">
+            <div className="flex min-h-48 flex-col justify-between rounded-[1.5rem] bg-neutral-800 p-3 md:order-1">
               <div className="flex items-center justify-between">
                 <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-black">
                   You
@@ -81,7 +81,19 @@ export default function DemoQaRoom() {
               </div>
             </div>
 
-            <div className="flex min-h-48 flex-col justify-between rounded-[1.5rem] bg-neutral-800/80 p-3">
+            <div className="rounded-[1.5rem] bg-white p-5 text-center text-black md:order-2">
+              <p className="text-xs uppercase tracking-[0.22em] text-black/45">
+                Question {questionIndex + 1} of {QUESTIONS.length}
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold leading-8 tracking-tight">
+                {currentQuestion}
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-black/60">
+                No perfect answer. Just be honest.
+              </p>
+            </div>
+
+            <div className="flex min-h-48 flex-col justify-between rounded-[1.5rem] bg-neutral-800/80 p-3 md:order-3">
               <div>
                 <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-black">
                   Maya
@@ -95,7 +107,7 @@ export default function DemoQaRoom() {
               <div className="rounded-2xl bg-white p-3 text-black">
                 <p className="text-xs font-semibold">Listening mode</p>
                 <p className="mt-1 text-xs leading-5 text-black/60">
-                  Softened while you answer.
+                  Listener softens while someone answers.
                 </p>
               </div>
             </div>

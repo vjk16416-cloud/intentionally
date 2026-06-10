@@ -1,12 +1,19 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { TrackedButton } from "@/components/analytics/tracked-button";
 import { TrackedLink } from "@/components/analytics/tracked-link";
+import {
+  QA_VISIBILITY_OPTIONS,
+  parseQaVisibilityMode,
+  qaVisibilitySearchParam,
+} from "@/lib/qa/visibility";
 import { createClient } from "@/lib/supabase/server";
 
 import { saveQaOutcome } from "./actions";
 import { DemoMicrophoneButton, DemoSafetyButton } from "./demo-qa-controls";
 import { LocalMediaPreview } from "./local-media-preview";
+import { VisibilitySelector } from "./visibility-selector";
 
 const QUESTIONS = [
   "What is something you value in how someone communicates?",
@@ -35,6 +42,7 @@ export default async function QaSessionPage({
     started?: string;
     finished?: string;
     decision?: string;
+    visibility?: string;
   }>;
 }) {
   const { sessionId } = await params;
@@ -84,13 +92,34 @@ export default async function QaSessionPage({
   const questionIndex = safeQuestionIndex(query.q);
   const finished = query.finished === "true";
   const decision = query.decision;
+  const visibilityMode = parseQaVisibilityMode(query.visibility);
+  const visibility = QA_VISIBILITY_OPTIONS[visibilityMode];
+  const visibilityParam = qaVisibilitySearchParam(visibilityMode);
 
   const currentQuestion = questions[questionIndex] ?? questions[0];
   const isLastQuestion = questionIndex === questions.length - 1;
+  const demoAnsweringParticipant = questionIndex % 2 === 0 ? "you" : "them";
+  const isYouAnswering = demoAnsweringParticipant === "you";
+  const isThemAnswering = demoAnsweringParticipant === "them";
+  const shouldSoftenYourTile =
+    visibilityMode === "dynamic" && isThemAnswering;
+  const shouldSoftenTheirTile =
+    visibilityMode === "dynamic" && isYouAnswering;
+  const yourTileStatus = shouldSoftenYourTile
+    ? "Listening softened"
+    : isYouAnswering
+      ? "Answering"
+      : "Listening";
+  const theirTileStatus = shouldSoftenTheirTile
+    ? "Listening softened"
+    : isThemAnswering
+      ? "Answering"
+      : "Listening";
+  const progressPercent = ((questionIndex + 1) / questions.length) * 100;
 
   const nextHref = isLastQuestion
-    ? `/qa/${sessionId}?started=true&finished=true`
-    : `/qa/${sessionId}?started=true&q=${questionIndex + 1}`;
+    ? `/qa/${sessionId}?started=true&finished=true&${visibilityParam}`
+    : `/qa/${sessionId}?started=true&q=${questionIndex + 1}&${visibilityParam}`;
 
   if (!started && !finished) {
     return (
@@ -120,13 +149,12 @@ export default async function QaSessionPage({
             <p className="mt-5 text-sm font-medium text-foreground">
               Estimated time: 10 minutes
             </p>
-            <TrackedLink
-              href={`/qa/${sessionId}?started=true`}
-              eventKey="qaStarted"
+            <Link
+              href={`/qa/${sessionId}/visibility?${visibilityParam}`}
               className="mt-6 block rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
             >
-              Start conversation
-            </TrackedLink>
+              Choose how you appear
+            </Link>
           </section>
         </div>
       </main>
@@ -208,114 +236,205 @@ export default async function QaSessionPage({
   }
 
   return (
-    <main className="min-h-[calc(100vh-57px)] bg-[#11120f] px-4 py-5 text-white">
-      <div className="mx-auto w-full max-w-md">
-        <section className="overflow-hidden rounded-[2.25rem] border border-white/10 bg-[#181915] p-4 shadow-2xl">
-          <header className="flex items-center justify-between border-b border-white/10 pb-4">
+    <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background via-[#f6ecdf] to-muted px-4 py-5 text-foreground md:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-md md:max-w-4xl lg:max-w-6xl xl:max-w-7xl">
+        <section className="overflow-hidden rounded-[2.25rem] border border-border bg-card p-4 shadow-xl md:p-5 lg:p-6">
+          <header className="flex items-center justify-between gap-3 border-b border-border pb-4">
             <a
               href="/discover"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-xl text-white/75"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-background text-xl text-muted-foreground"
               aria-label="Exit Q&A"
             >
               ×
             </a>
 
-            <div className="rounded-full border border-white/15 px-4 py-1.5 text-sm font-semibold text-white/85">
-              Q&amp;A Room
+            <div className="min-w-0 text-center">
+              <p className="text-sm font-semibold tracking-tight">
+                Q&amp;A Room
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                Guided conversation
+              </p>
             </div>
 
-            {isDemoSession ? (
-              <DemoSafetyButton />
-            ) : (
-              <button
-                type="button"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-lg"
-                aria-label="Safety options"
-              >
-                🛡
-              </button>
-            )}
+            <div className="flex shrink-0 items-center gap-2">
+              <VisibilitySelector mode={visibilityMode} />
+              {isDemoSession ? (
+                <DemoSafetyButton />
+              ) : (
+                <button
+                  type="button"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-lg"
+                  aria-label="Safety options"
+                >
+                  🛡
+                </button>
+              )}
+            </div>
           </header>
 
-          <div className="pt-5">
-            <div className="flex items-center justify-between">
-              <div className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/75">
-                Question {questionIndex + 1} of {questions.length}
+          <div className="space-y-4 pt-5 md:space-y-5">
+            <div className="rounded-[1.35rem] border border-border bg-background p-3 md:px-4">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs font-semibold text-muted-foreground">
+                  Question {questionIndex + 1} of {questions.length}
+                </span>
+                <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
+                  08:42
+                </span>
               </div>
-
-              <div className="rounded-full bg-white/8 px-3 py-1.5 text-sm text-white/70">
-                08:42 left
-              </div>
-            </div>
-
-            <h1 className="mt-7 text-center text-3xl font-semibold leading-10 tracking-tight">
-              {currentQuestion}
-            </h1>
-
-            <div className="mx-auto mt-5 h-6 w-6 text-center text-xl text-accent">
-              ✦
-            </div>
-
-            <p className="mx-auto mt-3 max-w-xs text-center text-sm leading-6 text-white/65">
-              No perfect answer. Just be honest and speak from your experience.
-            </p>
-
-            {isDemoSession ? (
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                <LocalMediaPreview />
-
-                <div className="relative min-h-64 overflow-hidden rounded-[1.5rem] bg-[linear-gradient(to_bottom,_#343434,_#131313)] p-3">
-                  <div className="flex items-center justify-between">
-                    <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-black">
-                      Maya
-                    </span>
-                    <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/60">
-                      Listening
-                    </span>
-                  </div>
-
-                  <div className="flex min-h-44 flex-col items-center justify-center">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/15 text-2xl font-semibold">
-                      M
-                    </div>
-                  </div>
-
-                  <div className="absolute inset-x-3 bottom-3 rounded-2xl bg-black/25 px-3 py-2 text-center text-xs leading-5 text-white/70">
-                    Their view stays calm while you answer.
-                  </div>
-                </div>
-              </div>
-            ) : session?.daily_room_url ? (
-              <div className="mt-6 overflow-hidden rounded-[1.5rem] bg-black">
-                <iframe
-                  src={session.daily_room_url}
-                  title="Guided Q&A video room"
-                  allow="camera; microphone; fullscreen; speaker; display-capture"
-                  className="h-[420px] w-full border-0"
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-accent transition-all"
+                  style={{ width: `${progressPercent}%` }}
                 />
               </div>
-            ) : (
-              <div className="mt-6 rounded-[1.5rem] bg-white/5 p-5 text-sm leading-6 text-white/70">
-                Your video room is being prepared. If this continues, return to
-                scheduling and confirm your Q&amp;A time again.
-              </div>
-            )}
+            </div>
 
-            <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+            <div className="relative grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(280px,360px)_minmax(0,1fr)] md:items-center lg:grid-cols-[minmax(0,1fr)_minmax(340px,440px)_minmax(0,1fr)]">
+              <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-border md:hidden" />
+
+              <div className="relative z-10 rounded-[1.75rem] border border-border bg-background p-3 shadow-sm md:order-1">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="rounded-full bg-card px-3 py-1 text-xs font-semibold">
+                    You
+                  </span>
+                  <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
+                    {visibilityMode === "audio" ? "Audio-first" : yourTileStatus}
+                  </span>
+                </div>
+
+                {visibilityMode === "audio" ? (
+                  <div className="relative min-h-44 overflow-hidden rounded-[1.5rem] bg-[#2d3028] p-4 text-white lg:min-h-72">
+                    <div className="flex min-h-28 flex-col items-center justify-center gap-4 lg:min-h-56">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#e2e8dc] text-xl font-semibold text-[#241c17]">
+                        Y
+                      </div>
+                      <div className="flex h-8 items-end gap-1.5">
+                        {[18, 30, 22, 38, 26, 34, 20].map((height, index) => (
+                          <span
+                            key={`${height}-${index}`}
+                            className="w-2 rounded-full bg-[#e8ded0]"
+                            style={{ height }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="absolute inset-x-3 bottom-3 rounded-2xl bg-black/30 px-3 py-2 text-center text-xs leading-5 text-white/80">
+                      Voice-first with a simple profile preview.
+                    </p>
+                  </div>
+                ) : (
+                  <LocalMediaPreview
+                    visibilityMode={visibilityMode}
+                    isSoftened={shouldSoftenYourTile}
+                    statusLabel={yourTileStatus}
+                    helperText={
+                      shouldSoftenYourTile
+                        ? "Dynamic Mode softens the listener so the speaker feels less watched."
+                        : isYouAnswering
+                          ? "You stay clear while you answer."
+                          : "You stay clear while listening."
+                    }
+                    isCompact
+                  />
+                )}
+              </div>
+
+              <div className="relative z-10 rounded-[1.75rem] border border-[#d8ccbd] bg-[#fff8ef] p-6 text-center shadow-sm md:order-2 md:p-6 lg:p-8">
+                <div className="mx-auto mb-4 h-8 w-8 rounded-full bg-secondary text-lg leading-8 text-accent">
+                  ✦
+                </div>
+                <h1 className="text-2xl font-semibold leading-8 tracking-tight md:text-3xl md:leading-10">
+                  {currentQuestion}
+                </h1>
+                <p className="mx-auto mt-4 max-w-xs text-sm leading-6 text-muted-foreground">
+                  No perfect answer. Just be honest.
+                </p>
+                <div className="mx-auto mt-4 max-w-xs rounded-2xl bg-secondary px-4 py-3">
+                  <p className="text-xs font-semibold text-foreground">
+                    {visibility.shortLabel}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    {visibility.roomCopy}
+                  </p>
+                </div>
+              </div>
+
+              <div className="relative z-10 rounded-[1.75rem] border border-border bg-background p-3 shadow-sm md:order-3">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="rounded-full bg-card px-3 py-1 text-xs font-semibold">
+                    Maya
+                  </span>
+                  <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
+                    {theirTileStatus}
+                  </span>
+                </div>
+
+                {isDemoSession ? (
+                  <div className="relative min-h-44 overflow-hidden rounded-[1.5rem] bg-[linear-gradient(to_bottom,_#343434,_#131313)] p-3 text-white lg:min-h-72">
+                    <div
+                      className={
+                        shouldSoftenTheirTile
+                          ? "absolute inset-0 scale-105 bg-[linear-gradient(to_bottom,_#343434,_#131313)] blur-sm opacity-75"
+                          : "absolute inset-0 bg-[linear-gradient(to_bottom,_#343434,_#131313)]"
+                      }
+                    />
+                    <div
+                      className={
+                        shouldSoftenTheirTile
+                          ? "absolute inset-0 bg-black/15"
+                          : "absolute inset-0"
+                      }
+                    />
+
+                    <div className="relative z-10 flex min-h-32 flex-col items-center justify-center lg:min-h-60">
+                      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/15 text-2xl font-semibold">
+                        M
+                      </div>
+                    </div>
+
+                    <div className="absolute inset-x-3 bottom-3 z-10 rounded-2xl bg-black/25 px-3 py-2 text-center text-xs leading-5 text-white/70">
+                      {shouldSoftenTheirTile
+                        ? "Dynamic Mode softens the listener so the speaker feels less watched."
+                        : isYouAnswering
+                          ? "They stay clear while listening."
+                          : "They stay clear while answering."}
+                    </div>
+                  </div>
+                ) : session?.daily_room_url ? (
+                  <div className="overflow-hidden rounded-[1.5rem] bg-black">
+                    <iframe
+                      src={session.daily_room_url}
+                      title="Guided Q&A video room"
+                      allow="camera; microphone; fullscreen; speaker; display-capture"
+                      className="h-[320px] w-full border-0 lg:h-[420px]"
+                    />
+                  </div>
+                ) : (
+                  <div className="rounded-[1.5rem] bg-muted p-5 text-sm leading-6 text-muted-foreground">
+                    Your video room is being prepared. If this continues,
+                    return to scheduling and confirm your Q&amp;A time again.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mx-auto grid w-full max-w-md grid-cols-[1fr_auto_1fr] items-center gap-3">
               {isLastQuestion ? (
                 <TrackedLink
                   href={nextHref}
                   eventKey="qaFinished"
-                  className="rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-center text-sm font-semibold text-white"
+                  className="rounded-2xl border border-border bg-background px-4 py-4 text-center text-sm font-semibold text-foreground"
                 >
-                  Skip question
+                  Skip
                 </TrackedLink>
               ) : (
                 <a
                   href={nextHref}
-                  className="rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-center text-sm font-semibold text-white"
+                  className="rounded-2xl border border-border bg-background px-4 py-4 text-center text-sm font-semibold text-foreground"
                 >
-                  Skip question
+                  Skip
                 </a>
               )}
 
@@ -324,8 +443,8 @@ export default async function QaSessionPage({
               ) : (
                 <button
                   type="button"
-                  className="flex h-16 w-16 items-center justify-center rounded-full bg-[#eadcc8] text-3xl text-[#241c17] shadow-sm"
-                  aria-label="Microphone"
+                  className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-2xl text-accent-foreground shadow-sm"
+                  aria-label="Tap to speak"
                 >
                   🎙
                 </button>
@@ -335,28 +454,23 @@ export default async function QaSessionPage({
                 <TrackedLink
                   href={nextHref}
                   eventKey="qaFinished"
-                  className="rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-center text-sm font-semibold text-white"
+                  className="rounded-2xl bg-accent px-4 py-4 text-center text-sm font-semibold text-accent-foreground"
                 >
                   Finish
                 </TrackedLink>
               ) : (
                 <a
                   href={nextHref}
-                  className="rounded-2xl border border-white/15 bg-white/5 px-4 py-4 text-center text-sm font-semibold text-white"
+                  className="rounded-2xl bg-accent px-4 py-4 text-center text-sm font-semibold text-accent-foreground"
                 >
-                  Next question →
+                  Next
                 </a>
               )}
             </div>
 
-            <div className="mt-4 rounded-[1.25rem] bg-white/7 p-4">
-              <div className="flex gap-3">
-                <span className="text-lg">🔒</span>
-                <p className="text-sm leading-6 text-white/70">
-                  Profiles stay softly blurred so the conversation comes first.
-                  Chat unlocks only if you both choose Continue.
-                </p>
-              </div>
+            <div className="mx-auto w-full max-w-2xl rounded-[1.35rem] bg-secondary p-4 text-sm leading-6 text-muted-foreground md:text-center">
+              <p>Full profiles unlock only if you both choose Continue.</p>
+              <p>Your answers stay private. You can skip any question.</p>
             </div>
           </div>
         </section>
