@@ -21,13 +21,19 @@ const QUESTIONS = [
   "What would make a first conversation feel genuinely comfortable?",
 ];
 
-function safeQuestionIndex(value: string | string[] | undefined) {
+const EXTRA_QUESTIONS = [
+  "What would make dating feel healthier for you?",
+  "What helps you feel safe opening up to someone?",
+];
+
+function safeQuestionIndex(value: string | string[] | undefined, total: number) {
   const raw = Array.isArray(value) ? value[0] : value;
   const parsed = Number(raw ?? "0");
+  const maxIndex = Math.max(total - 1, 0);
 
   if (!Number.isFinite(parsed)) return 0;
   if (parsed < 0) return 0;
-  if (parsed > QUESTIONS.length - 1) return QUESTIONS.length - 1;
+  if (parsed > maxIndex) return maxIndex;
 
   return parsed;
 }
@@ -43,6 +49,8 @@ export default async function QaSessionPage({
     finished?: string;
     decision?: string;
     visibility?: string;
+    extra?: string;
+    extraRequest?: string;
   }>;
 }) {
   const { sessionId } = await params;
@@ -83,15 +91,20 @@ export default async function QaSessionPage({
     }
   }
 
-  const questions =
+  const baseQuestions =
     Array.isArray(session?.questions) && session.questions.length > 0
       ? session.questions.map(String)
       : QUESTIONS;
+  const extraQuestionsAccepted = query.extra === "true";
+  const questions = extraQuestionsAccepted
+    ? [...baseQuestions, ...EXTRA_QUESTIONS]
+    : baseQuestions;
 
   const started = query.started === "true";
-  const questionIndex = safeQuestionIndex(query.q);
+  const questionIndex = safeQuestionIndex(query.q, questions.length);
   const finished = query.finished === "true";
   const decision = query.decision;
+  const extraRequest = query.extraRequest;
   const visibilityMode = parseQaVisibilityMode(query.visibility);
   const visibility = QA_VISIBILITY_OPTIONS[visibilityMode];
   const visibilityParam = qaVisibilitySearchParam(visibilityMode);
@@ -117,9 +130,45 @@ export default async function QaSessionPage({
       : "Listening";
   const progressPercent = ((questionIndex + 1) / questions.length) * 100;
 
+  function qaHref(overrides: Record<string, string | undefined>) {
+    const params = new URLSearchParams({
+      started: "true",
+      visibility: visibilityMode,
+    });
+
+    if (extraQuestionsAccepted) {
+      params.set("extra", "true");
+      params.set("extraRequest", "accepted");
+    }
+
+    Object.entries(overrides).forEach(([key, value]) => {
+      if (value === undefined) {
+        params.delete(key);
+        return;
+      }
+
+      params.set(key, value);
+    });
+
+    return `/qa/${sessionId}?${params.toString()}`;
+  }
+
   const nextHref = isLastQuestion
-    ? `/qa/${sessionId}?started=true&finished=true&${visibilityParam}`
-    : `/qa/${sessionId}?started=true&q=${questionIndex + 1}&${visibilityParam}`;
+    ? qaHref({ finished: "true", q: undefined })
+    : qaHref({ q: String(questionIndex + 1), finished: undefined });
+  const extraStartHref = qaHref({
+    extra: "true",
+    extraRequest: "accepted",
+    q: String(baseQuestions.length),
+    finished: undefined,
+  });
+  const extraNotNowHref = qaHref({
+    finished: "true",
+    extraRequest: "declined",
+    q: undefined,
+  });
+  const showExtraQuestionOption =
+    !extraQuestionsAccepted && questionIndex >= baseQuestions.length - 1;
 
   if (!started && !finished) {
     return (
@@ -419,6 +468,105 @@ export default async function QaSessionPage({
                 )}
               </div>
             </div>
+
+            {showExtraQuestionOption ? (
+              <div className="mx-auto w-full max-w-2xl rounded-[1.35rem] border border-border bg-background p-4 shadow-sm">
+                {extraRequest === "sent" ? (
+                  <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+                    <div>
+                      <p className="text-sm font-semibold">Request sent</p>
+                      <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                        Waiting for them to accept. We&apos;ll only add more if
+                        you both agree.
+                      </p>
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-1">
+                      <a
+                        href={extraStartHref}
+                        className="rounded-2xl bg-accent px-4 py-3 text-center text-sm font-semibold text-accent-foreground"
+                      >
+                        They accept
+                      </a>
+                      <a
+                        href={extraNotNowHref}
+                        className="rounded-2xl border border-border bg-card px-4 py-3 text-center text-sm font-semibold text-foreground"
+                      >
+                        Not now
+                      </a>
+                    </div>
+                  </div>
+                ) : extraRequest === "incoming" ? (
+                  <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+                    <div>
+                      <p className="text-sm font-semibold">
+                        Maya wants to add more questions.
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                        Only continue if you both want to.
+                      </p>
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-1">
+                      <a
+                        href={extraStartHref}
+                        className="rounded-2xl bg-accent px-4 py-3 text-center text-sm font-semibold text-accent-foreground"
+                      >
+                        Accept
+                      </a>
+                      <a
+                        href={extraNotNowHref}
+                        className="rounded-2xl border border-border bg-card px-4 py-3 text-center text-sm font-semibold text-foreground"
+                      >
+                        Not now
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+                    <div>
+                      <p className="text-sm font-semibold">
+                        Want to keep going?
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                        Add more questions only if you both agree. This is
+                        optional.
+                      </p>
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-1">
+                      <a
+                        href={qaHref({
+                          extraRequest: "sent",
+                          q: String(questionIndex),
+                          finished: undefined,
+                        })}
+                        className="rounded-2xl bg-accent px-4 py-3 text-center text-sm font-semibold text-accent-foreground"
+                      >
+                        Add more questions
+                      </a>
+                      {isDemoSession ? (
+                        <a
+                          href={qaHref({
+                            extraRequest: "incoming",
+                            q: String(questionIndex),
+                            finished: undefined,
+                          })}
+                          className="rounded-2xl border border-border bg-card px-4 py-3 text-center text-sm font-semibold text-foreground"
+                        >
+                          Maya asks
+                        </a>
+                      ) : null}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : extraQuestionsAccepted &&
+              questionIndex === baseQuestions.length ? (
+              <div className="mx-auto w-full max-w-2xl rounded-[1.35rem] bg-secondary p-4 text-center text-sm leading-6 text-muted-foreground">
+                <p className="font-semibold text-foreground">
+                  You both agreed to keep going.
+                </p>
+                <p>Adding 2 more questions.</p>
+              </div>
+            ) : null}
 
             <div className="mx-auto grid w-full max-w-md grid-cols-[1fr_auto_1fr] items-center gap-3">
               {isLastQuestion ? (
