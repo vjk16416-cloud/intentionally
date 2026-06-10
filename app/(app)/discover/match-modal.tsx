@@ -61,7 +61,7 @@ export function MatchModal({
                 "h-12 w-full rounded-2xl text-base font-semibold",
               )}
             >
-              Start with questions
+              Schedule Q&A
             </TrackedLink>
 
             <p className="text-xs leading-5 text-muted-foreground">

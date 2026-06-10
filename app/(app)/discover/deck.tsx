@@ -406,9 +406,9 @@ export function DiscoverDeck({
                 onClick={handlePass}
                 disabled={pending}
                 className="h-14 rounded-2xl border border-border bg-background text-sm font-semibold text-foreground shadow-sm transition hover:bg-muted active:scale-[0.98] disabled:opacity-50"
-                aria-label="Pass"
+                aria-label="Not for me"
               >
-                Pass
+                Not for me
               </button>
 
               <button
@@ -416,15 +416,15 @@ export function DiscoverDeck({
                 onClick={handleLike}
                 disabled={pending || limitReached}
                 className="h-14 rounded-2xl bg-accent text-sm font-semibold text-accent-foreground shadow-sm transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
-                aria-label="Start with questions"
+                aria-label="I’m interested"
               >
-                Start with questions
+                I’m interested
               </button>
             </div>
 
             <div className="rounded-[1.25rem] bg-secondary/70 px-4 py-3 text-center text-xs leading-5 text-muted-foreground">
-              Start with questions if you&apos;re curious. You&apos;ll choose
-              how you appear before the Q&amp;A.
+              If they&apos;re interested too, you&apos;ll both move into a short
+              guided Q&amp;A before chat opens.
             </div>
           </div>
         </section>
