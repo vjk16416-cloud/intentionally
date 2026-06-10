@@ -15,7 +15,15 @@ export function ChatMessageForm({
     <form
       action={action}
       className="mt-4 rounded-[1.5rem] border bg-background p-3 shadow-sm"
-      onSubmit={() => trackAnalyticsEvent("chatMessageSent")}
+      onSubmit={() =>
+        trackAnalyticsEvent("chatSent", {
+          properties: {
+            chat_id: chatId,
+            other_name: otherName,
+            surface: "message_form",
+          },
+        })
+      }
     >
       <input type="hidden" name="chatId" value={chatId} />
       <label htmlFor="message" className="sr-only">

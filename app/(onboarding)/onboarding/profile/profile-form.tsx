@@ -27,7 +27,13 @@ export function ProfileForm({
     <form
       action={action}
       className="space-y-5"
-      onSubmit={() => trackAnalyticsEvent("onboardingStarted")}
+      onSubmit={() =>
+        trackAnalyticsEvent("onboardingStarted", {
+          properties: {
+            step: "profile",
+          },
+        })
+      }
     >
       <div className="space-y-1.5">
         <label htmlFor="displayName" className="text-sm font-semibold text-foreground">

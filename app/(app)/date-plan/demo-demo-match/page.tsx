@@ -1,13 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import { DATE_PLAN_OPTIONS } from "@/lib/date-plans/options";
 
 export default function DemoDatePlanPage() {
   const [sharedPlan, setSharedPlan] = useState<string | null>(null);
+  const hasTrackedView = useRef(false);
+
+  useEffect(() => {
+    if (hasTrackedView.current) return;
+
+    hasTrackedView.current = true;
+    trackAnalyticsEvent("datePlanViewed", {
+      properties: {
+        match_id: "demo-demo-match",
+        is_demo_session: true,
+      },
+    });
+  }, []);
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
@@ -67,6 +80,11 @@ export default function DemoDatePlanPage() {
                 type="button"
                 onClick={() => {
                   trackAnalyticsEvent("datePlanShared", {
+                    properties: {
+                      match_id: "demo-demo-match",
+                      plan_key: option.key,
+                      is_demo_session: true,
+                    },
                     sendInstantly: true,
                   });
                   setSharedPlan(option.title);

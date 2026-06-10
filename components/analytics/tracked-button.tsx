@@ -7,10 +7,12 @@ import type { AnalyticsEventKey } from "@/lib/analytics/events";
 
 type TrackedButtonProps = ComponentProps<"button"> & {
   eventKey: AnalyticsEventKey;
+  eventProperties?: Record<string, unknown>;
 };
 
 export function TrackedButton({
   eventKey,
+  eventProperties,
   onClick,
   ...props
 }: TrackedButtonProps) {
@@ -18,7 +20,7 @@ export function TrackedButton({
     <button
       {...props}
       onClick={(event) => {
-        trackAnalyticsEvent(eventKey);
+        trackAnalyticsEvent(eventKey, { properties: eventProperties });
         onClick?.(event);
       }}
     />

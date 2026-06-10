@@ -103,7 +103,17 @@ export function LoginForm() {
 
   if (stage === "request") {
     return (
-      <form action={requestAction} className="space-y-5">
+      <form
+        action={requestAction}
+        className="space-y-5"
+        onSubmit={() =>
+          trackAnalyticsEvent("loginClicked", {
+            properties: {
+              sign_in_method: method,
+            },
+          })
+        }
+      >
         <input type="hidden" name="identifier" value={requestIdentifier} />
 
         <div className="grid grid-cols-2 gap-2 rounded-2xl border border-border bg-muted/30 p-1">
@@ -215,14 +225,13 @@ export function LoginForm() {
           type="submit"
           size="lg"
           disabled={requestPending}
-          onClick={() => trackAnalyticsEvent("loginClicked")}
           className="w-full rounded-2xl"
         >
           {requestPending
             ? "Sending…"
             : method === "email"
               ? "Send secure sign-in link"
-              : "Text me a sign-in code"}
+            : "Text me a sign-in code"}
         </Button>
       </form>
     );

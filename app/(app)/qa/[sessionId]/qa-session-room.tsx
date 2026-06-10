@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import {
@@ -61,6 +61,7 @@ export function QaSessionRoom({
   const [questionIndex, setQuestionIndex] = useState(() =>
     clampQuestionIndex(initialQuestionIndex, questions.length),
   );
+  const hasTrackedEntry = useRef(false);
 
   const safeQuestionIndex = clampQuestionIndex(questionIndex, questions.length);
   const currentQuestion = questions[safeQuestionIndex] ?? questions[0];
@@ -90,6 +91,27 @@ export function QaSessionRoom({
   const showAcceptedNotice =
     extraAccepted && safeQuestionIndex === baseQuestions.length;
 
+  useEffect(() => {
+    if (hasTrackedEntry.current) return;
+
+    hasTrackedEntry.current = true;
+    trackAnalyticsEvent("visibilitySelected", {
+      properties: {
+        session_id: sessionId,
+        visibility_mode: visibilityMode,
+        surface: "room_entry",
+        is_demo_session: isDemoSession,
+      },
+    });
+    trackAnalyticsEvent("qaStarted", {
+      properties: {
+        session_id: sessionId,
+        visibility_mode: visibilityMode,
+        is_demo_session: isDemoSession,
+      },
+    });
+  }, [isDemoSession, sessionId, visibilityMode]);
+
   function finishSession(extraState: ExtraRequestState = extraRequest) {
     const params = new URLSearchParams({
       started: "true",
@@ -104,11 +126,20 @@ export function QaSessionRoom({
       params.set("extraRequest", extraState);
     }
 
-    trackAnalyticsEvent("qaFinished");
+    trackAnalyticsEvent("qaFinished", {
+      properties: {
+        session_id: sessionId,
+        visibility_mode: visibilityMode,
+        question_count: questions.length,
+        extra_questions: extraAccepted,
+        extra_request_state: extraState,
+        is_demo_session: isDemoSession,
+      },
+    });
     router.push(`/qa/${sessionId}?${params.toString()}`);
   }
 
-  function goToNextQuestion() {
+  function advanceQuestion() {
     if (isLastQuestion) {
       finishSession();
       return;
@@ -117,6 +148,20 @@ export function QaSessionRoom({
     setQuestionIndex((current) =>
       clampQuestionIndex(current + 1, questions.length),
     );
+  }
+
+  function answerQuestion() {
+    trackAnalyticsEvent("qaQuestionAnswered", {
+      properties: {
+        session_id: sessionId,
+        visibility_mode: visibilityMode,
+        question_index: safeQuestionIndex,
+        question_total: questions.length,
+        is_last_question: isLastQuestion,
+        is_demo_session: isDemoSession,
+      },
+    });
+    advanceQuestion();
   }
 
   function acceptExtraQuestions() {
@@ -414,7 +459,7 @@ export function QaSessionRoom({
             <div className="mx-auto grid w-full max-w-md grid-cols-[1fr_auto_1fr] items-center gap-3">
               <button
                 type="button"
-                onClick={goToNextQuestion}
+                onClick={advanceQuestion}
                 className="rounded-2xl border border-border bg-background px-4 py-4 text-center text-sm font-semibold text-foreground"
               >
                 Skip
@@ -434,7 +479,7 @@ export function QaSessionRoom({
 
               <button
                 type="button"
-                onClick={goToNextQuestion}
+                onClick={answerQuestion}
                 className="rounded-2xl bg-accent px-4 py-4 text-center text-sm font-semibold text-accent-foreground"
               >
                 {isLastQuestion ? "Finish" : "Next"}

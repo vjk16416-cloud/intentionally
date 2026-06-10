@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import {
@@ -29,8 +29,21 @@ export function DatePlanPicker({
     shareDatePlan,
     INITIAL_STATE,
   );
+  const hasTrackedView = useRef(false);
   const sharedPlan =
     getDatePlanOption(state.sharedPlanKey) ?? getDatePlanOption(currentPlanKey);
+
+  useEffect(() => {
+    if (hasTrackedView.current) return;
+
+    hasTrackedView.current = true;
+    trackAnalyticsEvent("datePlanViewed", {
+      properties: {
+        match_id: matchId,
+        chat_id: chatId,
+      },
+    });
+  }, [chatId, matchId]);
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
@@ -105,6 +118,11 @@ export function DatePlanPicker({
                     disabled={pending}
                     onClick={() =>
                       trackAnalyticsEvent("datePlanShared", {
+                        properties: {
+                          match_id: matchId,
+                          chat_id: chatId,
+                          plan_key: option.key,
+                        },
                         sendInstantly: true,
                       })
                     }

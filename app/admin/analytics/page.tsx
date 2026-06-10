@@ -91,6 +91,12 @@ const metricConfig = [
     icon: CheckCircle2,
   },
   {
+    key: "discoverViewed",
+    label: "Discover views",
+    helper: "discover_viewed",
+    icon: Eye,
+  },
+  {
     key: "profileLiked",
     label: "Likes",
     helper: "profile_liked",
@@ -115,10 +121,28 @@ const metricConfig = [
     icon: CalendarDays,
   },
   {
+    key: "datePlanViewed",
+    label: "Date plan views",
+    helper: "date_plan_viewed",
+    icon: CalendarDays,
+  },
+  {
     key: "qaStarted",
     label: "Q&A started",
     helper: "qa_started",
     icon: Timer,
+  },
+  {
+    key: "visibilitySelected",
+    label: "Visibility selected",
+    helper: "visibility_selected",
+    icon: Eye,
+  },
+  {
+    key: "qaQuestionAnswered",
+    label: "Questions answered",
+    helper: "qa_question_answered",
+    icon: MessageSquareText,
   },
   {
     key: "qaFinished",
@@ -127,21 +151,21 @@ const metricConfig = [
     icon: Sparkles,
   },
   {
-    key: "qaContinueClicked",
-    label: "Continue clicked",
-    helper: "qa_continue_clicked",
+    key: "continueSelected",
+    label: "Continue selected",
+    helper: "continue_selected",
     icon: CheckCircle2,
   },
   {
-    key: "qaPassPrivatelyClicked",
-    label: "Pass privately clicked",
-    helper: "qa_pass_privately_clicked",
+    key: "passPrivatelySelected",
+    label: "Pass privately selected",
+    helper: "pass_privately_selected",
     icon: XCircle,
   },
   {
-    key: "chatMessageSent",
+    key: "chatSent",
     label: "Chat messages sent",
-    helper: "chat_message_sent",
+    helper: "chat_sent",
     icon: MessageSquareText,
   },
   {
@@ -155,12 +179,16 @@ const metricConfig = [
 const funnelConfig = [
   ["loginClicked", "Login clicks"],
   ["onboardingCompleted", "Onboarding completed"],
+  ["discoverViewed", "Discover views"],
   ["profileLiked", "Likes"],
   ["matchCreated", "Matches"],
   ["scheduleClicked", "Schedule clicks"],
+  ["datePlanViewed", "Date plan views"],
   ["qaStarted", "Q&A started"],
+  ["visibilitySelected", "Visibility selected"],
+  ["qaQuestionAnswered", "Questions answered"],
   ["qaFinished", "Q&A finished"],
-  ["chatMessageSent", "Chat messages sent"],
+  ["chatSent", "Chat messages sent"],
   ["datePlanShared", "Date plans shared"],
 ] as const satisfies readonly [DashboardEventKey, string][];
 
@@ -281,7 +309,7 @@ function getStrongestEngagementSignal(range: AnalyticsRange) {
   const qaFinished =
     range.metrics.find((metric) => metric.key === "qaFinished")?.value ?? 0;
   const chatMessages =
-    range.metrics.find((metric) => metric.key === "chatMessageSent")?.value ?? 0;
+    range.metrics.find((metric) => metric.key === "chatSent")?.value ?? 0;
   const datePlans =
     range.metrics.find((metric) => metric.key === "datePlanShared")?.value ?? 0;
 
@@ -313,18 +341,31 @@ function getStrongestEngagementSignal(range: AnalyticsRange) {
 function getHealthMetrics(range: AnalyticsRange): HealthMetric[] {
   const loginClicks = getMetricValue(range, "loginClicked");
   const onboardingCompleted = getMetricValue(range, "onboardingCompleted");
+  const discoverViews = getMetricValue(range, "discoverViewed");
   const likes = getMetricValue(range, "profileLiked");
   const matches = getMetricValue(range, "matchCreated");
   const scheduleClicks = getMetricValue(range, "scheduleClicked");
+  const datePlanViews = getMetricValue(range, "datePlanViewed");
   const qaStarted = getMetricValue(range, "qaStarted");
+  const visibilitySelected = getMetricValue(range, "visibilitySelected");
+  const qaQuestionAnswered = getMetricValue(range, "qaQuestionAnswered");
   const qaFinished = getMetricValue(range, "qaFinished");
-  const chatMessages = getMetricValue(range, "chatMessageSent");
+  const continueSelected = getMetricValue(range, "continueSelected");
+  const passPrivatelySelected = getMetricValue(range, "passPrivatelySelected");
+  const chatMessages = getMetricValue(range, "chatSent");
   const datePlans = getMetricValue(range, "datePlanShared");
 
   const onboarding = conversionRate(onboardingCompleted, loginClicks);
+  const discoverToLike = conversionRate(likes, discoverViews);
   const likeToMatch = conversionRate(matches, likes);
   const matchToSchedule = conversionRate(scheduleClicks, matches);
+  const scheduleToDatePlanView = conversionRate(datePlanViews, scheduleClicks);
+  const qaVisibility = conversionRate(visibilitySelected, qaStarted);
+  const qaAnswerRate = conversionRate(qaQuestionAnswered, qaStarted);
   const qaCompletion = conversionRate(qaFinished, qaStarted);
+  const decisionTotal = continueSelected + passPrivatelySelected;
+  const continueRate =
+    decisionTotal === 0 ? 0 : conversionRate(continueSelected, decisionTotal);
   const chatActivation = conversionRate(chatMessages, qaFinished);
   const datePlanShare = conversionRate(datePlans, chatMessages);
 
@@ -336,6 +377,14 @@ function getHealthMetrics(range: AnalyticsRange): HealthMetric[] {
         loginClicks,
       )} login clicks.`,
       status: rateStatus(onboarding, 75, 55),
+    },
+    {
+      label: "Discover engagement",
+      value: discoverToLike,
+      detail: `${formatNumber(likes)} likes from ${formatNumber(
+        discoverViews,
+      )} Discover views.`,
+      status: rateStatus(discoverToLike, 25, 10),
     },
     {
       label: "Like to match rate",
@@ -352,12 +401,44 @@ function getHealthMetrics(range: AnalyticsRange): HealthMetric[] {
       status: rateStatus(matchToSchedule, 65, 40),
     },
     {
+      label: "Date plan interest",
+      value: scheduleToDatePlanView,
+      detail: `${formatNumber(datePlanViews)} date plan views from ${formatNumber(
+        scheduleClicks,
+      )} schedule clicks.`,
+      status: rateStatus(scheduleToDatePlanView, 70, 35),
+    },
+    {
+      label: "Visibility selection rate",
+      value: qaVisibility,
+      detail: `${formatNumber(visibilitySelected)} visibility selections from ${formatNumber(
+        qaStarted,
+      )} Q&As started.`,
+      status: rateStatus(qaVisibility, 90, 60),
+    },
+    {
+      label: "Q&A answer rate",
+      value: qaAnswerRate,
+      detail: `${formatNumber(qaQuestionAnswered)} questions answered from ${formatNumber(
+        qaStarted,
+      )} Q&As started.`,
+      status: rateStatus(qaAnswerRate, 75, 50),
+    },
+    {
       label: "Q&A completion rate",
       value: qaCompletion,
       detail: `${formatNumber(qaFinished)} finished from ${formatNumber(
         qaStarted,
       )} Q&As started.`,
       status: rateStatus(qaCompletion, 75, 55),
+    },
+    {
+      label: "Continue rate",
+      value: continueRate,
+      detail: `${formatNumber(continueSelected)} Continue selections and ${formatNumber(
+        passPrivatelySelected,
+      )} Pass privately selections.`,
+      status: rateStatus(continueRate, 65, 40),
     },
     {
       label: "Chat activation rate",
@@ -416,6 +497,14 @@ function FounderSummary({ range }: { range: AnalyticsRange }) {
   const onboardingCompleted =
     range.metrics.find((metric) => metric.key === "onboardingCompleted")
       ?.value ?? 0;
+  const discoverViews =
+    range.metrics.find((metric) => metric.key === "discoverViewed")?.value ?? 0;
+  const visibilitySelected =
+    range.metrics.find((metric) => metric.key === "visibilitySelected")
+      ?.value ?? 0;
+  const qaQuestionAnswered =
+    range.metrics.find((metric) => metric.key === "qaQuestionAnswered")
+      ?.value ?? 0;
   const matches =
     range.metrics.find((metric) => metric.key === "matchCreated")?.value ?? 0;
   const scheduleClicks =
@@ -423,16 +512,38 @@ function FounderSummary({ range }: { range: AnalyticsRange }) {
     0;
   const qaFinished =
     range.metrics.find((metric) => metric.key === "qaFinished")?.value ?? 0;
+  const continueSelected =
+    range.metrics.find((metric) => metric.key === "continueSelected")
+      ?.value ?? 0;
+  const passPrivatelySelected =
+    range.metrics.find((metric) => metric.key === "passPrivatelySelected")
+      ?.value ?? 0;
+  const chatSent =
+    range.metrics.find((metric) => metric.key === "chatSent")?.value ?? 0;
+  const datePlanViewed =
+    range.metrics.find((metric) => metric.key === "datePlanViewed")?.value ?? 0;
+  const decisionTotal = continueSelected + passPrivatelySelected;
+  const continueRate =
+    decisionTotal === 0 ? 0 : conversionRate(continueSelected, decisionTotal);
 
   const insights = [
     `${conversionRate(
       onboardingCompleted,
       loginClicks,
     )}% of login clicks are becoming completed onboarding profiles.`,
+    `${conversionRate(
+      matches,
+      discoverViews,
+    )}% of Discover views are turning into matches.`,
     `${formatNumber(matches)} matches led to ${formatNumber(
       scheduleClicks,
     )} schedule clicks, so match intent is converting into Q&A planning.`,
-    `${formatNumber(qaFinished)} Q&As were finished; this is the core quality signal to watch before adding features.`,
+    `${formatNumber(visibilitySelected)} visibility selections and ${formatNumber(
+      qaQuestionAnswered,
+    )} answered questions show that people are getting through the room.`,
+    `${formatNumber(qaFinished)} Q&As were finished; ${formatNumber(
+      chatSent,
+    )} chat messages and ${formatNumber(datePlanViewed)} date plan views followed.`,
     `Biggest leak: ${biggestDropOff.from} → ${biggestDropOff.to} has ${biggestDropOff.dropOff}% drop-off.`,
   ];
   const recommendedAction = getRecommendedExperiments(range)[0];
@@ -486,6 +597,27 @@ function FounderSummary({ range }: { range: AnalyticsRange }) {
           label={engagementSignal.label}
           detail={engagementSignal.detail}
           status={engagementSignal.status}
+        />
+      </div>
+
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
+        <SummarySignalCard
+          title="Discover activity"
+          label={`${formatNumber(discoverViews)} views · ${formatNumber(matches)} matches`}
+          detail={`${conversionRate(matches, discoverViews)}% of Discover views are becoming matches.`}
+          status={rateStatus(conversionRate(matches, discoverViews), 20, 8)}
+        />
+        <SummarySignalCard
+          title="Decision split"
+          label={`${formatNumber(continueSelected)} Continue / ${formatNumber(
+            passPrivatelySelected,
+          )} Pass`}
+          detail={`${continueRate}% of Q&A decisions are Continue. ${formatNumber(
+            visibilitySelected,
+          )} visibility selections and ${formatNumber(
+            qaQuestionAnswered,
+          )} answered questions show room engagement.`}
+          status={rateStatus(continueRate, 65, 40)}
         />
       </div>
 

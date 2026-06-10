@@ -74,6 +74,7 @@ export default async function OnboardingDonePage() {
             <TrackedLink
               href="/discover"
               eventKey="onboardingCompleted"
+              eventProperties={{ source: "onboarding_done" }}
               className={cn(
                 buttonVariants({ size: "lg" }),
                 "w-full rounded-2xl bg-accent text-accent-foreground hover:opacity-90",

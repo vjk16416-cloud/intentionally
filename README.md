@@ -50,6 +50,16 @@ Documented in [`.env.local.example`](./.env.local.example) — every
 variable from AGENTS.md §11 with a placeholder value. Never commit
 `.env.local`.
 
+PostHog needs two sets of variables:
+
+- Client tracking: `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` and
+  `NEXT_PUBLIC_POSTHOG_HOST`
+- Founder dashboard queries: `POSTHOG_PERSONAL_API_KEY`,
+  `POSTHOG_PROJECT_ID`, and `POSTHOG_HOST`
+
+If the server-only values are missing, the admin analytics page shows a
+clear unavailable state instead of failing the app.
+
 ## Project layout
 
 See AGENTS.md §4 for the canonical layout. In Step 1 we've scaffolded:

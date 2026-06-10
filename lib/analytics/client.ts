@@ -9,6 +9,17 @@ import {
 
 let initialized = false;
 
+type TrackAnalyticsOptions = {
+  properties?: Record<string, unknown>;
+  sendInstantly?: boolean;
+};
+
+function viewportTier(width: number) {
+  if (width >= 1280) return "desktop";
+  if (width >= 768) return "tablet";
+  return "phone";
+}
+
 export function initAnalytics() {
   if (initialized || typeof window === "undefined") return;
 
@@ -29,15 +40,23 @@ export function initAnalytics() {
 
 export function trackAnalyticsEvent(
   eventKey: AnalyticsEventKey,
-  options: { sendInstantly?: boolean } = {},
+  options: TrackAnalyticsOptions = {},
 ) {
   if (typeof window === "undefined") return;
 
   initAnalytics();
   if (!initialized) return;
 
-  posthog.capture(ANALYTICS_EVENT_NAMES[eventKey], null, {
+  posthog.capture(
+    ANALYTICS_EVENT_NAMES[eventKey],
+    {
+      ...options.properties,
+      page: window.location.pathname,
+      viewport: viewportTier(window.innerWidth),
+    },
+    {
     send_instantly: options.sendInstantly,
     transport: options.sendInstantly ? "sendBeacon" : undefined,
-  });
+    },
+  );
 }

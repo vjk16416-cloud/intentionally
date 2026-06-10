@@ -48,7 +48,14 @@ export default function DemoChatPage() {
 
     if (!trimmed) return;
 
-    trackAnalyticsEvent("chatMessageSent");
+    trackAnalyticsEvent("chatSent", {
+      properties: {
+        chat_id: "demo-demo-match",
+        surface: "message_form",
+        message_length: trimmed.length,
+        is_demo_session: true,
+      },
+    });
 
     setMessages((current) => [
       ...current,

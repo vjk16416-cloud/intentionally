@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { TrackedButton } from "@/components/analytics/tracked-button";
 import {
   QA_VISIBILITY_OPTIONS,
   VISIBILITY_MODES,
@@ -116,13 +115,12 @@ export default async function QaVisibilityPage({
               );
             })}
 
-            <TrackedButton
+            <button
               type="submit"
-              eventKey="qaStarted"
               className="w-full rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground md:col-span-3"
             >
               Enter Q&amp;A Room
-            </TrackedButton>
+            </button>
           </form>
 
           <div className="mt-5 rounded-[1.25rem] bg-secondary p-4 text-sm leading-6 text-muted-foreground">

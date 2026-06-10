@@ -8,10 +8,12 @@ import type { AnalyticsEventKey } from "@/lib/analytics/events";
 
 type TrackedLinkProps = ComponentProps<typeof Link> & {
   eventKey: AnalyticsEventKey;
+  eventProperties?: Record<string, unknown>;
 };
 
 export function TrackedLink({
   eventKey,
+  eventProperties,
   onClick,
   ...props
 }: TrackedLinkProps) {
@@ -19,7 +21,7 @@ export function TrackedLink({
     <Link
       {...props}
       onClick={(event) => {
-        trackAnalyticsEvent(eventKey);
+        trackAnalyticsEvent(eventKey, { properties: eventProperties });
         onClick?.(event);
       }}
     />

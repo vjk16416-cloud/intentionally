@@ -205,14 +205,26 @@ export default async function QaSessionPage({
                 <div className="grid gap-3">
                   <TrackedLink
                     href="/chat/demo-demo-match"
-                    eventKey="qaContinueClicked"
+                    eventKey="continueSelected"
+                    eventProperties={{
+                      session_id: sessionId,
+                      decision: "continue",
+                      visibility_mode: visibilityMode,
+                      surface: "decision_screen",
+                    }}
                     className="w-full rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
                   >
                     Continue
                   </TrackedLink>
                   <TrackedLink
                     href="/discover"
-                    eventKey="qaPassPrivatelyClicked"
+                    eventKey="passPrivatelySelected"
+                    eventProperties={{
+                      session_id: sessionId,
+                      decision: "pass",
+                      visibility_mode: visibilityMode,
+                      surface: "decision_screen",
+                    }}
                     className="w-full rounded-2xl border border-[#d9a6a0]/40 bg-[#f3d8d3] px-4 py-4 text-center text-base font-semibold text-[#5a2d2a]"
                   >
                     Pass privately
@@ -232,7 +244,13 @@ export default async function QaSessionPage({
                     <input type="hidden" name="decision" value="continue" />
                     <TrackedButton
                       type="submit"
-                      eventKey="qaContinueClicked"
+                      eventKey="continueSelected"
+                      eventProperties={{
+                        session_id: sessionId,
+                        decision: "continue",
+                        visibility_mode: visibilityMode,
+                        surface: "decision_screen",
+                      }}
                       className="w-full rounded-2xl bg-accent px-4 py-4 text-base font-semibold text-accent-foreground"
                     >
                       Continue
@@ -244,7 +262,13 @@ export default async function QaSessionPage({
                     <input type="hidden" name="decision" value="pass" />
                     <TrackedButton
                       type="submit"
-                      eventKey="qaPassPrivatelyClicked"
+                      eventKey="passPrivatelySelected"
+                      eventProperties={{
+                        session_id: sessionId,
+                        decision: "pass",
+                        visibility_mode: visibilityMode,
+                        surface: "decision_screen",
+                      }}
                       className="w-full rounded-2xl border border-[#d9a6a0]/40 bg-[#f3d8d3] px-4 py-4 text-base font-semibold text-[#5a2d2a]"
                     >
                       Pass privately

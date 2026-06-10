@@ -8,6 +8,7 @@ import {
   type QaVisibilityMode,
 } from "@/lib/qa/visibility";
 import { cn } from "@/lib/utils";
+import { trackAnalyticsEvent } from "@/lib/analytics/client";
 
 type VisibilitySelectorProps = {
   mode: QaVisibilityMode;
@@ -23,6 +24,12 @@ export function VisibilitySelector({ mode }: VisibilitySelectorProps) {
   function applyMode() {
     const params = new URLSearchParams(searchParams.toString());
     params.set("visibility", selectedMode);
+    trackAnalyticsEvent("visibilitySelected", {
+      properties: {
+        visibility_mode: selectedMode,
+        surface: "in_room_selector",
+      },
+    });
     router.replace(`${pathname}?${params.toString()}`);
     setIsOpen(false);
   }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import type { DiscoverCard } from "@/lib/discover/feed";
@@ -115,10 +115,23 @@ export function DiscoverDeck({
   const [activeMatch, setActiveMatch] = useState<ActiveMatch | null>(null);
 
   const card = cards[index];
+  const hasTrackedView = useRef(false);
 
   const visibleNewMatches = useMemo(() => {
     return cards.slice(0, 3);
   }, [cards]);
+
+  useEffect(() => {
+    if (hasTrackedView.current) return;
+
+    hasTrackedView.current = true;
+    trackAnalyticsEvent("discoverViewed", {
+      properties: {
+        card_count: cards.length,
+        is_demo_mode: isDemoMode,
+      },
+    });
+  }, [card, cards.length, isDemoMode]);
 
   if (cards.length === 0 || !card) {
     return (
@@ -170,11 +183,24 @@ export function DiscoverDeck({
 
   function handleLike() {
     setActionError(null);
-    trackAnalyticsEvent("profileLiked");
+    trackAnalyticsEvent("profileLiked", {
+      properties: {
+        target_profile_id: card.id,
+        source: "discover",
+        is_demo_mode: isDemoMode,
+      },
+    });
     const cardId = card.id;
 
     if (isDemoMode || cardId.startsWith("demo-")) {
-      trackAnalyticsEvent("matchCreated");
+      trackAnalyticsEvent("matchCreated", {
+        properties: {
+          target_profile_id: cardId,
+          match_id: "demo-match",
+          source: "discover",
+          is_demo_mode: isDemoMode,
+        },
+      });
       openDemoMatch();
       return;
     }
@@ -192,7 +218,14 @@ export function DiscoverDeck({
       }
 
       if (result.matched) {
-        trackAnalyticsEvent("matchCreated");
+        trackAnalyticsEvent("matchCreated", {
+          properties: {
+            target_profile_id: cardId,
+            match_id: result.matchId,
+            source: "discover",
+            is_demo_mode: isDemoMode,
+          },
+        });
         setActiveMatch({ matchId: result.matchId, match: result.with });
       }
 
@@ -202,7 +235,13 @@ export function DiscoverDeck({
 
   function handlePass() {
     setActionError(null);
-    trackAnalyticsEvent("profilePassed");
+    trackAnalyticsEvent("profilePassed", {
+      properties: {
+        target_profile_id: card.id,
+        source: "discover",
+        is_demo_mode: isDemoMode,
+      },
+    });
     const cardId = card.id;
 
     if (isDemoMode || cardId.startsWith("demo-")) {
@@ -440,7 +479,12 @@ export function DiscoverDeck({
                 <button
                   type="button"
                   onClick={() => {
-                    trackAnalyticsEvent("scheduleClicked");
+                    trackAnalyticsEvent("scheduleClicked", {
+                      properties: {
+                        match_id: matchCard.id,
+                        source: "discover_matches",
+                      },
+                    });
                     openDemoMatch(matchCard);
                   }}
                   className="mt-2 w-full rounded-2xl bg-accent px-3 py-3 text-sm font-semibold text-accent-foreground transition hover:opacity-90 active:scale-[0.98]"

@@ -75,7 +75,15 @@ function SlotForm({
       <button
         type="submit"
         disabled={pending}
-        onClick={() => trackAnalyticsEvent("scheduleClicked")}
+        onClick={() =>
+          trackAnalyticsEvent("scheduleClicked", {
+            properties: {
+              match_id: matchId,
+              scheduled_at: slot.scheduledAtIso,
+              source: "slot_picker",
+            },
+          })
+        }
         className="w-full rounded-2xl border bg-card p-4 text-left transition-colors hover:bg-muted disabled:opacity-50"
       >
         <div className="flex items-baseline justify-between gap-3">

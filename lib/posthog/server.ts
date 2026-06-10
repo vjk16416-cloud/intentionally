@@ -4,15 +4,19 @@ export type DashboardEventKey =
   | "loginClicked"
   | "onboardingStarted"
   | "onboardingCompleted"
+  | "discoverViewed"
   | "profileLiked"
   | "profilePassed"
   | "matchCreated"
   | "scheduleClicked"
   | "qaStarted"
+  | "visibilitySelected"
+  | "qaQuestionAnswered"
   | "qaFinished"
-  | "qaContinueClicked"
-  | "qaPassPrivatelyClicked"
-  | "chatMessageSent"
+  | "continueSelected"
+  | "passPrivatelySelected"
+  | "chatSent"
+  | "datePlanViewed"
   | "datePlanShared";
 
 export type PostHogDashboardCounts = Record<
@@ -38,20 +42,37 @@ const dashboardEventConfig = [
   ["loginClicked", ANALYTICS_EVENT_NAMES.loginClicked],
   ["onboardingStarted", ANALYTICS_EVENT_NAMES.onboardingStarted],
   ["onboardingCompleted", ANALYTICS_EVENT_NAMES.onboardingCompleted],
+  ["discoverViewed", ANALYTICS_EVENT_NAMES.discoverViewed],
   ["profileLiked", ANALYTICS_EVENT_NAMES.profileLiked],
   ["profilePassed", ANALYTICS_EVENT_NAMES.profilePassed],
   ["matchCreated", ANALYTICS_EVENT_NAMES.matchCreated],
   ["scheduleClicked", ANALYTICS_EVENT_NAMES.scheduleClicked],
   ["qaStarted", ANALYTICS_EVENT_NAMES.qaStarted],
+  ["visibilitySelected", ANALYTICS_EVENT_NAMES.visibilitySelected],
+  ["qaQuestionAnswered", ANALYTICS_EVENT_NAMES.qaQuestionAnswered],
   ["qaFinished", ANALYTICS_EVENT_NAMES.qaFinished],
-  ["qaContinueClicked", ANALYTICS_EVENT_NAMES.qaContinueClicked],
-  ["qaPassPrivatelyClicked", ANALYTICS_EVENT_NAMES.qaPassPrivatelyClicked],
-  ["chatMessageSent", ANALYTICS_EVENT_NAMES.chatMessageSent],
+  ["continueSelected", ANALYTICS_EVENT_NAMES.continueSelected],
+  ["passPrivatelySelected", ANALYTICS_EVENT_NAMES.passPrivatelySelected],
+  ["chatSent", ANALYTICS_EVENT_NAMES.chatSent],
+  ["datePlanViewed", ANALYTICS_EVENT_NAMES.datePlanViewed],
   ["datePlanShared", ANALYTICS_EVENT_NAMES.datePlanShared],
 ] as const satisfies readonly [DashboardEventKey, string][];
 
+const eventAliases: Partial<Record<DashboardEventKey, readonly string[]>> = {
+  continueSelected: ["qa_continue_clicked"],
+  passPrivatelySelected: ["qa_pass_privately_clicked"],
+  chatSent: ["chat_message_sent"],
+};
+
 const eventNameToKey: ReadonlyMap<string, DashboardEventKey> = new Map(
   dashboardEventConfig.map(([key, eventName]) => [eventName, key]),
+);
+
+const posthogEventNames = Array.from(
+  new Set([
+    ...dashboardEventConfig.map(([, eventName]) => eventName),
+    ...Object.values(eventAliases).flatMap((aliases) => aliases ?? []),
+  ]),
 );
 
 function emptyCounts(): PostHogDashboardCounts {
@@ -94,9 +115,18 @@ export async function getPostHogDashboardCounts(): Promise<PostHogDashboardResul
 
   const baseUrl = host.replace(/\/+$/, "");
   const url = `${baseUrl}/api/projects/${encodeURIComponent(projectId)}/query/`;
-  const eventNames = dashboardEventConfig
-    .map(([, eventName]) => sqlString(eventName))
-    .join(", ");
+  const eventNames = posthogEventNames.map((eventName) => sqlString(eventName));
+  const normalizedEventCase = dashboardEventConfig
+    .map(([key, eventName]) => {
+      const aliases = eventAliases[key] ?? [];
+      const values = [eventName, ...aliases].map(sqlString).join(", ");
+
+      return aliases.length > 0
+        ? `WHEN event IN (${values}) THEN ${sqlString(eventName)}`
+        : "";
+    })
+    .filter(Boolean)
+    .join("\n              ");
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);
 
@@ -107,20 +137,29 @@ export async function getPostHogDashboardCounts(): Promise<PostHogDashboardResul
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        query: {
-          kind: "HogQLQuery",
-          query: `
+        body: JSON.stringify({
+          query: {
+            kind: "HogQLQuery",
+            query: `
+            WITH normalized_events AS (
+              SELECT
+                CASE
+                  ${normalizedEventCase}
+                  ELSE event
+                END AS event,
+                timestamp
+              FROM events
+              WHERE event IN (${eventNames.join(", ")})
+                AND timestamp >= now() - INTERVAL 30 DAY
+            )
             SELECT
               event,
               countIf(timestamp >= now() - INTERVAL 7 DAY) AS last_7_days,
               countIf(timestamp >= now() - INTERVAL 30 DAY) AS last_30_days
-            FROM events
-            WHERE event IN (${eventNames})
-              AND timestamp >= now() - INTERVAL 30 DAY
+            FROM normalized_events
             GROUP BY event
           `,
-        },
+          },
         name: "intentionally-admin-analytics-counts",
       }),
       cache: "no-store",

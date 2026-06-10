@@ -55,6 +55,7 @@ export function MatchModal({
             <TrackedLink
               href={`/schedule/${matchId}`}
               eventKey="scheduleClicked"
+              eventProperties={{ match_id: matchId, source: "match_modal" }}
               className={cn(
                 buttonVariants({ size: "lg" }),
                 "h-12 w-full rounded-2xl text-base font-semibold",

@@ -22,7 +22,14 @@ export function ConfirmButtons({ matchId }: { matchId: string }) {
         type="submit"
         size="lg"
         disabled={pending}
-        onClick={() => trackAnalyticsEvent("scheduleClicked")}
+        onClick={() =>
+          trackAnalyticsEvent("scheduleClicked", {
+            properties: {
+              match_id: matchId,
+              source: "confirm_buttons",
+            },
+          })
+        }
         className="w-full"
       >
         {pending ? "Confirming…" : "Confirm this time"}
