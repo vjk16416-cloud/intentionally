@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { TrackedButton } from "@/components/analytics/tracked-button";
-import { TrackedLink } from "@/components/analytics/tracked-link";
 import {
   parseQaVisibilityMode,
   qaVisibilitySearchParam,
@@ -10,6 +8,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 
 import { saveQaOutcome } from "./actions";
+import { QaDecisionButton, QaDecisionLink } from "./qa-decision-controls";
 import { QaSessionRoom } from "./qa-session-room";
 
 const QUESTIONS = [
@@ -123,6 +122,7 @@ export default async function QaSessionPage({
   const extraRequest = parseExtraRequestState(query.extraRequest);
   const visibilityMode = parseQaVisibilityMode(query.visibility);
   const visibilityParam = qaVisibilitySearchParam(visibilityMode);
+  const matchId = session?.match_id ?? (isDemoSession ? "demo-demo-match" : null);
 
   if (!started && !finished) {
     return (
@@ -203,32 +203,28 @@ export default async function QaSessionPage({
                 </div>
 
                 <div className="grid gap-3">
-                  <TrackedLink
+                  <QaDecisionLink
                     href="/chat/demo-demo-match"
-                    eventKey="continueSelected"
-                    eventProperties={{
-                      session_id: sessionId,
-                      decision: "continue",
-                      visibility_mode: visibilityMode,
-                      surface: "decision_screen",
-                    }}
+                    decision="continue"
+                    userId={user.id}
+                    matchId={matchId}
+                    sessionId={sessionId}
+                    visibilityMode={visibilityMode}
                     className="w-full rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
                   >
                     Continue
-                  </TrackedLink>
-                  <TrackedLink
+                  </QaDecisionLink>
+                  <QaDecisionLink
                     href="/discover"
-                    eventKey="passPrivatelySelected"
-                    eventProperties={{
-                      session_id: sessionId,
-                      decision: "pass",
-                      visibility_mode: visibilityMode,
-                      surface: "decision_screen",
-                    }}
+                    decision="pass"
+                    userId={user.id}
+                    matchId={matchId}
+                    sessionId={sessionId}
+                    visibilityMode={visibilityMode}
                     className="w-full rounded-2xl border border-[#d9a6a0]/40 bg-[#f3d8d3] px-4 py-4 text-center text-base font-semibold text-[#5a2d2a]"
                   >
                     Pass privately
-                  </TrackedLink>
+                  </QaDecisionLink>
                 </div>
               </div>
             ) : (
@@ -242,37 +238,33 @@ export default async function QaSessionPage({
                   <form action={saveQaOutcome}>
                     <input type="hidden" name="sessionId" value={sessionId} />
                     <input type="hidden" name="decision" value="continue" />
-                    <TrackedButton
+                    <QaDecisionButton
                       type="submit"
-                      eventKey="continueSelected"
-                      eventProperties={{
-                        session_id: sessionId,
-                        decision: "continue",
-                        visibility_mode: visibilityMode,
-                        surface: "decision_screen",
-                      }}
+                      decision="continue"
+                      userId={user.id}
+                      matchId={matchId}
+                      sessionId={sessionId}
+                      visibilityMode={visibilityMode}
                       className="w-full rounded-2xl bg-accent px-4 py-4 text-base font-semibold text-accent-foreground"
                     >
                       Continue
-                    </TrackedButton>
+                    </QaDecisionButton>
                   </form>
 
                   <form action={saveQaOutcome}>
                     <input type="hidden" name="sessionId" value={sessionId} />
                     <input type="hidden" name="decision" value="pass" />
-                    <TrackedButton
+                    <QaDecisionButton
                       type="submit"
-                      eventKey="passPrivatelySelected"
-                      eventProperties={{
-                        session_id: sessionId,
-                        decision: "pass",
-                        visibility_mode: visibilityMode,
-                        surface: "decision_screen",
-                      }}
+                      decision="pass"
+                      userId={user.id}
+                      matchId={matchId}
+                      sessionId={sessionId}
+                      visibilityMode={visibilityMode}
                       className="w-full rounded-2xl border border-[#d9a6a0]/40 bg-[#f3d8d3] px-4 py-4 text-base font-semibold text-[#5a2d2a]"
                     >
                       Pass privately
-                    </TrackedButton>
+                    </QaDecisionButton>
                   </form>
                 </div>
               </div>
@@ -291,6 +283,8 @@ export default async function QaSessionPage({
   return (
     <QaSessionRoom
       sessionId={sessionId}
+      userId={user.id}
+      matchId={matchId}
       baseQuestions={baseQuestions}
       initialQuestionIndex={questionIndex}
       initialExtraAccepted={extraQuestionsAccepted}

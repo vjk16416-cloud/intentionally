@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 export type ShareDatePlanState = {
   error?: string;
   sharedPlanKey?: DatePlanKey;
+  sharedPlanEventId?: string;
 };
 
 type MatchRow = {
@@ -72,5 +73,5 @@ export async function shareDatePlan(
   }
 
   revalidatePath(`/date-plan/${matchId}`);
-  return { sharedPlanKey: planKey };
+  return { sharedPlanKey: planKey, sharedPlanEventId: crypto.randomUUID() };
 }

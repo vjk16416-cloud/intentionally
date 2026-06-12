@@ -84,6 +84,7 @@ export default async function ProfileStepPage({
               initialDateOfBirth={profile?.date_of_birth ?? ""}
               returnTo={returnTo}
               previousStep={previousStep}
+              userId={user.id}
             />
           </div>
         </section>

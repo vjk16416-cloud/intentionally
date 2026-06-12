@@ -4,7 +4,7 @@ import { useActionState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { StepNav } from "@/components/onboarding/step-nav";
-import { trackAnalyticsEvent } from "@/lib/analytics/client";
+import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
 
 import { saveProfile, type ProfileActionState } from "./actions";
 
@@ -15,11 +15,13 @@ export function ProfileForm({
   initialDateOfBirth,
   returnTo,
   previousStep,
+  userId,
 }: {
   initialDisplayName: string;
   initialDateOfBirth: string;
   returnTo: string | null;
   previousStep: string | null;
+  userId: string;
 }) {
   const [state, action, pending] = useActionState(saveProfile, INITIAL_STATE);
 
@@ -28,10 +30,10 @@ export function ProfileForm({
       action={action}
       className="space-y-5"
       onSubmit={() =>
-        trackAnalyticsEvent("onboardingStarted", {
-          properties: {
-            step: "profile",
-          },
+        trackEvent(AnalyticsEvents.ONBOARDING_STARTED, {
+          user_id: userId,
+          source: "onboarding",
+          step: "profile",
         })
       }
     >

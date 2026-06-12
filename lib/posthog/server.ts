@@ -51,16 +51,22 @@ const dashboardEventConfig = [
   ["visibilitySelected", ANALYTICS_EVENT_NAMES.visibilitySelected],
   ["qaQuestionAnswered", ANALYTICS_EVENT_NAMES.qaQuestionAnswered],
   ["qaFinished", ANALYTICS_EVENT_NAMES.qaFinished],
-  ["continueSelected", ANALYTICS_EVENT_NAMES.continueSelected],
-  ["passPrivatelySelected", ANALYTICS_EVENT_NAMES.passPrivatelySelected],
+  ["continueSelected", "continue_after_qa"],
+  ["passPrivatelySelected", "pass_after_qa"],
   ["chatSent", ANALYTICS_EVENT_NAMES.chatSent],
   ["datePlanViewed", ANALYTICS_EVENT_NAMES.datePlanViewed],
   ["datePlanShared", ANALYTICS_EVENT_NAMES.datePlanShared],
 ] as const satisfies readonly [DashboardEventKey, string][];
 
 const eventAliases: Partial<Record<DashboardEventKey, readonly string[]>> = {
-  continueSelected: ["qa_continue_clicked"],
-  passPrivatelySelected: ["qa_pass_privately_clicked"],
+  continueSelected: [
+    ANALYTICS_EVENT_NAMES.continueSelected,
+    "qa_continue_clicked",
+  ],
+  passPrivatelySelected: [
+    ANALYTICS_EVENT_NAMES.passPrivatelySelected,
+    "qa_pass_privately_clicked",
+  ],
   chatSent: ["chat_message_sent"],
 };
 

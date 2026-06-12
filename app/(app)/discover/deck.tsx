@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 
+import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import type { DiscoverCard } from "@/lib/discover/feed";
 import { summariseAvailability } from "@/lib/onboarding/availability";
@@ -183,23 +184,19 @@ export function DiscoverDeck({
 
   function handleLike() {
     setActionError(null);
-    trackAnalyticsEvent("profileLiked", {
-      properties: {
-        target_profile_id: card.id,
-        source: "discover",
-        is_demo_mode: isDemoMode,
-      },
+    trackEvent(AnalyticsEvents.PROFILE_LIKED, {
+      target_profile_id: card.id,
+      source: "discover",
+      is_demo_mode: isDemoMode,
     });
     const cardId = card.id;
 
     if (isDemoMode || cardId.startsWith("demo-")) {
-      trackAnalyticsEvent("matchCreated", {
-        properties: {
-          target_profile_id: cardId,
-          match_id: "demo-match",
-          source: "discover",
-          is_demo_mode: isDemoMode,
-        },
+      trackEvent(AnalyticsEvents.MATCH_CREATED, {
+        target_profile_id: cardId,
+        match_id: "demo-match",
+        source: "discover",
+        is_demo_mode: isDemoMode,
       });
       openDemoMatch();
       return;
@@ -218,13 +215,11 @@ export function DiscoverDeck({
       }
 
       if (result.matched) {
-        trackAnalyticsEvent("matchCreated", {
-          properties: {
-            target_profile_id: cardId,
-            match_id: result.matchId,
-            source: "discover",
-            is_demo_mode: isDemoMode,
-          },
+        trackEvent(AnalyticsEvents.MATCH_CREATED, {
+          target_profile_id: cardId,
+          match_id: result.matchId,
+          source: "discover",
+          is_demo_mode: isDemoMode,
         });
         setActiveMatch({ matchId: result.matchId, match: result.with });
       }
@@ -235,12 +230,10 @@ export function DiscoverDeck({
 
   function handlePass() {
     setActionError(null);
-    trackAnalyticsEvent("profilePassed", {
-      properties: {
-        target_profile_id: card.id,
-        source: "discover",
-        is_demo_mode: isDemoMode,
-      },
+    trackEvent(AnalyticsEvents.PROFILE_PASSED, {
+      target_profile_id: card.id,
+      source: "discover",
+      is_demo_mode: isDemoMode,
     });
     const cardId = card.id;
 

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import {
   QA_VISIBILITY_OPTIONS,
@@ -22,6 +23,8 @@ type ExtraRequestState = "idle" | "sent" | "incoming" | "accepted" | "declined";
 
 type QaSessionRoomProps = {
   sessionId: string;
+  userId: string;
+  matchId: string | null;
   baseQuestions: string[];
   initialQuestionIndex: number;
   initialExtraAccepted: boolean;
@@ -43,6 +46,8 @@ function clampQuestionIndex(value: number, total: number) {
 
 export function QaSessionRoom({
   sessionId,
+  userId,
+  matchId,
   baseQuestions,
   initialQuestionIndex,
   initialExtraAccepted,
@@ -103,14 +108,15 @@ export function QaSessionRoom({
         is_demo_session: isDemoSession,
       },
     });
-    trackAnalyticsEvent("qaStarted", {
-      properties: {
-        session_id: sessionId,
-        visibility_mode: visibilityMode,
-        is_demo_session: isDemoSession,
-      },
+    trackEvent(AnalyticsEvents.QA_STARTED, {
+      user_id: userId,
+      match_id: matchId,
+      qa_session_id: sessionId,
+      source: "qa",
+      visibility_mode: visibilityMode,
+      is_demo_session: isDemoSession,
     });
-  }, [isDemoSession, sessionId, visibilityMode]);
+  }, [isDemoSession, matchId, sessionId, userId, visibilityMode]);
 
   function finishSession(extraState: ExtraRequestState = extraRequest) {
     const params = new URLSearchParams({
@@ -126,15 +132,16 @@ export function QaSessionRoom({
       params.set("extraRequest", extraState);
     }
 
-    trackAnalyticsEvent("qaFinished", {
-      properties: {
-        session_id: sessionId,
-        visibility_mode: visibilityMode,
-        question_count: questions.length,
-        extra_questions: extraAccepted,
-        extra_request_state: extraState,
-        is_demo_session: isDemoSession,
-      },
+    trackEvent(AnalyticsEvents.QA_FINISHED, {
+      user_id: userId,
+      match_id: matchId,
+      qa_session_id: sessionId,
+      source: "qa",
+      visibility_mode: visibilityMode,
+      question_count: questions.length,
+      extra_questions: extraAccepted,
+      extra_request_state: extraState,
+      is_demo_session: isDemoSession,
     });
     router.push(`/qa/${sessionId}?${params.toString()}`);
   }

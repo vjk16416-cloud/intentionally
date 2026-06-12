@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import { trackAnalyticsEvent } from "@/lib/analytics/client";
+import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
 
 type Message = {
   id: number;
@@ -48,15 +48,6 @@ export default function DemoChatPage() {
 
     if (!trimmed) return;
 
-    trackAnalyticsEvent("chatSent", {
-      properties: {
-        chat_id: "demo-demo-match",
-        surface: "message_form",
-        message_length: trimmed.length,
-        is_demo_session: true,
-      },
-    });
-
     setMessages((current) => [
       ...current,
       {
@@ -65,6 +56,12 @@ export default function DemoChatPage() {
         text: trimmed,
       },
     ]);
+
+    trackEvent(AnalyticsEvents.CHAT_SENT, {
+      match_id: "demo-demo-match",
+      source: "chat",
+      is_demo_session: true,
+    });
 
     setDraft("");
   }

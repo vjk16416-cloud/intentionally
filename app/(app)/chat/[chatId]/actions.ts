@@ -21,11 +21,19 @@ export async function sendMessage(formData: FormData) {
     redirect("/login");
   }
 
-  await supabase.from("messages").insert({
-    chat_id: chatId,
-    sender_id: user.id,
-    body,
-  });
+  const { data: message } = await supabase
+    .from("messages")
+    .insert({
+      chat_id: chatId,
+      sender_id: user.id,
+      body,
+    })
+    .select("id")
+    .single();
 
-  redirect(`/chat/${chatId}`);
+  const sentParam = message?.id
+    ? `?sent=${encodeURIComponent(String(message.id))}`
+    : "";
+
+  redirect(`/chat/${chatId}${sentParam}`);
 }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useEffect, useRef } from "react";
 
+import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import {
   DATE_PLAN_OPTIONS,
@@ -15,11 +16,13 @@ import { shareDatePlan, type ShareDatePlanState } from "./actions";
 const INITIAL_STATE: ShareDatePlanState = {};
 
 export function DatePlanPicker({
+  userId,
   matchId,
   chatId,
   otherName,
   currentPlanKey,
 }: {
+  userId: string;
   matchId: string;
   chatId: string;
   otherName: string;
@@ -30,6 +33,7 @@ export function DatePlanPicker({
     INITIAL_STATE,
   );
   const hasTrackedView = useRef(false);
+  const trackedShareEventIds = useRef(new Set<string>());
   const sharedPlan =
     getDatePlanOption(state.sharedPlanKey) ?? getDatePlanOption(currentPlanKey);
 
@@ -44,6 +48,19 @@ export function DatePlanPicker({
       },
     });
   }, [chatId, matchId]);
+
+  useEffect(() => {
+    if (!state.sharedPlanKey || !state.sharedPlanEventId) return;
+    if (trackedShareEventIds.current.has(state.sharedPlanEventId)) return;
+
+    trackedShareEventIds.current.add(state.sharedPlanEventId);
+    trackEvent(AnalyticsEvents.DATE_PLAN_SHARED, {
+      user_id: userId,
+      match_id: matchId,
+      source: "date_plan",
+      plan_key: state.sharedPlanKey,
+    });
+  }, [matchId, state.sharedPlanEventId, state.sharedPlanKey, userId]);
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
@@ -116,16 +133,6 @@ export function DatePlanPicker({
                   <button
                     type="submit"
                     disabled={pending}
-                    onClick={() =>
-                      trackAnalyticsEvent("datePlanShared", {
-                        properties: {
-                          match_id: matchId,
-                          chat_id: chatId,
-                          plan_key: option.key,
-                        },
-                        sendInstantly: true,
-                      })
-                    }
                     className="mt-4 w-full rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground disabled:opacity-50"
                   >
                     {selected ? "Shared" : "Share this plan"}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import { DATE_PLAN_OPTIONS } from "@/lib/date-plans/options";
 
@@ -79,15 +80,13 @@ export default function DemoDatePlanPage() {
               <button
                 type="button"
                 onClick={() => {
-                  trackAnalyticsEvent("datePlanShared", {
-                    properties: {
-                      match_id: "demo-demo-match",
-                      plan_key: option.key,
-                      is_demo_session: true,
-                    },
-                    sendInstantly: true,
-                  });
                   setSharedPlan(option.title);
+                  trackEvent(AnalyticsEvents.DATE_PLAN_SHARED, {
+                    match_id: "demo-demo-match",
+                    source: "date_plan",
+                    plan_key: option.key,
+                    is_demo_session: true,
+                  });
                 }}
                 className="mt-4 w-full rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground"
               >

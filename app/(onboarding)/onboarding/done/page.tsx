@@ -1,10 +1,12 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { TrackedLink } from "@/components/analytics/tracked-link";
 import { buttonVariants } from "@/components/ui/button";
 import { getOnboardingState } from "@/lib/onboarding/state";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
+
+import { OnboardingCompletedTracker } from "./onboarding-completed-tracker";
 
 export default async function OnboardingDonePage() {
   const supabase = await createClient();
@@ -24,6 +26,7 @@ export default async function OnboardingDonePage() {
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-background px-5 py-8 text-foreground">
+      <OnboardingCompletedTracker userId={user.id} />
       <div className="mx-auto w-full max-w-md">
         <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm">
           <header className="space-y-2">
@@ -71,17 +74,15 @@ export default async function OnboardingDonePage() {
           </div>
 
           <div className="mt-5">
-            <TrackedLink
+            <Link
               href="/discover"
-              eventKey="onboardingCompleted"
-              eventProperties={{ source: "onboarding_done" }}
               className={cn(
                 buttonVariants({ size: "lg" }),
                 "w-full rounded-2xl bg-accent text-accent-foreground hover:opacity-90",
               )}
             >
               Start browsing
-            </TrackedLink>
+            </Link>
           </div>
         </section>
       </div>

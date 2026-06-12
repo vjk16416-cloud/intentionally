@@ -14,6 +14,7 @@ import {
   XCircle,
 } from "lucide-react";
 import type { ComponentType } from "react";
+import { createClient as createSupabaseServiceClient } from "@supabase/supabase-js";
 
 import {
   getPostHogDashboardCounts,
@@ -21,6 +22,8 @@ import {
   type PostHogDashboardCounts,
   type PostHogDashboardResult,
 } from "@/lib/posthog/server";
+import { MIN_SLOTS } from "@/lib/onboarding/availability";
+import { getServiceRoleKey, SUPABASE_URL } from "@/lib/supabase/env";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -69,6 +72,20 @@ type HealthMetric = {
   value: number;
   detail: string;
   status: RagStatus;
+};
+
+type ProductSuccessMetric = {
+  label: string;
+  value: number | null;
+  helper: string;
+  source: string;
+  icon: ComponentType<{ className?: string }>;
+};
+
+type OnboardingCandidate = {
+  id: string;
+  photos: unknown;
+  availability: unknown;
 };
 
 const metricConfig = [
@@ -152,14 +169,14 @@ const metricConfig = [
   },
   {
     key: "continueSelected",
-    label: "Continue selected",
-    helper: "continue_selected",
+    label: "Continue after Q&A",
+    helper: "continue_after_qa",
     icon: CheckCircle2,
   },
   {
     key: "passPrivatelySelected",
-    label: "Pass privately selected",
-    helper: "pass_privately_selected",
+    label: "Pass after Q&A",
+    helper: "pass_after_qa",
     icon: XCircle,
   },
   {
@@ -191,6 +208,287 @@ const funnelConfig = [
   ["chatSent", "Chat messages sent"],
   ["datePlanShared", "Date plans shared"],
 ] as const satisfies readonly [DashboardEventKey, string][];
+
+const unavailableProductMetrics: ProductSuccessMetric[] = [
+  {
+    label: "Total users",
+    value: null,
+    helper: "Profiles table count unavailable.",
+    source: "Supabase",
+    icon: UsersRound,
+  },
+  {
+    label: "Onboarding completed",
+    value: null,
+    helper: "Completion is inferred from required profile fields and trusted contact.",
+    source: "Supabase",
+    icon: CheckCircle2,
+  },
+  {
+    label: "Profiles liked",
+    value: null,
+    helper: "Swipe count unavailable.",
+    source: "Supabase",
+    icon: Heart,
+  },
+  {
+    label: "Profiles passed",
+    value: null,
+    helper: "Swipe count unavailable.",
+    source: "Supabase",
+    icon: XCircle,
+  },
+  {
+    label: "Matches created",
+    value: null,
+    helper: "Match count unavailable.",
+    source: "Supabase",
+    icon: UsersRound,
+  },
+  {
+    label: "Q&A sessions started",
+    value: null,
+    helper: "Q&A session count unavailable.",
+    source: "Supabase",
+    icon: Timer,
+  },
+  {
+    label: "Q&A sessions completed",
+    value: null,
+    helper: "Tracking added, waiting for events. No Supabase completion column yet.",
+    source: "TODO",
+    icon: Sparkles,
+  },
+  {
+    label: "Continue after Q&A",
+    value: null,
+    helper: "Q&A outcome count unavailable.",
+    source: "Supabase",
+    icon: CheckCircle2,
+  },
+  {
+    label: "Pass after Q&A",
+    value: null,
+    helper: "Q&A outcome count unavailable.",
+    source: "Supabase",
+    icon: XCircle,
+  },
+  {
+    label: "Chat messages sent",
+    value: null,
+    helper: "Message count unavailable.",
+    source: "Supabase",
+    icon: MessageSquareText,
+  },
+  {
+    label: "Date plans shared",
+    value: null,
+    helper: "Date plan preference count unavailable.",
+    source: "Supabase",
+    icon: Send,
+  },
+];
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
+function isNumberArray(value: unknown): value is number[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "number");
+}
+
+function countValue(count: number | null) {
+  return count ?? 0;
+}
+
+async function getProductSuccessMetrics(): Promise<ProductSuccessMetric[]> {
+  try {
+    const supabase = createSupabaseServiceClient(
+      SUPABASE_URL,
+      getServiceRoleKey(),
+      {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+      },
+    );
+
+    const countRows = async (table: string) => {
+      const { count } = await supabase
+        .from(table)
+        .select("*", { count: "exact", head: true });
+
+      return countValue(count);
+    };
+
+    const countSwipes = async (direction: "like" | "pass") => {
+      const { count } = await supabase
+        .from("swipes")
+        .select("*", { count: "exact", head: true })
+        .eq("direction", direction);
+
+      return countValue(count);
+    };
+
+    const countQaOutcomes = async (decision: "continue" | "pass") => {
+      const { count } = await supabase
+        .from("qa_outcomes")
+        .select("*", { count: "exact", head: true })
+        .eq("decision", decision);
+
+      return countValue(count);
+    };
+
+    const getOnboardingCompletedCount = async () => {
+      const { data: candidates } = await supabase
+        .from("profiles")
+        .select("id, photos, availability")
+        .not("display_name", "is", null)
+        .not("date_of_birth", "is", null)
+        .not("gender", "is", null)
+        .not("seeking", "is", null)
+        .not("intention", "is", null)
+        .not("bio_prompt_key", "is", null)
+        .not("bio_answer", "is", null)
+        .neq("display_name", "")
+        .neq("bio_answer", "")
+        .not("city", "is", null)
+        .not("neighbourhood", "is", null)
+        .not("photos", "is", null)
+        .not("availability", "is", null)
+        .returns<OnboardingCandidate[]>();
+
+      const completeProfileIds = (candidates ?? [])
+        .filter(
+          (candidate) =>
+            isStringArray(candidate.photos) &&
+            candidate.photos.length > 0 &&
+            isNumberArray(candidate.availability) &&
+            candidate.availability.length >= MIN_SLOTS,
+        )
+        .map((candidate) => candidate.id);
+
+      if (completeProfileIds.length === 0) {
+        return 0;
+      }
+
+      const { data: contacts } = await supabase
+        .from("trusted_contacts")
+        .select("user_id")
+        .in("user_id", completeProfileIds)
+        .returns<{ user_id: string }[]>();
+
+      return new Set((contacts ?? []).map((contact) => contact.user_id)).size;
+    };
+
+    const [
+      totalUsers,
+      onboardingCompleted,
+      profilesLiked,
+      profilesPassed,
+      matchesCreated,
+      qaSessionsStarted,
+      continueAfterQa,
+      passAfterQa,
+      chatMessagesSent,
+      datePlansShared,
+    ] = await Promise.all([
+      countRows("profiles"),
+      getOnboardingCompletedCount(),
+      countSwipes("like"),
+      countSwipes("pass"),
+      countRows("matches"),
+      countRows("qa_sessions"),
+      countQaOutcomes("continue"),
+      countQaOutcomes("pass"),
+      countRows("messages"),
+      countRows("date_plan_preferences"),
+    ]);
+
+    return [
+      {
+        label: "Total users",
+        value: totalUsers,
+        helper: "Profiles created in Supabase.",
+        source: "Supabase",
+        icon: UsersRound,
+      },
+      {
+        label: "Onboarding completed",
+        value: onboardingCompleted,
+        helper: "Profiles with required setup fields, photos, availability, and trusted contact.",
+        source: "Supabase",
+        icon: CheckCircle2,
+      },
+      {
+        label: "Profiles liked",
+        value: profilesLiked,
+        helper: "Rows in swipes where direction is like.",
+        source: "Supabase",
+        icon: Heart,
+      },
+      {
+        label: "Profiles passed",
+        value: profilesPassed,
+        helper: "Rows in swipes where direction is pass.",
+        source: "Supabase",
+        icon: XCircle,
+      },
+      {
+        label: "Matches created",
+        value: matchesCreated,
+        helper: "Rows in matches.",
+        source: "Supabase",
+        icon: UsersRound,
+      },
+      {
+        label: "Q&A sessions started",
+        value: qaSessionsStarted,
+        helper: "Rows in qa_sessions.",
+        source: "Supabase",
+        icon: Timer,
+      },
+      {
+        label: "Q&A sessions completed",
+        value: null,
+        helper: "Tracking added, waiting for events. Supabase does not store a completed timestamp yet.",
+        source: "TODO",
+        icon: Sparkles,
+      },
+      {
+        label: "Continue after Q&A",
+        value: continueAfterQa,
+        helper: "Rows in qa_outcomes where decision is continue.",
+        source: "Supabase",
+        icon: CheckCircle2,
+      },
+      {
+        label: "Pass after Q&A",
+        value: passAfterQa,
+        helper: "Rows in qa_outcomes where decision is pass.",
+        source: "Supabase",
+        icon: XCircle,
+      },
+      {
+        label: "Chat messages sent",
+        value: chatMessagesSent,
+        helper: "Rows in messages; message text is not selected.",
+        source: "Supabase",
+        icon: MessageSquareText,
+      },
+      {
+        label: "Date plans shared",
+        value: datePlansShared,
+        helper: "Rows in date_plan_preferences.",
+        source: "Supabase",
+        icon: Send,
+      },
+    ];
+  } catch {
+    return unavailableProductMetrics;
+  }
+}
 
 function buildAnalyticsRange({
   label,
@@ -484,6 +782,83 @@ function HealthCard({ metric }: { metric: HealthMetric }) {
         {metric.detail}
       </p>
     </article>
+  );
+}
+
+function ProductSuccessCard({ metric }: { metric: ProductSuccessMetric }) {
+  const Icon = metric.icon;
+  const isWaiting = metric.value === null;
+
+  return (
+    <article className="rounded-[1.25rem] border border-border bg-card p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-muted-foreground">
+            {metric.label}
+          </p>
+          <p className="mt-2 text-3xl font-semibold tracking-tight">
+            {metric.value === null ? "Waiting" : formatNumber(metric.value)}
+          </p>
+        </div>
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+          <Icon className="h-5 w-5" />
+        </div>
+      </div>
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <span
+          className={cn(
+            "rounded-full px-3 py-1 text-xs font-semibold",
+            isWaiting
+              ? "bg-[#f1dfbd] text-[#6a4b16]"
+              : "bg-[#e2e8dc] text-[#2f3a2b]",
+          )}
+        >
+          {metric.source}
+        </span>
+        {isWaiting ? (
+          <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
+            No stored count
+          </span>
+        ) : null}
+      </div>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        {metric.helper}
+      </p>
+    </article>
+  );
+}
+
+function ProductSuccessDashboard({
+  metrics,
+}: {
+  metrics: ProductSuccessMetric[];
+}) {
+  return (
+    <section className="space-y-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+            MVP product success
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+            What users are doing
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+            Durable product counts from Supabase where the action creates a row.
+            Event-only steps stay clearly marked until they have stored data.
+          </p>
+        </div>
+        <span className="rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold shadow-sm">
+          No private content shown
+        </span>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {metrics.map((metric) => (
+          <ProductSuccessCard key={metric.label} metric={metric} />
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -950,7 +1325,10 @@ function ClarityReviewPrompt({ range }: { range: AnalyticsRange }) {
 }
 
 export default async function AdminAnalyticsPage() {
-  const posthogResult = await getPostHogDashboardCounts();
+  const [productSuccessMetrics, posthogResult] = await Promise.all([
+    getProductSuccessMetrics(),
+    getPostHogDashboardCounts(),
+  ]);
   const analyticsRanges =
     posthogResult.status === "ok"
       ? [
@@ -985,8 +1363,9 @@ export default async function AdminAnalyticsPage() {
                 Product Analytics
               </h1>
               <p className="mt-4 text-sm leading-6 text-muted-foreground sm:text-base">
-                A focused MVP view of the action events currently tracked in
-                PostHog. Values shown here are aggregate event counts only.
+                A focused MVP view of durable product counts from Supabase and
+                action events currently tracked in PostHog. Values shown here
+                are aggregate counts only.
               </p>
             </div>
 
@@ -1011,11 +1390,14 @@ export default async function AdminAnalyticsPage() {
           {[
             {
               label: "Data source",
-              value: posthogResult.status === "ok" ? "PostHog" : "Unavailable",
+              value:
+                posthogResult.status === "ok"
+                  ? "Supabase + PostHog"
+                  : "Supabase + waiting",
               helper:
                 posthogResult.status === "ok"
-                  ? "Fetched server-side through the private Query API."
-                  : "Live counts are hidden until the server connection works.",
+                  ? "Product rows plus server-side PostHog event counts."
+                  : "Product rows are shown; live event counts wait for PostHog.",
             },
             {
               label: "Privacy",
@@ -1044,6 +1426,8 @@ export default async function AdminAnalyticsPage() {
             </article>
           ))}
         </section>
+
+        <ProductSuccessDashboard metrics={productSuccessMetrics} />
 
         {summaryRange ? (
           <>

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 import { ChatMessageForm } from "./chat-message-form";
+import { ChatSentTracker } from "./chat-sent-tracker";
 import { sendMessage } from "./actions";
 
 type ChatRow = {
@@ -31,10 +32,13 @@ type MessageRow = {
 
 export default async function ChatPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ chatId: string }>;
+  searchParams: Promise<{ sent?: string }>;
 }) {
   const { chatId } = await params;
+  const query = await searchParams;
   const supabase = await createClient();
 
   const {
@@ -84,6 +88,11 @@ export default async function ChatPage({
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
+      <ChatSentTracker
+        userId={user.id}
+        matchId={match.id}
+        sentMessageId={query.sent ?? null}
+      />
       <div className="mx-auto flex min-h-[calc(100vh-97px)] w-full max-w-md flex-col md:max-w-3xl lg:max-w-5xl">
         <header className="rounded-[1.75rem] border bg-background p-4 shadow-sm">
           <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
