@@ -60,6 +60,10 @@ PostHog needs two sets of variables:
 If the server-only values are missing, the admin analytics page shows a
 clear unavailable state instead of failing the app.
 
+Founder dashboard routes under `/admin/*` require a signed-in Supabase
+user whose email is listed in `FOUNDER_ADMIN_EMAILS` as a comma-separated
+allowlist.
+
 ## Project layout
 
 See AGENTS.md §4 for the canonical layout. In Step 1 we've scaffolded:
