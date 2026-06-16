@@ -300,7 +300,7 @@ export function QaSessionRoom({
               <div className="relative z-10 rounded-[1.75rem] border border-border bg-background p-3 shadow-sm md:order-3">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="rounded-full bg-card px-3 py-1 text-xs font-semibold">
-                    Maya
+                    Your match
                   </span>
                   <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
                     {theirTileStatus}
@@ -357,7 +357,7 @@ export function QaSessionRoom({
                   <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
                     <div>
                       <p className="text-sm font-semibold">
-                        Maya wants to add more questions.
+                        Your match wants to add more questions.
                       </p>
                       <p className="mt-1 text-sm leading-6 text-muted-foreground">
                         Only continue if you both want to.

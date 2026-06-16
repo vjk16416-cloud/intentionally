@@ -181,7 +181,7 @@ export function FeedbackForm() {
         <TextArea id="safetyFeedback" name="safetyFeedback" />
       </Field>
 
-      <Field label="Did the Q&A dating journey make sense?">
+      <Field label="Did the Guided Vibe Check journey make sense?">
         <TextArea id="qaFeedback" name="qaFeedback" />
       </Field>
 

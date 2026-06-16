@@ -47,8 +47,8 @@ export async function sendQaScheduledEmail({
   await resend.emails.send({
     from: FROM_EMAIL,
     to,
-    subject: `Your Q&A with ${otherName} is on`,
-    text: `Your Q&A with ${otherName} is scheduled for ${when}.
+    subject: `Your Guided Vibe Check with ${otherName} is on`,
+    text: `Your Guided Vibe Check with ${otherName} is scheduled for ${when}.
 
 Three questions to start you off:
 ${questionsList}
@@ -81,8 +81,8 @@ export async function sendQaMorningOfEmail({
   await resend.emails.send({
     from: FROM_EMAIL,
     to,
-    subject: `Your Q&A with ${otherName} is today`,
-    text: `Quick reminder: your Q&A with ${otherName} is today at ${time} London time.
+    subject: `Your Guided Vibe Check with ${otherName} is today`,
+    text: `Quick reminder: your Guided Vibe Check with ${otherName} is today at ${time} London time.
 
 Join here when it's time: ${joinUrl}`,
   });
@@ -114,8 +114,8 @@ export async function sendQaOneHourBeforeEmail({
   await resend.emails.send({
     from: FROM_EMAIL,
     to,
-    subject: `Your Q&A with ${otherName} starts in about an hour`,
-    text: `Your Q&A with ${otherName} starts at ${time} London time — about an hour from now.
+    subject: `Your Guided Vibe Check with ${otherName} starts in about an hour`,
+    text: `Your Guided Vibe Check with ${otherName} starts at ${time} London time — about an hour from now.
 
 Three questions, same as before:
 ${questionsList}
