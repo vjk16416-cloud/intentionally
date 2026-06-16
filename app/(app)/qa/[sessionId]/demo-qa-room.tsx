@@ -79,7 +79,7 @@ export default function DemoQaRoom() {
         <header className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="rounded-full border bg-background px-3 py-1 text-xs text-muted-foreground">
-              Demo Q&amp;A room
+              Demo Vibe Check room
             </span>
             <span className="rounded-full bg-black px-3 py-1 text-xs text-white">
               10 min
@@ -88,7 +88,7 @@ export default function DemoQaRoom() {
 
           <div>
             <h1 className="text-3xl font-semibold tracking-tight">
-              Guided video Q&amp;A
+              Guided Vibe Check
             </h1>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
               Answer one guided prompt at a time, then both people privately
@@ -307,7 +307,7 @@ export default function DemoQaRoom() {
                   </p>
                   <p className="mt-1">
                     {decision === "continue"
-                      ? "Your full profiles are now unlocked and chat is open."
+                      ? "Chats are now unlocked because you both chose Continue."
                       : "We&apos;ll quietly close this match. They won&apos;t be told you passed."}
                   </p>
                 </div>

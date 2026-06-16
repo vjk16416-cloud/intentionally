@@ -34,8 +34,8 @@ export default function DemoDatePlanPage() {
             Ready to meet Maya?
           </h1>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Based on your Q&amp;A and chat momentum, Intentionally suggests
-            safe, public first-date options.
+            Based on your Guided Vibe Check and chat momentum, Intentionally
+            suggests safe, public first-date options.
           </p>
         </header>
 
