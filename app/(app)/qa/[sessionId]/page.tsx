@@ -8,7 +8,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 
 import { saveQaOutcome } from "./actions";
-import { QaDecisionButton, QaDecisionLink } from "./qa-decision-controls";
+import { QaDecisionButton } from "./qa-decision-controls";
 import { QaSessionRoom } from "./qa-session-room";
 
 const QUESTIONS = [
@@ -71,8 +71,6 @@ export default async function QaSessionPage({
   const { sessionId } = await params;
   const query = await searchParams;
 
-  const isDemoSession = sessionId.startsWith("demo-");
-
   const supabase = await createClient();
   const {
     data: { user },
@@ -82,28 +80,24 @@ export default async function QaSessionPage({
     redirect("/login");
   }
 
-  const { data: session } = isDemoSession
-    ? { data: null }
-    : await supabase
-        .from("qa_sessions")
-        .select("id, questions, match_id, daily_room_url")
-        .eq("id", sessionId)
-        .maybeSingle();
+  const { data: session } = await supabase
+    .from("qa_sessions")
+    .select("id, questions, match_id, daily_room_url")
+    .eq("id", sessionId)
+    .maybeSingle();
 
-  if (!isDemoSession && !session) {
+  if (!session) {
     redirect("/discover");
   }
 
-  if (!isDemoSession && session) {
-    const { data: match } = await supabase
-      .from("matches")
-      .select("id, user_a, user_b")
-      .eq("id", session.match_id)
-      .maybeSingle();
+  const { data: match } = await supabase
+    .from("matches")
+    .select("id, user_a, user_b")
+    .eq("id", session.match_id)
+    .maybeSingle();
 
-    if (!match || (match.user_a !== user.id && match.user_b !== user.id)) {
-      redirect("/discover");
-    }
+  if (!match || (match.user_a !== user.id && match.user_b !== user.id)) {
+    redirect("/discover");
   }
 
   const baseQuestions =
@@ -122,7 +116,7 @@ export default async function QaSessionPage({
   const extraRequest = parseExtraRequestState(query.extraRequest);
   const visibilityMode = parseQaVisibilityMode(query.visibility);
   const visibilityParam = qaVisibilitySearchParam(visibilityMode);
-  const matchId = session?.match_id ?? (isDemoSession ? "demo-demo-match" : null);
+  const matchId = session.match_id;
 
   if (!started && !finished) {
     return (
@@ -195,38 +189,6 @@ export default async function QaSessionPage({
                     : "We&apos;ll quietly close this match. They won&apos;t be told you passed."}
                 </p>
               </div>
-            ) : isDemoSession ? (
-              <div className="mt-6 space-y-4">
-                <div className="grid gap-3 rounded-[1.5rem] bg-background p-4 text-sm leading-6 text-muted-foreground">
-                  <p>Choose Continue if you&apos;d like to keep talking.</p>
-                  <p>Choose Pass privately if it doesn&apos;t feel right.</p>
-                </div>
-
-                <div className="grid gap-3">
-                  <QaDecisionLink
-                    href="/chat/demo-demo-match"
-                    decision="continue"
-                    userId={user.id}
-                    matchId={matchId}
-                    sessionId={sessionId}
-                    visibilityMode={visibilityMode}
-                    className="w-full rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
-                  >
-                    Continue
-                  </QaDecisionLink>
-                  <QaDecisionLink
-                    href="/discover"
-                    decision="pass"
-                    userId={user.id}
-                    matchId={matchId}
-                    sessionId={sessionId}
-                    visibilityMode={visibilityMode}
-                    className="w-full rounded-2xl border border-[#d9a6a0]/40 bg-[#f3d8d3] px-4 py-4 text-center text-base font-semibold text-[#5a2d2a]"
-                  >
-                    Pass privately
-                  </QaDecisionLink>
-                </div>
-              </div>
             ) : (
               <div className="mt-6 space-y-4">
                 <div className="grid gap-3 rounded-[1.5rem] bg-background p-4 text-sm leading-6 text-muted-foreground">
@@ -290,8 +252,7 @@ export default async function QaSessionPage({
       initialExtraAccepted={extraQuestionsAccepted}
       initialExtraRequest={extraRequest}
       visibilityMode={visibilityMode}
-      isDemoSession={isDemoSession}
-      dailyRoomUrl={session?.daily_room_url}
+      dailyRoomUrl={session.daily_room_url}
     />
   );
 }

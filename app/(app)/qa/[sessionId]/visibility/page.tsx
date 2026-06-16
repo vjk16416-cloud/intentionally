@@ -18,7 +18,6 @@ export default async function QaVisibilityPage({
   const { sessionId } = await params;
   const query = await searchParams;
   const selectedMode = parseQaVisibilityMode(query.visibility);
-  const isDemoSession = sessionId.startsWith("demo-");
 
   const supabase = await createClient();
   const {
@@ -29,28 +28,24 @@ export default async function QaVisibilityPage({
     redirect("/login");
   }
 
-  const { data: session } = isDemoSession
-    ? { data: null }
-    : await supabase
-        .from("qa_sessions")
-        .select("id, match_id")
-        .eq("id", sessionId)
-        .maybeSingle();
+  const { data: session } = await supabase
+    .from("qa_sessions")
+    .select("id, match_id")
+    .eq("id", sessionId)
+    .maybeSingle();
 
-  if (!isDemoSession && !session) {
+  if (!session) {
     redirect("/discover");
   }
 
-  if (!isDemoSession && session) {
-    const { data: match } = await supabase
-      .from("matches")
-      .select("id, user_a, user_b")
-      .eq("id", session.match_id)
-      .maybeSingle();
+  const { data: match } = await supabase
+    .from("matches")
+    .select("id, user_a, user_b")
+    .eq("id", session.match_id)
+    .maybeSingle();
 
-    if (!match || (match.user_a !== user.id && match.user_b !== user.id)) {
-      redirect("/discover");
-    }
+  if (!match || (match.user_a !== user.id && match.user_b !== user.id)) {
+    redirect("/discover");
   }
 
   return (

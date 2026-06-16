@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
@@ -11,7 +11,6 @@ import { BIO_PROMPTS } from "@/lib/onboarding/constants";
 
 import { likeProfile, passProfile, type MatchedCard } from "./actions";
 import { MatchModal } from "./match-modal";
-import { UpcomingQaSection } from "./upcoming-qa-section";
 
 type ActiveMatch = { matchId: string; match: MatchedCard };
 
@@ -104,10 +103,8 @@ function promptAnswer(answer: string | null | undefined) {
 
 export function DiscoverDeck({
   cards,
-  isDemoMode = false,
 }: {
   cards: DiscoverCard[];
-  isDemoMode?: boolean;
 }) {
   const [index, setIndex] = useState(0);
   const [pending, startTransition] = useTransition();
@@ -118,10 +115,6 @@ export function DiscoverDeck({
   const card = cards[index];
   const hasTrackedView = useRef(false);
 
-  const visibleNewMatches = useMemo(() => {
-    return cards.slice(0, 3);
-  }, [cards]);
-
   useEffect(() => {
     if (hasTrackedView.current) return;
 
@@ -129,10 +122,9 @@ export function DiscoverDeck({
     trackAnalyticsEvent("discoverViewed", {
       properties: {
         card_count: cards.length,
-        is_demo_mode: isDemoMode,
       },
     });
-  }, [card, cards.length, isDemoMode]);
+  }, [card, cards.length]);
 
   if (cards.length === 0 || !card) {
     return (
@@ -170,37 +162,13 @@ export function DiscoverDeck({
   const photos = photoLabel(card.photo_urls);
   const trustCue = verificationLabel(card.id_verified);
 
-  function openDemoMatch(matchCard = card) {
-    setActiveMatch({
-      matchId: "demo-match",
-      match: {
-        id: matchCard.id,
-        display_name: matchCard.display_name,
-        date_of_birth: matchCard.date_of_birth,
-        photo_urls: matchCard.photo_urls,
-      },
-    });
-  }
-
   function handleLike() {
     setActionError(null);
     trackEvent(AnalyticsEvents.PROFILE_LIKED, {
       target_profile_id: card.id,
       source: "discover",
-      is_demo_mode: isDemoMode,
     });
     const cardId = card.id;
-
-    if (isDemoMode || cardId.startsWith("demo-")) {
-      trackEvent(AnalyticsEvents.MATCH_CREATED, {
-        target_profile_id: cardId,
-        match_id: "demo-match",
-        source: "discover",
-        is_demo_mode: isDemoMode,
-      });
-      openDemoMatch();
-      return;
-    }
 
     startTransition(async () => {
       const result = await likeProfile(cardId);
@@ -219,7 +187,6 @@ export function DiscoverDeck({
           target_profile_id: cardId,
           match_id: result.matchId,
           source: "discover",
-          is_demo_mode: isDemoMode,
         });
         setActiveMatch({ matchId: result.matchId, match: result.with });
       }
@@ -233,14 +200,8 @@ export function DiscoverDeck({
     trackEvent(AnalyticsEvents.PROFILE_PASSED, {
       target_profile_id: card.id,
       source: "discover",
-      is_demo_mode: isDemoMode,
     });
     const cardId = card.id;
-
-    if (isDemoMode || cardId.startsWith("demo-")) {
-      setIndex((current) => Math.min(current + 1, cards.length));
-      return;
-    }
 
     startTransition(async () => {
       await passProfile(cardId);
@@ -422,114 +383,12 @@ export function DiscoverDeck({
           </div>
         </section>
 
-        <UpcomingQaSection />
-
-        <section className="mt-8">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                Matches
-              </p>
-              <h2 className="mt-1 text-xl font-semibold tracking-tight">
-                Matches ready for Vibe Check
-              </h2>
-            </div>
-
-            <p className="text-xs font-medium text-muted-foreground">
-              Ready to invite
-            </p>
-          </div>
-
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            You matched. Send a Vibe Check invite to see if the conversation
-            feels natural before chat unlocks.
-          </p>
-
-          <div className="-mx-4 mt-4 flex gap-3 overflow-x-auto px-4 pb-3 sm:-mx-5 sm:px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {visibleNewMatches.map((matchCard) => (
-              <article
-                key={matchCard.id}
-                className="w-36 shrink-0 rounded-[1.5rem] border border-border bg-card p-2 shadow-sm"
-              >
-                <div className="relative overflow-hidden rounded-[1.15rem] bg-muted">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={matchCard.photo_urls[0]}
-                    alt=""
-                    className="h-44 w-full object-cover grayscale"
-                  />
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
-
-                  <div className="absolute inset-x-0 bottom-0 p-3 text-primary-foreground">
-                    <p className="text-sm font-semibold">
-                      {firstName(matchCard.display_name)},{" "}
-                      {ageFromDate(matchCard.date_of_birth)}
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    trackAnalyticsEvent("scheduleClicked", {
-                      properties: {
-                        match_id: matchCard.id,
-                        source: "discover_matches",
-                      },
-                    });
-                    openDemoMatch(matchCard);
-                  }}
-                  className="mt-2 w-full rounded-2xl bg-accent px-3 py-3 text-sm font-semibold text-accent-foreground transition hover:opacity-90 active:scale-[0.98]"
-                >
-                  Send invite
-                </button>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="mt-8">
-          <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-              Messages
-            </p>
-            <h2 className="mt-1 text-xl font-semibold tracking-tight">
-              Chats unlocked
-            </h2>
-          </div>
-
-          <div className="mt-4 rounded-[1.75rem] border border-border bg-card p-5 shadow-sm">
-            <p className="text-sm font-semibold text-foreground">
-              Quality over quantity.
-            </p>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Chats unlock only after your Guided Vibe Check and mutual
-              Continue.
-            </p>
-          </div>
-        </section>
-
-        <nav className="fixed inset-x-4 bottom-4 z-40 mx-auto grid max-w-md grid-cols-4 rounded-[1.5rem] border border-border bg-card/95 p-2 text-center text-xs shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur md:max-w-3xl lg:max-w-5xl">
+        <nav className="fixed inset-x-4 bottom-4 z-40 mx-auto grid max-w-md grid-cols-2 rounded-[1.5rem] border border-border bg-card/95 p-2 text-center text-xs shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur md:max-w-3xl lg:max-w-5xl">
           <Link
             href="/discover"
             className="rounded-2xl bg-accent px-2 py-3 font-semibold text-accent-foreground"
           >
             Discover
-          </Link>
-
-          <Link
-            href="/qa/demo-demo-match"
-            className="rounded-2xl px-2 py-3 font-semibold text-muted-foreground"
-          >
-            Vibe Check
-          </Link>
-
-          <Link
-            href="/chat/demo-demo-match"
-            className="rounded-2xl px-2 py-3 font-semibold text-muted-foreground"
-          >
-            Messages
           </Link>
 
           <Link

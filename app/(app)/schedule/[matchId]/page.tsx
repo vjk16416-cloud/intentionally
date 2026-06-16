@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-import { TrackedLink } from "@/components/analytics/tracked-link";
 import { buttonVariants } from "@/components/ui/button";
 import { computeMutualSlots } from "@/lib/scheduling/slots";
 import { createClient } from "@/lib/supabase/server";
@@ -42,106 +41,6 @@ const dateFormatter = new Intl.DateTimeFormat("en-GB", {
   timeZone: "Europe/London",
 });
 
-const demoScheduleSlots = [
-  {
-    label: "Tonight",
-    time: "7:30pm",
-    helper: "Best for a quick first Guided Vibe Check",
-  },
-  {
-    label: "Tomorrow",
-    time: "8:00pm",
-    helper: "A calm evening slot",
-  },
-  {
-    label: "Sunday",
-    time: "6:30pm",
-    helper: "Weekend reset conversation",
-  },
-];
-
-function demoNameFromMatchId(matchId: string) {
-  const cleaned = matchId
-    .replace(/^demo-demo-/, "")
-    .replace(/^demo-/, "")
-    .replace(/^woman-/, "")
-    .replace(/^man-/, "")
-    .replace(/^nb-/, "");
-
-  const lastPart = cleaned.split("-").filter(Boolean).pop();
-
-  if (!lastPart) return "your match";
-
-  return lastPart.charAt(0).toUpperCase() + lastPart.slice(1);
-}
-
-function DemoSchedulePage({ matchId }: { matchId: string }) {
-  const otherName = demoNameFromMatchId(matchId);
-
-  return (
-    <main className="min-h-[calc(100vh-57px)] bg-[radial-gradient(circle_at_top,_rgba(0,0,0,0.08),_transparent_34%),linear-gradient(to_bottom,_hsl(var(--background)),_hsl(var(--muted)))] px-4 py-6">
-      <div className="mx-auto w-full max-w-md space-y-5 md:max-w-3xl">
-        <header className="space-y-2">
-          <div className="inline-flex rounded-full border bg-background/80 px-3 py-1 text-xs text-muted-foreground shadow-sm">
-            Demo Vibe Check scheduling
-          </div>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Schedule with {otherName}
-          </h1>
-          <p className="text-sm leading-6 text-muted-foreground">
-            In the real app, these times come from both people’s availability.
-            For demo mode, choose a sample slot to preview the next step.
-          </p>
-        </header>
-
-        <section className="rounded-[2rem] border bg-background/85 p-4 shadow-sm backdrop-blur">
-          <p className="text-sm font-medium">Suggested Vibe Check times</p>
-          <p className="mt-1 text-xs leading-5 text-muted-foreground">
-            Your first Guided Vibe Check is only 10 minutes. Chat unlocks later
-            if both people choose Continue.
-          </p>
-
-          <div className="mt-4 grid gap-2 md:grid-cols-3">
-            {demoScheduleSlots.map((slot) => (
-              <TrackedLink
-                key={`${slot.label}-${slot.time}`}
-                href={`/qa/${matchId}`}
-                eventKey="scheduleClicked"
-                className="block rounded-3xl border bg-card p-4 transition hover:bg-muted"
-              >
-                <div className="flex items-baseline justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-medium">{slot.label}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {slot.helper}
-                    </p>
-                  </div>
-                  <p className="text-lg font-semibold">{slot.time}</p>
-                </div>
-              </TrackedLink>
-            ))}
-          </div>
-        </section>
-
-        <div className="rounded-3xl border bg-muted/40 p-4">
-          <p className="text-sm font-medium">What happens next?</p>
-          <p className="mt-1 text-xs leading-5 text-muted-foreground">
-            Both people answer a few guided questions on video. The aim is to
-            create a better first conversation before chat unlocks.
-          </p>
-        </div>
-
-        <Link
-          href="/discover"
-          className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full")}
-        >
-          Back to Discover
-        </Link>
-      </div>
-    </main>
-  );
-}
-
 export default async function SchedulePage({
   params,
 }: {
@@ -154,10 +53,6 @@ export default async function SchedulePage({
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-
-  if (matchId.startsWith("demo-")) {
-    return <DemoSchedulePage matchId={matchId} />;
-  }
 
   const { data: match } = await supabase
     .from("matches")

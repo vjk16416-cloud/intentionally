@@ -10,7 +10,6 @@ import {
   type QaVisibilityMode,
 } from "@/lib/qa/visibility";
 
-import { DemoMicrophoneButton, DemoSafetyButton } from "./demo-qa-controls";
 import { LocalMediaPreview } from "./local-media-preview";
 import { VisibilitySelector } from "./visibility-selector";
 
@@ -30,7 +29,6 @@ type QaSessionRoomProps = {
   initialExtraAccepted: boolean;
   initialExtraRequest: ExtraRequestState;
   visibilityMode: QaVisibilityMode;
-  isDemoSession: boolean;
   dailyRoomUrl?: string | null;
 };
 
@@ -53,7 +51,6 @@ export function QaSessionRoom({
   initialExtraAccepted,
   initialExtraRequest,
   visibilityMode,
-  isDemoSession,
   dailyRoomUrl,
 }: QaSessionRoomProps) {
   const router = useRouter();
@@ -105,7 +102,6 @@ export function QaSessionRoom({
         session_id: sessionId,
         visibility_mode: visibilityMode,
         surface: "room_entry",
-        is_demo_session: isDemoSession,
       },
     });
     trackEvent(AnalyticsEvents.QA_STARTED, {
@@ -114,9 +110,8 @@ export function QaSessionRoom({
       qa_session_id: sessionId,
       source: "qa",
       visibility_mode: visibilityMode,
-      is_demo_session: isDemoSession,
     });
-  }, [isDemoSession, matchId, sessionId, userId, visibilityMode]);
+  }, [matchId, sessionId, userId, visibilityMode]);
 
   function finishSession(extraState: ExtraRequestState = extraRequest) {
     const params = new URLSearchParams({
@@ -141,7 +136,6 @@ export function QaSessionRoom({
       question_count: questions.length,
       extra_questions: extraAccepted,
       extra_request_state: extraState,
-      is_demo_session: isDemoSession,
     });
     router.push(`/qa/${sessionId}?${params.toString()}`);
   }
@@ -165,7 +159,6 @@ export function QaSessionRoom({
         question_index: safeQuestionIndex,
         question_total: questions.length,
         is_last_question: isLastQuestion,
-        is_demo_session: isDemoSession,
       },
     });
     advanceQuestion();
@@ -206,17 +199,13 @@ export function QaSessionRoom({
 
             <div className="flex shrink-0 items-center gap-2">
               <VisibilitySelector mode={visibilityMode} />
-              {isDemoSession ? (
-                <DemoSafetyButton />
-              ) : (
-                <button
-                  type="button"
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-lg"
-                  aria-label="Safety options"
-                >
-                  🛡
-                </button>
-              )}
+              <button
+                type="button"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-lg"
+                aria-label="Safety options"
+              >
+                🛡
+              </button>
             </div>
           </header>
 
@@ -318,38 +307,7 @@ export function QaSessionRoom({
                   </span>
                 </div>
 
-                {isDemoSession ? (
-                  <div className="relative min-h-44 overflow-hidden rounded-[1.5rem] bg-[linear-gradient(to_bottom,_#343434,_#131313)] p-3 text-white lg:min-h-72">
-                    <div
-                      className={
-                        shouldSoftenTheirTile
-                          ? "absolute inset-0 scale-105 bg-[linear-gradient(to_bottom,_#343434,_#131313)] blur-sm opacity-75"
-                          : "absolute inset-0 bg-[linear-gradient(to_bottom,_#343434,_#131313)]"
-                      }
-                    />
-                    <div
-                      className={
-                        shouldSoftenTheirTile
-                          ? "absolute inset-0 bg-black/15"
-                          : "absolute inset-0"
-                      }
-                    />
-
-                    <div className="relative z-10 flex min-h-32 flex-col items-center justify-center lg:min-h-60">
-                      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/15 text-2xl font-semibold">
-                        M
-                      </div>
-                    </div>
-
-                    <div className="absolute inset-x-3 bottom-3 z-10 rounded-2xl bg-black/25 px-3 py-2 text-center text-xs leading-5 text-white/70">
-                      {shouldSoftenTheirTile
-                        ? "Dynamic Mode softens the listener so the speaker feels less watched."
-                        : isYouAnswering
-                          ? "They stay clear while listening."
-                          : "They stay clear while answering."}
-                    </div>
-                  </div>
-                ) : dailyRoomUrl ? (
+                {dailyRoomUrl ? (
                   <div className="overflow-hidden rounded-[1.5rem] bg-black">
                     <iframe
                       src={dailyRoomUrl}
@@ -441,15 +399,6 @@ export function QaSessionRoom({
                       >
                         Add more questions
                       </button>
-                      {isDemoSession ? (
-                        <button
-                          type="button"
-                          onClick={() => setExtraRequest("incoming")}
-                          className="rounded-2xl border border-border bg-card px-4 py-3 text-center text-sm font-semibold text-foreground"
-                        >
-                          Maya asks
-                        </button>
-                      ) : null}
                     </div>
                   </div>
                 )}
@@ -472,17 +421,13 @@ export function QaSessionRoom({
                 Skip
               </button>
 
-              {isDemoSession ? (
-                <DemoMicrophoneButton />
-              ) : (
-                <button
-                  type="button"
-                  className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-2xl text-accent-foreground shadow-sm"
-                  aria-label="Tap to speak"
-                >
-                  🎙
-                </button>
-              )}
+              <button
+                type="button"
+                className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-2xl text-accent-foreground shadow-sm"
+                aria-label="Tap to speak"
+              >
+                🎙
+              </button>
 
               <button
                 type="button"
