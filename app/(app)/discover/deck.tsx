@@ -92,7 +92,7 @@ function photoLabel(photoUrls: string[]) {
 }
 
 function verificationLabel(isVerified: boolean | null | undefined) {
-  return isVerified ? "Verified basics" : "Vibe Check ready";
+  return isVerified ? "Verified basics" : "Match first";
 }
 
 function promptAnswer(answer: string | null | undefined) {
@@ -377,7 +377,7 @@ export function DiscoverDeck({
                 Private mutual reveal
               </span>
               <span className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-                Choose visibility first
+                Choose how you appear
               </span>
             </div>
 
@@ -416,8 +416,8 @@ export function DiscoverDeck({
             </div>
 
             <div className="rounded-[1.25rem] bg-secondary/70 px-4 py-3 text-center text-xs leading-5 text-muted-foreground">
-              If they&apos;re interested too, you&apos;ll match. Then either of
-              you can send a Vibe Check invite.
+              If they like you back, you&apos;ll match. Then either of you can
+              send a Vibe Check invite.
             </div>
           </div>
         </section>
@@ -436,7 +436,7 @@ export function DiscoverDeck({
             </div>
 
             <p className="text-xs font-medium text-muted-foreground">
-              Ready for invite
+              Ready to invite
             </p>
           </div>
 
@@ -495,7 +495,7 @@ export function DiscoverDeck({
               Messages
             </p>
             <h2 className="mt-1 text-xl font-semibold tracking-tight">
-              Conversations unlocked
+              Chats unlocked
             </h2>
           </div>
 

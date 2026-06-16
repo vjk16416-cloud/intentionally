@@ -238,8 +238,8 @@ export function DemoDiscover() {
             Browse slowly.
           </h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            If there is mutual interest, you both move into a short Guided Vibe
-            Check invite before chat can unlock.
+            If they like you back, you&apos;ll match. Then either of you can
+            send a Vibe Check invite.
           </p>
         </div>
 
