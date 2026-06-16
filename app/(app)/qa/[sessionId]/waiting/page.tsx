@@ -90,7 +90,7 @@ export default async function QaWaitingPage({
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
             {bothDecided
               ? bothContinue
-                ? "Your full profiles are now unlocked and chat is open."
+                ? "Chats are now unlocked because you both chose Continue."
                 : "We&apos;ll quietly close this match. They won&apos;t be told you passed."
               : "Your choice stays private. They&apos;ll only know if you both choose Continue."}
           </p>

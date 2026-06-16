@@ -53,7 +53,7 @@ export function VisibilitySelector({ mode }: VisibilitySelectorProps) {
       {isOpen ? (
         <div className="absolute right-0 top-11 z-20 w-[min(19rem,calc(100vw-2rem))] rounded-[1.5rem] border border-white/12 bg-[#f8efe2] p-4 text-[#241c17] shadow-2xl">
           <p className="text-sm font-semibold">
-            Choose how you appear during this Q&amp;A.
+            Choose how you appear during this Guided Vibe Check.
           </p>
 
           <div className="mt-4 space-y-2">

@@ -65,7 +65,7 @@ export default async function QaVisibilityPage({
           </Link>
 
           <p className="mt-6 text-xs uppercase tracking-[0.24em] text-muted-foreground">
-            Guided questions. Chosen visibility. Mutual reveal.
+            Guided Vibe Check. Chosen visibility. Mutual Continue.
           </p>
 
           <h1 className="mt-4 text-3xl font-semibold tracking-tight">
@@ -73,7 +73,7 @@ export default async function QaVisibilityPage({
           </h1>
 
           <p className="mt-4 text-sm leading-6 text-muted-foreground">
-            You can change this during the Q&amp;A. Full profiles only unlock
+            You can change this during the Guided Vibe Check. Chat unlocks only
             if you both choose Continue.
           </p>
 
@@ -119,7 +119,7 @@ export default async function QaVisibilityPage({
               type="submit"
               className="w-full rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground md:col-span-3"
             >
-              Enter Q&amp;A Room
+              Join Vibe Check
             </button>
           </form>
 

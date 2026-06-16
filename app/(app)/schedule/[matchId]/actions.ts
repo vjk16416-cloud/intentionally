@@ -115,7 +115,7 @@ export async function proposeSlot(
     }>();
 
   if (existing?.confirmed_at) {
-    return { error: "This Q&A is already confirmed." };
+    return { error: "This Guided Vibe Check is already confirmed." };
   }
 
   const now = new Date().toISOString();

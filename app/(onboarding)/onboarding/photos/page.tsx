@@ -40,7 +40,7 @@ export default async function PhotosStepPage({
         <p className="text-sm leading-6 text-muted-foreground">
           Choose recent photos where your face is clear and the lighting is
           natural. Avoid heavy filters. The aim is to help someone recognise
-          the real you before a guided Q&amp;A.
+          the real you before a Guided Vibe Check.
         </p>
       </header>
       <PhotosForm

@@ -44,13 +44,14 @@ export default async function OnboardingDonePage() {
                 1. Match first
               </p>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                When you and someone match, we move you towards a short Q&amp;A instead of endless texting.
+                When you and someone match, one of you sends a Guided Vibe
+                Check invite instead of unlocking chat immediately.
               </p>
             </div>
 
             <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
               <p className="text-sm font-semibold text-foreground">
-                2. Ten-minute video Q&amp;A
+                2. Ten-minute Guided Vibe Check
               </p>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
                 You answer three guided questions. The listener stays softly blurred so it feels calmer and less performative.
@@ -62,7 +63,8 @@ export default async function OnboardingDonePage() {
                 3. Decide privately
               </p>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                If you both want to continue, chat opens. If not, the match closes quietly.
+                If you both choose Continue after the Guided Vibe Check, chat
+                unlocks. If not, the match closes quietly.
               </p>
             </div>
           </div>

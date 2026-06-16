@@ -226,8 +226,8 @@ export default async function OnboardingReviewPage() {
           Almost ready
         </p>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">
-          ID verification happens later, before your first guided Q&amp;A. For
-          now, this is how your profile will appear.
+          ID verification happens later, before your first Guided Vibe Check.
+          For now, this is how your profile will appear.
         </p>
       </div>
 

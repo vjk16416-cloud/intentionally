@@ -95,7 +95,7 @@ export function TrustedContactForm({
         </p>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">
           They are never shown on your profile and are not contacted about
-          matches, likes, or Q&amp;As. You can update this later.
+          matches, likes, or Vibe Checks. You can update this later.
         </p>
       </div>
 

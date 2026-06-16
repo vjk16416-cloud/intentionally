@@ -15,9 +15,9 @@ export const QA_VISIBILITY_OPTIONS: Record<
   open: {
     label: "Open Mode",
     shortLabel: "Open",
-    copy: "Be visible during the Q&A.",
+    copy: "Be visible during the Guided Vibe Check.",
     helper: "Best if you're comfortable being seen clearly.",
-    roomCopy: "Visible during the Q&A.",
+    roomCopy: "Visible during the Guided Vibe Check.",
   },
   dynamic: {
     label: "Dynamic Mode",

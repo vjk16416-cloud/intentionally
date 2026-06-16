@@ -40,8 +40,8 @@ export default async function IntentionStepPage({
               What kind of connection are you open to?
             </h1>
             <p className="text-sm leading-6 text-muted-foreground">
-              Your answer helps shape the prompts and pace of your guided Q&amp;A
-              experience.
+              Your answer helps shape the prompts and pace of your Guided Vibe
+              Check experience.
             </p>
           </header>
 

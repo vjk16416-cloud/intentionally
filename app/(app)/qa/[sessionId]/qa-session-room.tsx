@@ -190,14 +190,14 @@ export function QaSessionRoom({
             <a
               href="/discover"
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-background text-xl text-muted-foreground"
-              aria-label="Exit Q&A"
+              aria-label="Exit Vibe Check"
             >
               ×
             </a>
 
             <div className="min-w-0 text-center">
               <p className="text-sm font-semibold tracking-tight">
-                Q&amp;A Room
+                Guided Vibe Check
               </p>
               <p className="text-[11px] text-muted-foreground">
                 Guided conversation
@@ -353,7 +353,7 @@ export function QaSessionRoom({
                   <div className="overflow-hidden rounded-[1.5rem] bg-black">
                     <iframe
                       src={dailyRoomUrl}
-                      title="Guided Q&A video room"
+                      title="Guided Vibe Check video room"
                       allow="camera; microphone; fullscreen; speaker; display-capture"
                       className="h-[320px] w-full border-0 lg:h-[420px]"
                     />
@@ -361,7 +361,7 @@ export function QaSessionRoom({
                 ) : (
                   <div className="rounded-[1.5rem] bg-muted p-5 text-sm leading-6 text-muted-foreground">
                     Your video room is being prepared. If this continues,
-                    return to scheduling and confirm your Q&amp;A time again.
+                    return to scheduling and confirm your Vibe Check time again.
                   </div>
                 )}
               </div>
@@ -494,7 +494,7 @@ export function QaSessionRoom({
             </div>
 
             <div className="mx-auto w-full max-w-2xl rounded-[1.35rem] bg-secondary p-4 text-sm leading-6 text-muted-foreground md:text-center">
-              <p>Full profiles unlock only if you both choose Continue.</p>
+              <p>Chat unlocks only if you both choose Continue.</p>
               <p>Your answers stay private. You can skip any question.</p>
             </div>
           </div>

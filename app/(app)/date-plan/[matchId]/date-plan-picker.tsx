@@ -73,8 +73,8 @@ export function DatePlanPicker({
             Ready to meet {otherName}?
           </h1>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Pick a simple, public first-date plan. We&apos;ll save it as your
-            preferred plan for this match.
+            Now that chat is unlocked, pick a simple, public first-date plan.
+            We&apos;ll save it as your preferred plan for this match.
           </p>
         </header>
 

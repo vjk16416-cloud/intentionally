@@ -46,7 +46,7 @@ const demoScheduleSlots = [
   {
     label: "Tonight",
     time: "7:30pm",
-    helper: "Best for a quick first Q&A",
+    helper: "Best for a quick first Guided Vibe Check",
   },
   {
     label: "Tomorrow",
@@ -83,7 +83,7 @@ function DemoSchedulePage({ matchId }: { matchId: string }) {
       <div className="mx-auto w-full max-w-md space-y-5 md:max-w-3xl">
         <header className="space-y-2">
           <div className="inline-flex rounded-full border bg-background/80 px-3 py-1 text-xs text-muted-foreground shadow-sm">
-            Demo Q&amp;A scheduling
+            Demo Vibe Check scheduling
           </div>
           <h1 className="text-3xl font-semibold tracking-tight">
             Schedule with {otherName}
@@ -95,10 +95,10 @@ function DemoSchedulePage({ matchId }: { matchId: string }) {
         </header>
 
         <section className="rounded-[2rem] border bg-background/85 p-4 shadow-sm backdrop-blur">
-          <p className="text-sm font-medium">Suggested Q&amp;A times</p>
+          <p className="text-sm font-medium">Suggested Vibe Check times</p>
           <p className="mt-1 text-xs leading-5 text-muted-foreground">
-            Your first video Q&amp;A is only 10 minutes. Chat opens later if both
-            people choose to continue.
+            Your first Guided Vibe Check is only 10 minutes. Chat unlocks later
+            if both people choose Continue.
           </p>
 
           <div className="mt-4 grid gap-2 md:grid-cols-3">
@@ -127,7 +127,7 @@ function DemoSchedulePage({ matchId }: { matchId: string }) {
           <p className="text-sm font-medium">What happens next?</p>
           <p className="mt-1 text-xs leading-5 text-muted-foreground">
             Both people answer a few guided questions on video. The aim is to
-            create a better first conversation before opening chat.
+            create a better first conversation before chat unlocks.
           </p>
         </div>
 
@@ -191,7 +191,7 @@ export default async function SchedulePage({
       <main className="flex flex-1 items-center justify-center px-6 py-12">
         <div className="w-full max-w-md space-y-3 text-center md:max-w-xl">
           <h1 className="text-2xl font-semibold tracking-tight">
-            This match isn&apos;t open for scheduling.
+            This match isn&apos;t ready for a Guided Vibe Check.
           </h1>
           <p className="text-sm text-muted-foreground">
             Head back to /discover to find someone new.
@@ -210,7 +210,7 @@ export default async function SchedulePage({
             Scheduled
           </p>
           <h1 className="text-2xl font-semibold tracking-tight">
-            Q&amp;A with {otherName} is on.
+            Guided Vibe Check with {otherName} is on.
           </h1>
           <p className="text-sm text-muted-foreground">
             {when}. London time. Open the call when it&apos;s time to start.
@@ -220,7 +220,7 @@ export default async function SchedulePage({
               href={`/qa/${session.id}`}
               className={cn(buttonVariants({ size: "lg" }), "w-full rounded-2xl bg-accent text-accent-foreground hover:opacity-90")}
             >
-              Go to the call
+              Join Vibe Check
             </Link>
           </div>
         </div>
@@ -253,8 +253,8 @@ export default async function SchedulePage({
               You proposed {when}.
             </h1>
             <p className="text-sm text-muted-foreground">
-              We&apos;ll surface this on their /discover so they see it on
-              their next visit. Or replace it with a different time:
+              They&apos;ll see this Vibe Check invite on Discover next time they
+              visit. Or replace it with a different time:
             </p>
           </header>
           <SlotPicker matchId={matchId} slots={slots} />
@@ -270,7 +270,7 @@ export default async function SchedulePage({
         <div className="w-full max-w-md space-y-5 md:max-w-2xl">
           <header className="space-y-1 text-center">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              Their proposal
+              Their Vibe Check invite
             </p>
             <h1 className="text-2xl font-semibold tracking-tight">
               {otherName} proposed {when}.
@@ -297,14 +297,14 @@ export default async function SchedulePage({
       <div className="w-full max-w-md space-y-4 md:max-w-2xl">
         <header className="space-y-1 text-center">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">
-            Schedule your Q&amp;A
+            Schedule your Guided Vibe Check
           </p>
           <h1 className="text-2xl font-semibold tracking-tight">
             With {otherName}.
           </h1>
           <p className="text-sm text-muted-foreground">
-            Here&apos;s when you&apos;re both free in the next week. Pick
-            one, and they&apos;ll get to confirm or counter.
+            Here&apos;s when you&apos;re both free in the next week. Pick one,
+            and they&apos;ll get to accept or counter.
           </p>
         </header>
         <SlotPicker matchId={matchId} slots={slots} />

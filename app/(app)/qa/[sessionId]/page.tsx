@@ -130,7 +130,7 @@ export default async function QaSessionPage({
         <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center md:max-w-2xl">
           <section className="rounded-[2rem] border bg-background p-6 shadow-sm">
             <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-              Guided Q&amp;A
+              Guided Vibe Check
             </p>
             <h1 className="mt-4 text-3xl font-semibold tracking-tight">
               Before we begin
@@ -140,14 +140,14 @@ export default async function QaSessionPage({
               there is less pressure to perform or decide too quickly.
             </p>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Simply listen, be curious, and answer honestly. After the Q&amp;A,
-              you both privately choose Continue or Pass.
+              Simply listen, be curious, and answer honestly. After the Guided
+              Vibe Check, you both privately choose Continue or Pass.
             </p>
             <div className="mt-6 space-y-3 rounded-[1.5rem] bg-muted/60 p-4 text-sm leading-6 text-muted-foreground">
               <p>• Three thoughtful questions</p>
               <p>• Move on when you&apos;re both ready</p>
               <p>• Your choice stays private</p>
-              <p>• Chat and profiles unlock only if you both Continue</p>
+              <p>• Chat unlocks only if you both choose Continue</p>
             </div>
             <p className="mt-5 text-sm font-medium text-foreground">
               Estimated time: 10 minutes
@@ -191,7 +191,7 @@ export default async function QaSessionPage({
                 </p>
                 <p className="mt-1">
                   {decision === "continue"
-                    ? "Your full profiles are now unlocked and chat is open."
+                    ? "Chats are now unlocked because you both chose Continue."
                     : "We&apos;ll quietly close this match. They won&apos;t be told you passed."}
                 </p>
               </div>
@@ -271,8 +271,8 @@ export default async function QaSessionPage({
             )}
 
             <div className="mt-6 rounded-[1.5rem] bg-secondary p-4 text-sm leading-6 text-muted-foreground">
-              No awkward notifications. No pressure. Full profiles unlock only
-              if you both choose Continue.
+              No awkward notifications. No pressure. Chat unlocks only if you
+              both choose Continue.
             </div>
           </section>
         </div>
