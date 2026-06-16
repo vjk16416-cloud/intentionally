@@ -47,8 +47,8 @@ export function MatchModal({
           />
 
           <p className="mx-auto max-w-sm text-sm leading-6 text-muted-foreground">
-            There&apos;s mutual interest. Start with a guided Q&amp;A to see if
-            the conversation feels right before opening chat.
+            There&apos;s mutual interest. Send a Vibe Check invite to see if the
+            conversation feels natural before chat unlocks.
           </p>
 
           <div className="space-y-3">
@@ -61,12 +61,12 @@ export function MatchModal({
                 "h-12 w-full rounded-2xl text-base font-semibold",
               )}
             >
-              Schedule Q&A
+              Send Vibe Check invite
             </TrackedLink>
 
             <p className="text-xs leading-5 text-muted-foreground">
-              You&apos;ll choose how you appear before the Q&amp;A. Full
-              profiles unlock only if you both continue.
+              Once they accept, you can schedule or join the Guided Vibe Check.
+              Chat unlocks only if you both choose Continue.
             </p>
 
             <Button

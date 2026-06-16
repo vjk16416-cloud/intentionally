@@ -64,7 +64,7 @@ export function ProfileCard({ card }: { card: DiscoverCard }) {
             </h2>
 
             <p className="mt-2 max-w-xs text-sm leading-5 text-white/75">
-              A short guided Q&amp;A before chat opens.
+              A short Guided Vibe Check before chat unlocks.
             </p>
           </div>
         </div>

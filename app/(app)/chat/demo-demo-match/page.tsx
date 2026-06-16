@@ -72,19 +72,20 @@ export default function DemoChatPage() {
         <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
           <header className="rounded-[1.75rem] border bg-background p-4 shadow-sm">
             <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-              Chat unlocked
+              Chats unlocked
             </p>
             <h1 className="mt-2 text-2xl font-semibold tracking-tight">
               You and Maya both chose to continue.
             </h1>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              The Q&amp;A helped start the conversation before chat opened.
+              Chats unlock only after your Guided Vibe Check and mutual
+              Continue.
             </p>
           </header>
 
           <section className="rounded-[1.75rem] border bg-accent p-4 text-accent-foreground shadow-sm">
             <p className="text-xs uppercase tracking-[0.22em] text-accent-foreground/60">
-              Q&amp;A insight
+              Guided Vibe Check insight
             </p>
             <h2 className="mt-2 text-xl font-semibold tracking-tight">
               You both value honest, low-pressure communication.

@@ -9,7 +9,7 @@ export const demoProfile = {
   prompt: "My perfect Friday night is...",
   answer:
     "Good food, low-pressure plans and conversation that accidentally lasts for hours.",
-  trustCues: ["Verified basics", "Guided Vibe Check first", "Private decision"],
+  trustCues: ["Verified basics", "Match first", "Private decision"],
 };
 
 export const demoProfiles = [
@@ -22,7 +22,7 @@ export const demoProfiles = [
     photoUrl: "https://randomuser.me/api/portraits/men/42.jpg",
     prompt: "A small thing that makes me feel cared for is...",
     answer: "Someone remembering the details without making a big performance of it.",
-    trustCues: ["Q&A ready", "Mutual continue", "Safety-led reveal"],
+    trustCues: ["Vibe Check ready", "Mutual continue", "Safety-led reveal"],
   },
   {
     name: "Rio",

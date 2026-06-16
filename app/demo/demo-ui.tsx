@@ -18,7 +18,7 @@ import {
 const journey = [
   { href: "/demo/discover", label: "Discover" },
   { href: "/demo/profile", label: "Profile" },
-  { href: "/demo/schedule", label: "Schedule" },
+  { href: "/demo/schedule", label: "Invite + schedule" },
   { href: "/demo/vibe-check", label: "Guided Vibe Check" },
   { href: "/demo/decision", label: "Continue/Pass" },
   { href: "/demo/chat", label: "Chat" },
@@ -109,7 +109,7 @@ export function DemoIndex() {
     {
       href: "/demo/schedule",
       title: "Schedule Vibe Check",
-      text: "Choose a safe mock time for a Guided Vibe Check.",
+      text: "Preview an accepted invite and safe mock time.",
       icon: CalendarDays,
     },
     {
@@ -127,7 +127,7 @@ export function DemoIndex() {
     {
       href: "/demo/chat",
       title: "Chat",
-      text: "Chat unlocks if you both choose to continue.",
+      text: "Chats unlock only after the Guided Vibe Check and mutual Continue.",
       icon: MessageCircle,
     },
     {
@@ -239,7 +239,7 @@ export function DemoDiscover() {
           </h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
             If there is mutual interest, you both move into a short Guided Vibe
-            Check before chat opens.
+            Check invite before chat can unlock.
           </p>
         </div>
 
@@ -254,7 +254,7 @@ export function DemoDiscover() {
             href="/demo/profile"
             className={buttonVariants({ size: "lg", className: "h-12 rounded-2xl" })}
           >
-            Interested
+            I&apos;m interested
           </Link>
         </div>
 
@@ -277,8 +277,8 @@ export function DemoProfileDetail() {
             Why this profile is shown
           </h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Maya is looking for a real connection and is open to starting with a
-            structured conversation instead of a cold message.
+            In this demo, you and Maya have mutually liked each other. The next
+            step is sending a Vibe Check invite before chat can unlock.
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             {["Video-first", "Private choice", "Safety-led"].map((item) => (
@@ -293,7 +293,7 @@ export function DemoProfileDetail() {
           href="/demo/schedule"
           className={buttonVariants({ size: "lg", className: "h-12 w-full rounded-2xl" })}
         >
-          Schedule Vibe Check
+          Send Vibe Check invite
         </Link>
       </div>
     </section>
@@ -322,10 +322,10 @@ export function DemoSchedule() {
       </div>
 
       <section className="rounded-[1.5rem] border border-border bg-card p-5 shadow-sm">
-        <p className="text-sm font-semibold">What happens next?</p>
+        <p className="text-sm font-semibold">Invite accepted</p>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Start Guided Vibe Check when it is time. The demo opens immediately
-          and never creates a real session.
+          Maya accepted your Vibe Check invite. Choose a mock time, then join
+          the Guided Vibe Check. The demo never creates a real session.
         </p>
       </section>
     </section>
@@ -492,14 +492,14 @@ export function DemoChat() {
     <section className="space-y-4">
       <div className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm">
         <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-          Chat unlocked
+          Chats unlocked
         </p>
         <h2 className="mt-2 text-2xl font-semibold tracking-tight">
           You and Maya both chose to continue.
         </h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Chat unlocks if you both choose to continue. This message thread is
-          local mock data only.
+          Chats unlock only after your Guided Vibe Check and mutual Continue.
+          This message thread is local mock data only.
         </p>
       </div>
 

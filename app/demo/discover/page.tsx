@@ -5,7 +5,7 @@ export default function DemoDiscoverPage() {
     <DemoPageShell
       eyebrow="Discover"
       title="Discover intentionally."
-      description="Review how a profile appears before any chat exists. The next step is a mutual Guided Vibe Check, not a cold opener."
+      description="Review how a profile appears before any chat exists. Like first; a mutual like creates the match."
     >
       <DemoDiscover />
     </DemoPageShell>

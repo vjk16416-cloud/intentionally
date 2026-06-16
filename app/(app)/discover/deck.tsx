@@ -92,13 +92,13 @@ function photoLabel(photoUrls: string[]) {
 }
 
 function verificationLabel(isVerified: boolean | null | undefined) {
-  return isVerified ? "Verified basics" : "Q&A ready";
+  return isVerified ? "Verified basics" : "Vibe Check ready";
 }
 
 function promptAnswer(answer: string | null | undefined) {
   return (
     answer?.trim() ||
-    "They have not answered this one yet, so start with the guided Q&A."
+    "They have not answered this one yet, so start with the Guided Vibe Check."
   );
 }
 
@@ -263,8 +263,8 @@ export function DiscoverDeck({
         </header>
 
         <p className="mb-5 max-w-sm text-sm leading-6 text-muted-foreground md:max-w-2xl">
-          Browse slowly. If there is mutual interest, you both move into a short
-          guided Q&amp;A before chat opens.
+          Browse slowly. A mutual like creates a match, then one person sends a
+          Vibe Check invite before chat can unlock.
         </p>
 
         <section className="overflow-hidden rounded-[2rem] border border-border bg-card shadow-sm lg:grid lg:grid-cols-[minmax(0,1fr)_420px]">
@@ -280,7 +280,7 @@ export function DiscoverDeck({
 
             <div className="absolute left-4 top-4 flex max-w-[calc(100%-6rem)] flex-wrap items-center gap-2">
               <span className="rounded-full bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm backdrop-blur">
-                Q&amp;A ready
+                Vibe Check ready
               </span>
               <span className="rounded-full bg-background/80 px-3 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm backdrop-blur">
                 {trustCue}
@@ -371,7 +371,7 @@ export function DiscoverDeck({
 
             <div className="flex flex-wrap gap-2">
               <span className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-                Q&amp;A before chat
+                Guided Vibe Check before chat
               </span>
               <span className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground">
                 Private mutual reveal
@@ -416,8 +416,8 @@ export function DiscoverDeck({
             </div>
 
             <div className="rounded-[1.25rem] bg-secondary/70 px-4 py-3 text-center text-xs leading-5 text-muted-foreground">
-              If they&apos;re interested too, you&apos;ll both move into a short
-              guided Q&amp;A before chat opens.
+              If they&apos;re interested too, you&apos;ll match. Then either of
+              you can send a Vibe Check invite.
             </div>
           </div>
         </section>
@@ -431,18 +431,18 @@ export function DiscoverDeck({
                 Matches
               </p>
               <h2 className="mt-1 text-xl font-semibold tracking-tight">
-                New people waiting
+                Matches ready for Vibe Check
               </h2>
             </div>
 
             <p className="text-xs font-medium text-muted-foreground">
-              Ready to schedule
+              Ready for invite
             </p>
           </div>
 
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            You matched. Now choose who you want to meet through a guided
-            Q&amp;A.
+            You matched. Send a Vibe Check invite to see if the conversation
+            feels natural before chat unlocks.
           </p>
 
           <div className="-mx-4 mt-4 flex gap-3 overflow-x-auto px-4 pb-3 sm:-mx-5 sm:px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -482,7 +482,7 @@ export function DiscoverDeck({
                   }}
                   className="mt-2 w-full rounded-2xl bg-accent px-3 py-3 text-sm font-semibold text-accent-foreground transition hover:opacity-90 active:scale-[0.98]"
                 >
-                  Schedule
+                  Send invite
                 </button>
               </article>
             ))}
@@ -504,8 +504,8 @@ export function DiscoverDeck({
               Quality over quantity.
             </p>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Once you&apos;ve both chosen to continue after a guided Q&amp;A,
-              your conversations will appear here.
+              Chats unlock only after your Guided Vibe Check and mutual
+              Continue.
             </p>
           </div>
         </section>
@@ -522,7 +522,7 @@ export function DiscoverDeck({
             href="/qa/demo-demo-match"
             className="rounded-2xl px-2 py-3 font-semibold text-muted-foreground"
           >
-            Q&amp;A
+            Vibe Check
           </Link>
 
           <Link

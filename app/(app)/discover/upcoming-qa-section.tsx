@@ -44,7 +44,7 @@ export function UpcomingQaSection() {
             Next step
           </p>
           <h2 className="mt-1 text-xl font-semibold tracking-tight">
-            Your Q&amp;A queue
+            Your Vibe Checks
           </h2>
         </div>
 
@@ -80,9 +80,9 @@ export function UpcomingQaSection() {
               Your next guided conversation
             </p>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
-              A short 10-minute Q&amp;A to see if the conversation feels right
-              before chat opens. You&apos;ll choose how you appear before
-              entering.
+              A short 10-minute Guided Vibe Check to see if the conversation
+              feels right before chat unlocks. You&apos;ll choose how you appear
+              before joining.
             </p>
           </div>
 
@@ -98,7 +98,7 @@ export function UpcomingQaSection() {
               href="/qa/demo-demo-match"
               className="rounded-2xl bg-accent px-3 py-3 text-center text-sm font-semibold text-accent-foreground transition hover:opacity-90"
             >
-              Enter Q&amp;A
+              Join Vibe Check
             </Link>
           </div>
 
@@ -132,7 +132,7 @@ export function UpcomingQaSection() {
               type="button"
               onClick={() =>
                 showNotice(
-                  "Rescheduling Sophia's Q&A will open the slot picker once live sessions are connected.",
+                  "Rescheduling Sophia's Vibe Check will open the slot picker once live sessions are connected.",
                 )
               }
               className="rounded-2xl border border-border bg-background px-3 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
@@ -144,7 +144,7 @@ export function UpcomingQaSection() {
               type="button"
               onClick={() =>
                 showNotice(
-                  "We'll remind you on the morning of the Q&A and one hour before.",
+                  "We'll remind you on the morning of the Vibe Check and one hour before.",
                 )
               }
               className="rounded-2xl bg-muted px-3 py-3 text-sm font-semibold text-muted-foreground"

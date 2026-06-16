@@ -96,13 +96,13 @@ export default async function ChatPage({
       <div className="mx-auto flex min-h-[calc(100vh-97px)] w-full max-w-md flex-col md:max-w-3xl lg:max-w-5xl">
         <header className="rounded-[1.75rem] border bg-background p-4 shadow-sm">
           <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            Chat unlocked
+            Chats unlocked
           </p>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight">
             You and {otherName} both chose to continue.
           </h1>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            The Q&amp;A helped start the conversation before chat opened.
+            Chats unlock only after your Guided Vibe Check and mutual Continue.
           </p>
           <Link
             href={`/date-plan/${match.id}`}

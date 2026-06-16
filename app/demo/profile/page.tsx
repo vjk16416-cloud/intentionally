@@ -4,8 +4,8 @@ export default function DemoProfilePage() {
   return (
     <DemoPageShell
       eyebrow="Profile"
-      title="A profile with enough context to choose carefully."
-      description="This mock profile shows the trust cues, prompt answer and intent that help reviewers understand the flow."
+      title="Mutual match created."
+      description="After a mutual like, one person sends a Vibe Check invite. Chat is still locked."
     >
       <DemoProfileDetail />
     </DemoPageShell>
