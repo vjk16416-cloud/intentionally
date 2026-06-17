@@ -146,8 +146,9 @@ export function DatePlanPicker({
         <section className="rounded-[1.5rem] border bg-background p-4 shadow-sm">
           <p className="text-sm font-semibold">Before the date</p>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            Phone reveal and reminders are not part of this MVP action yet.
-            This only saves your preferred plan for the match.
+            Share the plan here, then use chat to agree the final details when
+            you both feel comfortable. Keep the first meeting public, simple,
+            and easy to leave.
           </p>
         </section>
 
