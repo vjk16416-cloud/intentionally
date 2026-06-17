@@ -18,9 +18,10 @@ export function PendingMatchesBanner({
 
   return (
     <div className="mx-auto w-full max-w-md p-4 pb-0 md:max-w-3xl lg:max-w-5xl">
-      <div className="flex items-center justify-between gap-3 rounded-2xl border bg-muted px-4 py-3">
-        <p className="text-sm">
-          <span className="font-medium">{count}</span> {label} waiting
+      <div className="flex flex-col gap-3 rounded-2xl border border-[#e6ded0] bg-[#fffdf8] px-4 py-3 shadow-[0_8px_24px_rgba(74,59,42,0.05)] sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm leading-6 text-foreground">
+          <span className="font-semibold">{count}</span> {label} ready for a
+          Vibe Check invite
         </p>
         <TrackedLink
           href={`/schedule/${latest.matchId}`}
@@ -31,7 +32,7 @@ export function PendingMatchesBanner({
           }}
           className={cn(buttonVariants({ size: "sm" }), "shrink-0")}
         >
-          Send Vibe Check invite
+          Send invite
         </TrackedLink>
       </div>
     </div>

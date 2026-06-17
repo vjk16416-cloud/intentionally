@@ -28,12 +28,12 @@ export default async function DiscoverPage() {
 
   return (
     <>
-      {showInternalTestingShortcuts ? <InternalTestingShortcuts /> : null}
       <PendingMatchesBanner pending={pending} />
       <DiscoverDeck
         key={cards.length > 0 ? cards.map((card) => card.id).join(",") : "empty"}
         cards={cards}
       />
+      {showInternalTestingShortcuts ? <InternalTestingShortcuts /> : null}
     </>
   );
 }
