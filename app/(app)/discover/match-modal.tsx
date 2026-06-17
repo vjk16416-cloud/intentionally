@@ -17,6 +17,9 @@ export function MatchModal({
   onDismiss: () => void;
 }) {
   const age = computeAge(match.date_of_birth);
+  const firstName = match.display_name.split(" ")[0] || match.display_name;
+  const initial = firstName.charAt(0).toUpperCase();
+  const primaryPhoto = match.photo_urls[0];
 
   return (
     <div
@@ -25,30 +28,53 @@ export function MatchModal({
       // on the modal without needing a portal in MVP.
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 px-4 py-6 backdrop-blur-sm"
+      aria-labelledby="match-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#2f2a23]/32 px-4 py-6 backdrop-blur-md"
     >
-      <div className="w-full max-w-md rounded-[2rem] border bg-card p-5 shadow-lg sm:p-7 md:max-w-2xl">
-        <div className="space-y-6 text-center">
-          <header className="space-y-3">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              Match
+      <div className="w-full max-w-md rounded-[2rem] border border-[#e6ded0] bg-[#fffaf3] p-5 shadow-[0_24px_80px_rgba(47,42,35,0.22)] sm:p-7">
+        <div className="space-y-5 text-center">
+          <header className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              MATCH
             </p>
-            <h2 className="text-3xl font-semibold leading-tight tracking-tight">
+            <h2
+              id="match-modal-title"
+              className="text-3xl font-semibold leading-tight tracking-tight text-foreground"
+            >
               You both chose to connect
             </h2>
           </header>
 
-          {/* Raw <img> for the same reasons as the discover card. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={match.photo_urls[0]}
-            alt={`${match.display_name}, ${age}`}
-            className="mx-auto aspect-square w-32 rounded-[2rem] border object-cover shadow-sm sm:w-36"
-          />
+          <div className="mx-auto flex max-w-xs items-center gap-4 rounded-[1.5rem] border border-[#e6ded0] bg-[#fffdf8] p-3 text-left shadow-[0_10px_30px_rgba(74,59,42,0.08)]">
+            {primaryPhoto ? (
+              <>
+                {/* Raw <img> for the same reasons as the discover card. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={primaryPhoto}
+                  alt={`${match.display_name}, ${age}`}
+                  className="h-20 w-20 shrink-0 rounded-[1.25rem] border border-[#e6ded0] object-cover grayscale"
+                />
+              </>
+            ) : (
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-[#e6ded0] bg-[#f4efe6] text-3xl font-semibold text-[#766c62]">
+                {initial}
+              </div>
+            )}
+
+            <div className="min-w-0">
+              <p className="truncate text-lg font-semibold tracking-tight text-foreground">
+                {firstName}, {age}
+              </p>
+              <p className="mt-1 text-sm leading-5 text-muted-foreground">
+                Ready for a guided Vibe Check.
+              </p>
+            </div>
+          </div>
 
           <p className="mx-auto max-w-sm text-sm leading-6 text-muted-foreground">
-            There&apos;s mutual interest. Send a Vibe Check invite to see if the
-            conversation feels natural before chat unlocks.
+            You both showed interest. Before chat opens, send a guided Vibe
+            Check invite and see if the conversation feels natural.
           </p>
 
           <div className="space-y-3">
@@ -58,15 +84,15 @@ export function MatchModal({
               eventProperties={{ match_id: matchId, source: "match_modal" }}
               className={cn(
                 buttonVariants({ size: "lg" }),
-                "h-12 w-full rounded-2xl text-base font-semibold",
+                "h-13 w-full rounded-2xl bg-[#75886b] text-base font-semibold text-white shadow-[0_12px_30px_rgba(83,104,73,0.24)] hover:bg-[#697b60]",
               )}
             >
               Send Vibe Check invite
             </TrackedLink>
 
             <p className="text-xs leading-5 text-muted-foreground">
-              Once they accept, you can schedule or join the Guided Vibe Check.
-              Chat unlocks only if you both choose Continue.
+              Chat unlocks only if you both choose to continue after the Vibe
+              Check.
             </p>
 
             <Button
@@ -74,7 +100,7 @@ export function MatchModal({
               variant="ghost"
               size="lg"
               onClick={onDismiss}
-              className="w-full rounded-2xl text-muted-foreground"
+              className="h-12 w-full rounded-2xl text-muted-foreground hover:bg-[#f3eee5] hover:text-foreground"
             >
               Continue browsing
             </Button>
