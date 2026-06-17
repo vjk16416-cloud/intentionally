@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { StepShell } from "@/components/onboarding/step-shell";
 import { getPreviousStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -34,25 +35,19 @@ export default async function NeighbourhoodStepPage({
     .maybeSingle<LocationFields>();
 
   return (
-    <div className="space-y-6">
-      <header className="space-y-2">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
-          Step 6 of 8
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Where do you live?
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Pick your city, then the neighbourhood you spend the most time in.
-          You can change it later.
-        </p>
-      </header>
+    <StepShell
+      stepLabel="Step 6 of 8"
+      title="Where do you live?"
+      description="Pick your city, then the neighbourhood you spend the most time in. You can change it later."
+      progress={75}
+      className="mx-auto w-full max-w-md"
+    >
       <NeighbourhoodForm
         initialCity={profile?.city ?? null}
         initialNeighbourhood={profile?.neighbourhood ?? null}
         returnTo={returnTo}
         previousStep={previousStep}
       />
-    </div>
+    </StepShell>
   );
 }

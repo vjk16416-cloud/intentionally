@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ProfileCompleteness } from "@/components/onboarding/profile-completeness";
+import { StepShell } from "@/components/onboarding/step-shell";
 import { buttonVariants } from "@/components/ui/button";
 import { computeAge } from "@/lib/age";
 import { summariseAvailability } from "@/lib/onboarding/availability";
@@ -66,7 +67,7 @@ function ReviewSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-border bg-card/80 px-4 py-3 shadow-sm">
+    <section className="rounded-[1.5rem] border border-[#e6ded0] bg-[#fffdf8] px-4 py-3 shadow-[0_10px_30px_rgba(74,59,42,0.06)]">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-semibold text-foreground">{title}</h2>
         <Link
@@ -127,119 +128,118 @@ export default async function OnboardingReviewPage() {
     .join(", ");
 
   return (
-    <div className="space-y-5">
-      <header className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Review your profile
-        </h1>
-        <p className="text-sm leading-6 text-muted-foreground">
-          Check your profile before entering Intentionally. You can edit any
-          section and come back here.
-        </p>
-      </header>
+    <StepShell
+      stepLabel="Review"
+      title="Review your profile"
+      description="Check your profile before entering Intentionally. You can edit any section and come back here."
+      progress={100}
+      className="mx-auto w-full max-w-md"
+    >
+      <div className="space-y-5">
+        <ProfileCompleteness profile={profile} trustedContact={contact} />
 
-      <ProfileCompleteness profile={profile} trustedContact={contact} />
+        <div className="space-y-2.5">
+          <ReviewSection
+            title="Profile"
+            editHref="/onboarding/profile?return=review"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-medium text-foreground">
+                {profile.display_name}
+                {profile.date_of_birth
+                  ? `, ${computeAge(profile.date_of_birth)}`
+                  : null}
+              </span>
+            </div>
+          </ReviewSection>
 
-      <div className="space-y-2.5">
-        <ReviewSection
-          title="Profile"
-          editHref="/onboarding/profile?return=review"
-        >
-          <div className="flex items-center justify-between gap-3">
-            <span className="font-medium text-foreground">
-              {profile.display_name}
-              {profile.date_of_birth
-                ? `, ${computeAge(profile.date_of_birth)}`
-                : null}
-            </span>
-          </div>
-        </ReviewSection>
+          <ReviewSection
+            title="Identity"
+            editHref="/onboarding/identity?return=review"
+          >
+            {labelOf(GENDER_LABELS, profile.gender)}
+            {seekingLabel ? ` · seeking ${seekingLabel}` : null}
+          </ReviewSection>
 
-        <ReviewSection
-          title="Identity"
-          editHref="/onboarding/identity?return=review"
-        >
-          {labelOf(GENDER_LABELS, profile.gender)}
-          {seekingLabel ? ` · seeking ${seekingLabel}` : null}
-        </ReviewSection>
+          <ReviewSection
+            title="Photos"
+            editHref="/onboarding/photos?return=review"
+          >
+            <div className="grid grid-cols-4 gap-2">
+              {photoUrls.map((url) => (
+                <div
+                  key={url}
+                  className="relative aspect-square overflow-hidden rounded-2xl border border-border bg-muted shadow-sm"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" className="size-full object-cover" />
+                </div>
+              ))}
+            </div>
+          </ReviewSection>
 
-        <ReviewSection
-          title="Photos"
-          editHref="/onboarding/photos?return=review"
-        >
-          <div className="grid grid-cols-4 gap-2">
-            {photoUrls.map((url) => (
-              <div
-                key={url}
-                className="relative aspect-square overflow-hidden rounded-2xl border border-border bg-muted shadow-sm"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt="" className="size-full object-cover" />
-              </div>
-            ))}
-          </div>
-        </ReviewSection>
+          <ReviewSection
+            title="Intention"
+            editHref="/onboarding/intention?return=review"
+          >
+            {labelOf(INTENTION_LABELS, profile.intention)}
+          </ReviewSection>
 
-        <ReviewSection
-          title="Intention"
-          editHref="/onboarding/intention?return=review"
-        >
-          {labelOf(INTENTION_LABELS, profile.intention)}
-        </ReviewSection>
+          <ReviewSection
+            title="Bio"
+            editHref="/onboarding/prompt?return=review"
+          >
+            <p className="font-medium text-foreground">
+              {promptText(profile.bio_prompt_key)}
+            </p>
+            <p className="mt-1">{profile.bio_answer}</p>
+          </ReviewSection>
 
-        <ReviewSection title="Bio" editHref="/onboarding/prompt?return=review">
-          <p className="font-medium text-foreground">
-            {promptText(profile.bio_prompt_key)}
+          <ReviewSection
+            title="Location"
+            editHref="/onboarding/neighbourhood?return=review"
+          >
+            {profile.neighbourhood}
+            {profile.city ? `, ${profile.city}` : null}
+          </ReviewSection>
+
+          <ReviewSection
+            title="Availability"
+            editHref="/onboarding/availability?return=review"
+          >
+            {summariseAvailability(profile.availability ?? [])}
+          </ReviewSection>
+
+          <ReviewSection
+            title="Trusted contact"
+            editHref="/onboarding/trusted-contact?return=review"
+          >
+            {contact.name}
+            {contact.phone_e164 ? ` · ${contact.phone_e164}` : null}
+            {contact.relationship
+              ? ` · ${labelOf(RELATIONSHIP_LABELS, contact.relationship)}`
+              : null}
+          </ReviewSection>
+        </div>
+
+        <div className="rounded-2xl border border-border bg-background/75 px-4 py-3">
+          <p className="text-sm font-semibold text-foreground">Almost ready</p>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+            ID verification happens later, before your first Guided Vibe Check.
+            For now, this is how your profile will appear.
           </p>
-          <p className="mt-1">{profile.bio_answer}</p>
-        </ReviewSection>
+        </div>
 
-        <ReviewSection
-          title="Location"
-          editHref="/onboarding/neighbourhood?return=review"
+        <Link
+          href="/onboarding/done"
+          className={cn(
+            buttonVariants({ size: "lg" }),
+            "w-full rounded-2xl bg-accent text-accent-foreground hover:opacity-90",
+          )}
         >
-          {profile.neighbourhood}
-          {profile.city ? `, ${profile.city}` : null}
-        </ReviewSection>
-
-        <ReviewSection
-          title="Availability"
-          editHref="/onboarding/availability?return=review"
-        >
-          {summariseAvailability(profile.availability ?? [])}
-        </ReviewSection>
-
-        <ReviewSection
-          title="Trusted contact"
-          editHref="/onboarding/trusted-contact?return=review"
-        >
-          {contact.name}
-          {contact.phone_e164 ? ` · ${contact.phone_e164}` : null}
-          {contact.relationship
-            ? ` · ${labelOf(RELATIONSHIP_LABELS, contact.relationship)}`
-            : null}
-        </ReviewSection>
+          Enter Intentionally
+        </Link>
       </div>
-
-      <div className="rounded-2xl border border-border bg-muted/30 px-4 py-3">
-        <p className="text-sm font-semibold text-foreground">
-          Almost ready
-        </p>
-        <p className="mt-1 text-xs leading-5 text-muted-foreground">
-          ID verification happens later, before your first Guided Vibe Check.
-          For now, this is how your profile will appear.
-        </p>
-      </div>
-
-      <Link
-        href="/onboarding/done"
-        className={cn(
-          buttonVariants({ size: "lg" }),
-          "w-full rounded-2xl bg-accent text-accent-foreground hover:opacity-90",
-        )}
-      >
-        Enter Intentionally
-      </Link>
-    </div>
+    </StepShell>
   );
 }

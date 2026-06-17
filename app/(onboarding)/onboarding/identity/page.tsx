@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { StepShell } from "@/components/onboarding/step-shell";
 import { getPreviousStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -34,25 +35,19 @@ export default async function IdentityStepPage({
     .maybeSingle<IdentityFields>();
 
   return (
-    <div className="space-y-6">
-      <header className="space-y-2">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
-          Step 2 of 8
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          How would you describe yourself?
-        </h1>
-        <p className="text-sm leading-6 text-muted-foreground">
-          Choose the option that feels right for you. This helps us shape a more
-          respectful dating experience.
-        </p>
-      </header>
+    <StepShell
+      stepLabel="Step 2 of 8"
+      title="How would you describe yourself?"
+      description="Choose the option that feels right for you. This helps us shape a more respectful dating experience."
+      progress={25}
+      className="mx-auto w-full max-w-md"
+    >
       <IdentityForm
         initialGender={profile?.gender ?? null}
         initialSeeking={profile?.seeking ?? []}
         returnTo={returnTo}
         previousStep={previousStep}
       />
-    </div>
+    </StepShell>
   );
 }

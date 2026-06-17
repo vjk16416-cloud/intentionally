@@ -21,7 +21,7 @@ export function StepNav({
   submitLabel = "Continue",
 }: StepNavProps) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-background/95 px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.06)] backdrop-blur sm:px-6">
+    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[#e6ded0] bg-[#fffaf3]/96 px-4 py-3 shadow-[0_-10px_30px_rgba(74,59,42,0.08)] backdrop-blur sm:px-6">
       <div className="mx-auto flex w-full max-w-lg items-center gap-2">
         {returnTo ? (
           <input type="hidden" name="returnTo" value={returnTo} />
@@ -32,7 +32,7 @@ export function StepNav({
             href="/onboarding/review"
             className={cn(
               buttonVariants({ variant: "outline", size: "lg" }),
-              "rounded-2xl px-5",
+              "rounded-2xl border-[#d8d0c3] bg-[#fffdf8] px-5 shadow-sm",
             )}
           >
             Cancel
@@ -42,7 +42,7 @@ export function StepNav({
             href={previousStep}
             className={cn(
               buttonVariants({ variant: "outline", size: "lg" }),
-              "rounded-2xl px-5",
+              "rounded-2xl border-[#d8d0c3] bg-[#fffdf8] px-5 shadow-sm",
             )}
           >
             Back
@@ -53,7 +53,7 @@ export function StepNav({
           type="submit"
           size="lg"
           disabled={pending || disabled}
-          className="flex-1 rounded-2xl bg-accent px-5 text-accent-foreground hover:opacity-90"
+          className="flex-1 rounded-2xl bg-accent px-5 text-accent-foreground shadow-sm hover:opacity-90"
         >
           {pending ? "Saving…" : submitLabel}
         </Button>

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { StepShell } from "@/components/onboarding/step-shell";
 import { createClient } from "@/lib/supabase/server";
 
 import { PhoneForm } from "./phone-form";
@@ -25,17 +26,13 @@ export default async function PhoneStepPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <header className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Verify your phone number
-        </h1>
-        <p className="text-sm leading-6 text-muted-foreground">
-          We use your phone number to help keep Intentionally safer and reduce
-          fake profiles. Your number is not shown on your profile.
-        </p>
-      </header>
+    <StepShell
+      stepLabel="Safety check"
+      title="Verify your phone number"
+      description="We use your phone number to help keep Intentionally safer and reduce fake profiles. Your number is not shown on your profile."
+      className="mx-auto w-full max-w-md"
+    >
       <PhoneForm />
-    </div>
+    </StepShell>
   );
 }

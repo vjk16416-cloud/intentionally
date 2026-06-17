@@ -15,14 +15,14 @@ export default async function OnboardingLayout({
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background">
-      <header className="border-b border-border/70 bg-background/95 px-4 py-4 sm:px-6">
+    <div className="flex min-h-dvh flex-col bg-[#f8f4ec] text-foreground">
+      <header className="border-b border-[#e6ded0] bg-[#fffaf3]/92 px-4 py-4 shadow-[0_8px_30px_rgba(74,59,42,0.05)] backdrop-blur sm:px-6">
         <div className="mx-auto flex w-full max-w-lg flex-col gap-1 md:max-w-2xl">
           <span className="text-sm font-semibold tracking-tight">
             Intentionally
           </span>
           <span className="text-xs leading-5 text-muted-foreground">
-            Set up your profile · takes around 3 minutes
+            Calm, guided setup for your profile
           </span>
         </div>
       </header>

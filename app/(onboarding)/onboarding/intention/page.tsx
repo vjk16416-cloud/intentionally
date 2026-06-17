@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { StepShell } from "@/components/onboarding/step-shell";
 import { getPreviousStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -29,31 +30,18 @@ export default async function IntentionStepPage({
     .maybeSingle<{ intention: string | null }>();
 
   return (
-    <main className="min-h-[calc(100vh-57px)] bg-background px-5 py-8 text-foreground">
-      <div className="mx-auto w-full max-w-md">
-        <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm">
-          <header className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-              Step 4 of 8
-            </p>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              What kind of connection are you open to?
-            </h1>
-            <p className="text-sm leading-6 text-muted-foreground">
-              Your answer helps shape the prompts and pace of your Guided Vibe
-              Check experience.
-            </p>
-          </header>
-
-          <div className="mt-6">
-            <IntentionForm
-              initialIntention={profile?.intention ?? null}
-              returnTo={returnTo}
-              previousStep={previousStep}
-            />
-          </div>
-        </section>
-      </div>
-    </main>
+    <StepShell
+      stepLabel="Step 4 of 8"
+      title="What kind of connection are you open to?"
+      description="Your answer helps shape the prompts and pace of your Guided Vibe Check experience."
+      progress={50}
+      className="mx-auto w-full max-w-md"
+    >
+      <IntentionForm
+        initialIntention={profile?.intention ?? null}
+        returnTo={returnTo}
+        previousStep={previousStep}
+      />
+    </StepShell>
   );
 }

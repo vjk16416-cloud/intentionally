@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { ProfileCompleteness } from "@/components/onboarding/profile-completeness";
+import { StepShell } from "@/components/onboarding/step-shell";
 import { getPreviousStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -55,40 +56,27 @@ export default async function ProfileStepPage({
     .maybeSingle<TrustedContactFields>();
 
   return (
-    <main className="min-h-[calc(100vh-57px)] bg-background px-5 py-8 text-foreground">
-      <div className="mx-auto w-full max-w-md">
-        <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm">
-          <header className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-              Step 1 of 8
-            </p>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              First, the basics
-            </h1>
-            <p className="text-sm leading-6 text-muted-foreground">
-              Start with the basics. We&apos;ll only show your first name and age
-              to potential matches.
-            </p>
-          </header>
+    <StepShell
+      stepLabel="Step 1 of 8"
+      title="Start with the basics"
+      description="We&apos;ll only show your first name and age to potential matches."
+      progress={12}
+      className="mx-auto w-full max-w-md"
+    >
+      <ProfileCompleteness
+        profile={profile ?? null}
+        trustedContact={trustedContact ?? null}
+      />
 
-          <div className="mt-5">
-            <ProfileCompleteness
-              profile={profile ?? null}
-              trustedContact={trustedContact ?? null}
-            />
-          </div>
-
-          <div className="mt-6">
-            <ProfileForm
-              initialDisplayName={profile?.display_name ?? ""}
-              initialDateOfBirth={profile?.date_of_birth ?? ""}
-              returnTo={returnTo}
-              previousStep={previousStep}
-              userId={user.id}
-            />
-          </div>
-        </section>
+      <div className="mt-6">
+        <ProfileForm
+          initialDisplayName={profile?.display_name ?? ""}
+          initialDateOfBirth={profile?.date_of_birth ?? ""}
+          returnTo={returnTo}
+          previousStep={previousStep}
+          userId={user.id}
+        />
       </div>
-    </main>
+    </StepShell>
   );
 }

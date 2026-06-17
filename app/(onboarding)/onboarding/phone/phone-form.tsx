@@ -65,14 +65,14 @@ export function PhoneForm() {
         <input type="hidden" name="phone" value={fullPhoneNumber} />
 
         <div className="space-y-1.5">
-          <label htmlFor="countryCode" className="text-sm font-medium">
+          <label htmlFor="countryCode" className="text-sm font-semibold text-foreground">
             Country code
           </label>
           <select
             id="countryCode"
             value={countryCode}
             onChange={(event) => setCountryCode(event.target.value)}
-            className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
+            className="h-12 w-full rounded-2xl border border-border bg-card px-4 text-sm shadow-sm outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/30"
           >
             {COUNTRY_CODES.map((country) => (
               <option key={`${country.label}-${country.code}`} value={country.code}>
@@ -83,11 +83,12 @@ export function PhoneForm() {
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="localNumber" className="text-sm font-medium">
+          <label htmlFor="localNumber" className="text-sm font-semibold text-foreground">
             Phone number
           </label>
           <Input
             id="localNumber"
+            className="h-12 rounded-2xl border-border bg-card px-4 text-base shadow-sm focus-visible:ring-accent"
             name="localNumber"
             type="tel"
             inputMode="tel"
@@ -112,7 +113,12 @@ export function PhoneForm() {
         ) : null}
 
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Button type="submit" size="lg" disabled={requestPending || !localNumber}>
+          <Button
+            type="submit"
+            size="lg"
+            disabled={requestPending || !localNumber}
+            className="rounded-2xl bg-accent text-accent-foreground shadow-sm hover:opacity-90"
+          >
             {requestPending ? "Sending code…" : "Send code"}
           </Button>
 
@@ -120,6 +126,7 @@ export function PhoneForm() {
             type="button"
             size="lg"
             variant="outline"
+            className="rounded-2xl border-[#d8d0c3] bg-[#fffdf8] shadow-sm"
             onClick={() => {
               window.location.href = "/onboarding/review";
             }}
@@ -135,12 +142,13 @@ export function PhoneForm() {
     <form action={verifyAction} className="space-y-4">
       <input type="hidden" name="phone" value={phone} />
 
-      <div className="space-y-1.5">
-        <label htmlFor="token" className="text-sm font-medium">
+        <div className="space-y-1.5">
+        <label htmlFor="token" className="text-sm font-semibold text-foreground">
           6-digit code
         </label>
         <Input
           id="token"
+          className="h-12 rounded-2xl border-border bg-card px-4 text-base shadow-sm focus-visible:ring-accent"
           name="token"
           type="text"
           inputMode="numeric"
@@ -167,7 +175,12 @@ export function PhoneForm() {
         <p className="text-sm text-destructive">{verifyState.error}</p>
       ) : null}
 
-      <Button type="submit" size="lg" disabled={verifyPending}>
+      <Button
+        type="submit"
+        size="lg"
+        disabled={verifyPending}
+        className="rounded-2xl bg-accent text-accent-foreground shadow-sm hover:opacity-90"
+      >
         {verifyPending ? "Verifying…" : "Verify"}
       </Button>
     </form>

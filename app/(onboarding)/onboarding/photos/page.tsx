@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { StepShell } from "@/components/onboarding/step-shell";
 import { getPreviousStep } from "@/lib/onboarding/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -29,26 +30,19 @@ export default async function PhotosStepPage({
     .maybeSingle<{ photos: string[] | null }>();
 
   return (
-    <div className="space-y-6">
-      <header className="space-y-2">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
-          Step 3 of 8
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Add photos that feel like you
-        </h1>
-        <p className="text-sm leading-6 text-muted-foreground">
-          Choose recent photos where your face is clear and the lighting is
-          natural. Avoid heavy filters. The aim is to help someone recognise
-          the real you before a Guided Vibe Check.
-        </p>
-      </header>
+    <StepShell
+      stepLabel="Step 3 of 8"
+      title="Add photos that feel like you"
+      description="Choose recent photos where your face is clear and the lighting is natural. Avoid heavy filters. The aim is to help someone recognise the real you before a Guided Vibe Check."
+      progress={38}
+      className="mx-auto w-full max-w-md"
+    >
       <PhotosForm
         userId={user.id}
         initialPaths={profile?.photos ?? []}
         returnTo={returnTo}
         previousStep={previousStep}
       />
-    </div>
+    </StepShell>
   );
 }
