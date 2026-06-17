@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { getDiscoverFeed } from "@/lib/discover/feed";
+import { getDiscoverFeedWithDiagnostics } from "@/lib/discover/feed";
 import { getPendingMatches } from "@/lib/discover/pending";
 import { createClient } from "@/lib/supabase/server";
 
@@ -17,15 +17,19 @@ export default async function DiscoverPage() {
     redirect("/login");
   }
 
-  const [cards, pending] = await Promise.all([
-    getDiscoverFeed(supabase, user.id, 20),
+  const [feed, pending] = await Promise.all([
+    getDiscoverFeedWithDiagnostics(supabase, user.id, 20),
     getPendingMatches(supabase, user.id),
   ]);
+  const { cards } = feed;
 
   return (
     <>
       <PendingMatchesBanner pending={pending} />
-      <DiscoverDeck cards={cards} />
+      <DiscoverDeck
+        key={cards.length > 0 ? cards.map((card) => card.id).join(",") : "empty"}
+        cards={cards}
+      />
     </>
   );
 }

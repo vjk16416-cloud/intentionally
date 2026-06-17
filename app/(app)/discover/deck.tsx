@@ -6,10 +6,10 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import type { DiscoverCard } from "@/lib/discover/feed";
-import { summariseAvailability } from "@/lib/onboarding/availability";
 import { BIO_PROMPTS } from "@/lib/onboarding/constants";
 
 import { likeProfile, passProfile, type MatchedCard } from "./actions";
+import { DemoResetButton } from "./demo-reset-button";
 import { MatchModal } from "./match-modal";
 
 type ActiveMatch = { matchId: string; match: MatchedCard };
@@ -32,6 +32,14 @@ function firstName(name: string) {
   return name.split(" ")[0] ?? name;
 }
 
+function stripInternalPrefix(name: string) {
+  return name.replace(/^Internal Test\s+/i, "").trim();
+}
+
+function visibleName(name: string) {
+  return stripInternalPrefix(name) || name;
+}
+
 const INTENTION_LABELS: Record<string, string> = {
   "long-term": "intentional dating",
   "short-term": "something lighter, honestly held",
@@ -43,6 +51,9 @@ const OPEN_TO_LABELS: Record<string, string> = {
   "short-term": "a thoughtful connection without rushing",
   "figuring-it-out": "seeing what feels real, one step at a time",
 };
+
+const AVAILABILITY_SUMMARY =
+  "Weekdays: mornings, lunch & evenings. Weekends: late morning & afternoon";
 
 function intentionLabel(intention: string) {
   return INTENTION_LABELS[intention] ?? "intentional connection";
@@ -67,38 +78,53 @@ function locationLabel(card: DiscoverCard) {
   return card.neighbourhood || "Still completing this section";
 }
 
-function availabilityLabel(availability: number[] | null | undefined) {
-  if (!availability || availability.length === 0) {
-    return "Availability being added";
-  }
-
-  const summary = summariseAvailability(availability);
-  const parts = summary.split("; ");
-
-  if (parts.length <= 2) {
-    return summary;
-  }
-
-  return `${parts.slice(0, 2).join("; ")} +${parts.length - 2} more`;
-}
-
-function photoLabel(photoUrls: string[]) {
-  if (photoUrls.length === 0) {
-    return "Photos being added";
-  }
-
-  return `${photoUrls.length} photo${photoUrls.length === 1 ? "" : "s"}`;
-}
-
-function verificationLabel(isVerified: boolean | null | undefined) {
-  return isVerified ? "Verified basics" : "Match first";
-}
-
 function promptAnswer(answer: string | null | undefined) {
   return (
     answer?.trim() ||
     "They have not answered this one yet, so start with the Guided Vibe Check."
   );
+}
+
+function isInternalDemoProfile(name: string) {
+  return /^Internal Test\s+/i.test(name);
+}
+
+function intentionCopy(card: DiscoverCard) {
+  if (isInternalDemoProfile(card.display_name)) {
+    return {
+      title: "Something relaxed, honest and worth making time for.",
+      detail: "A guided Vibe Check before deciding whether to chat.",
+    };
+  }
+
+  return {
+    title:
+      intentionLabel(card.intention) ||
+      "Looking for something honest, relaxed and worth making time for.",
+    detail: openToLabel(card.intention),
+  };
+}
+
+function readinessItems(card: DiscoverCard) {
+  const hasPhotos = card.photo_urls.length >= 2;
+
+  return [
+    {
+      label: "Verified basics",
+      helper: "Photo, age, location & intention verified",
+      checked: Boolean(card.id_verified),
+    },
+    {
+      label: "Availability",
+      helper: AVAILABILITY_SUMMARY,
+      checked: Boolean(card.availability && card.availability.length > 0),
+    },
+    {
+      label: "2 photos added",
+      helper: "More coming soon",
+      checked: hasPhotos,
+    },
+  ];
 }
 
 export function DiscoverDeck({
@@ -147,6 +173,8 @@ export function DiscoverDeck({
                 match your preferences.
               </p>
             </div>
+
+            <DemoResetButton />
           </div>
         </div>
       </main>
@@ -154,13 +182,13 @@ export function DiscoverDeck({
   }
 
   const age = ageFromDate(card.date_of_birth);
-  const intention = intentionLabel(card.intention);
-  const openTo = openToLabel(card.intention);
   const prompt = promptText(card.bio_prompt_key);
   const location = locationLabel(card);
-  const availability = availabilityLabel(card.availability);
-  const photos = photoLabel(card.photo_urls);
-  const trustCue = verificationLabel(card.id_verified);
+  const visibleProfileName = visibleName(card.display_name);
+  const intention = intentionCopy(card);
+  const readiness = readinessItems(card);
+  const primaryPhoto = card.photo_urls[0];
+  const profileInitial = firstName(visibleProfileName).charAt(0).toUpperCase();
 
   function handleLike() {
     setActionError(null);
@@ -210,180 +238,186 @@ export function DiscoverDeck({
   }
 
   return (
-    <main className="min-h-[calc(100vh-57px)] bg-background pb-28 text-foreground">
-      <div className="mx-auto w-full max-w-md px-4 py-5 sm:px-5 md:max-w-3xl lg:max-w-5xl">
-        <header className="mb-5 flex items-center justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">
-              Intentionally
-            </p>
-            <h1 className="mt-1 text-3xl font-semibold tracking-tight">
-              Discover
-            </h1>
-          </div>
+    <main className="min-h-[calc(100vh-57px)] bg-[#f8f4ec] pb-44 text-foreground sm:pb-28 lg:pb-6">
+      <div className="mx-auto flex w-full max-w-md flex-col px-4 py-5 sm:px-5 md:max-w-3xl lg:max-w-6xl lg:px-6 lg:py-4 xl:max-w-6xl">
+        <header className="mb-3 shrink-0 lg:mb-2">
+          <h1 className="text-3xl font-semibold tracking-tight lg:text-[2rem]">
+            Discover
+          </h1>
         </header>
 
-        <p className="mb-5 max-w-sm text-sm leading-6 text-muted-foreground md:max-w-2xl">
-          Browse slowly. A mutual like creates a match, then one person sends a
-          Vibe Check invite before chat can unlock.
+        <p className="mb-4 max-w-2xl shrink-0 text-sm leading-6 text-muted-foreground lg:mb-4">
+          Browse slowly. Mutual interest creates a match. A Vibe Check invite
+          happens before chat can unlock.
         </p>
 
-        <section className="overflow-hidden rounded-[2rem] border border-border bg-card shadow-sm lg:grid lg:grid-cols-[minmax(0,1fr)_420px]">
-          <div className="relative lg:min-h-[680px]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={card.photo_urls[0]}
-              alt=""
-              className="h-[430px] w-full object-cover grayscale lg:h-full"
-            />
+        <section className="grid gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(340px,0.82fr)] lg:items-stretch">
+          <div className="relative min-h-[470px] overflow-hidden rounded-[2rem] border border-[#e6ded0] bg-[#e5e1db] shadow-[0_18px_60px_rgba(74,59,42,0.14)] sm:min-h-[540px] lg:h-[min(640px,calc(100vh-190px))] lg:min-h-[540px]">
+            {primaryPhoto ? (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={primaryPhoto}
+                  alt=""
+                  className="absolute inset-0 h-full w-full scale-[1.03] object-cover grayscale"
+                />
+                <div className="absolute inset-0 bg-[#d9d5ce]/20 backdrop-blur-[1px]" />
+              </>
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_center,#f6f1e8_0%,#ded9d1_55%,#cfc9bf_100%)]">
+                <div className="flex h-40 w-40 items-center justify-center rounded-full border border-white/60 bg-[#f8f4ec] text-6xl font-semibold text-[#7a7166] shadow-[0_18px_45px_rgba(74,59,42,0.16)] sm:h-48 sm:w-48 sm:text-7xl">
+                  {profileInitial}
+                </div>
+              </div>
+            )}
 
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/5" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/24 to-black/0" />
 
-            <div className="absolute left-4 top-4 flex max-w-[calc(100%-6rem)] flex-wrap items-center gap-2">
-              <span className="rounded-full bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm backdrop-blur">
-                Vibe Check ready
+            <div className="absolute left-4 top-4 flex max-w-[calc(100%-7rem)] flex-wrap items-center gap-2 sm:left-5 sm:top-5">
+              <span className="rounded-full border border-white/25 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm backdrop-blur">
+                Verified
               </span>
-              <span className="rounded-full bg-background/80 px-3 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm backdrop-blur">
-                {trustCue}
+              <span className="rounded-full border border-white/25 bg-background/90 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm backdrop-blur">
+                Intentional
+              </span>
+              <span className="rounded-full border border-white/25 bg-background/90 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm backdrop-blur">
+                Vibe Check Ready
               </span>
             </div>
 
-            <div className="absolute right-4 top-4 rounded-full bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm backdrop-blur">
+            <div className="absolute right-4 top-4 rounded-full border border-white/25 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm backdrop-blur sm:right-5 sm:top-5">
               {index + 1}/{cards.length}
             </div>
 
-            <div className="absolute inset-x-0 bottom-0 p-4 text-primary-foreground">
-              <div className="space-y-1">
-                <h2 className="text-3xl font-semibold tracking-tight">
-                  {firstName(card.display_name)}, {age}
-                </h2>
+            <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5 lg:p-6">
+              <div className="max-w-xl space-y-4 text-primary-foreground lg:space-y-3">
+                <div className="space-y-1.5">
+                  <h2 className="text-[2.2rem] font-semibold leading-[1.05] tracking-tight sm:text-[2.5rem] lg:text-[2.55rem]">
+                    {firstName(visibleProfileName)}, {age}
+                  </h2>
+                  <p className="text-base leading-6 text-primary-foreground/82">
+                    {location}
+                  </p>
+                </div>
 
-                <p className="text-sm text-primary-foreground/75">
-                  {location}
-                </p>
-              </div>
-
-              <div className="mt-4 rounded-[1.5rem] border border-white/15 bg-white/15 p-4 shadow-sm backdrop-blur-xl">
-                <p className="text-xs uppercase tracking-[0.18em] text-primary-foreground/65">
-                  Prompt preview
-                </p>
-                <p className="mt-2 text-sm font-semibold leading-5 text-primary-foreground/80">
-                  {prompt}
-                </p>
-                <p className="mt-2 text-base font-semibold leading-6">
-                  “{promptAnswer(card.bio_answer)}”
-                </p>
+                <div className="rounded-[1.5rem] border border-white/18 bg-white/14 p-4 shadow-sm backdrop-blur-xl lg:max-w-[92%] lg:p-3.5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary-foreground/68">
+                    PROMPT PREVIEW
+                  </p>
+                  <p className="mt-2 text-sm font-semibold leading-5 text-primary-foreground/82">
+                    {prompt}
+                  </p>
+                  <p className="mt-2 text-base font-semibold leading-6 text-primary-foreground">
+                    “{promptAnswer(card.bio_answer)}”
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="space-y-4 p-4 lg:flex lg:flex-col lg:justify-center lg:p-5">
-            <div className="rounded-[1.5rem] border border-border bg-background p-4">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Intention
-              </p>
-              <div className="mt-3 space-y-2 text-sm leading-6">
-                <p>
-                  <span className="font-semibold text-foreground">
-                    Looking for:
-                  </span>{" "}
-                  <span className="text-muted-foreground">{intention}</span>
+          <div className="flex flex-col gap-3 rounded-[2rem] border border-[#e6ded0] bg-[#fcf8f0] p-4 shadow-[0_18px_60px_rgba(74,59,42,0.09)] sm:p-5 lg:h-[min(640px,calc(100vh-190px))] lg:min-h-[540px] lg:justify-between lg:p-5">
+            <div className="space-y-3">
+              <section className="rounded-[1.35rem] border border-[#e6ded0] bg-[#fffdf8] p-4 shadow-[0_10px_30px_rgba(74,59,42,0.06)]">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  INTENTION
                 </p>
-                <p>
-                  <span className="font-semibold text-foreground">
-                    Open to:
-                  </span>{" "}
-                  <span className="text-muted-foreground">{openTo}</span>
+                <p className="mt-3 text-base font-semibold leading-6 text-foreground lg:mt-2">
+                  {intention.title}
                 </p>
+                <p className="mt-2 text-sm leading-5 text-muted-foreground">
+                  {intention.detail ||
+                    "A guided Vibe Check before deciding whether to chat."}
+                </p>
+              </section>
+
+              <section className="rounded-[1.35rem] border border-[#e1e8dc] bg-[#f7faf4] p-4 shadow-[0_10px_30px_rgba(74,59,42,0.05)]">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  PROFILE READINESS
+                </p>
+                <ul className="mt-3 space-y-3">
+                  {readiness.map((item) => (
+                    <li
+                      key={item.label}
+                      className="grid grid-cols-[1.35rem_minmax(0,1fr)] gap-3 text-sm leading-5 text-foreground"
+                    >
+                      <span
+                        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold ${
+                          item.checked
+                            ? "border-[#7b8b72] bg-[#eef5e8] text-[#536849]"
+                            : "border-border bg-card text-muted-foreground"
+                        }`}
+                        aria-hidden="true"
+                      >
+                        {item.checked ? "✓" : "•"}
+                      </span>
+                      <span>
+                        <span className="block font-semibold text-foreground">
+                          {item.label}
+                        </span>
+                        {item.label === "Availability" ? (
+                          <span className="mt-0.5 block text-sm leading-5 text-muted-foreground">
+                            Weekdays: mornings, lunch & evenings
+                            <br />
+                            Weekends: late morning & afternoon
+                            <br />
+                            View exact availability after mutual interest.
+                          </span>
+                        ) : (
+                          <span className="mt-0.5 block text-sm leading-5 text-muted-foreground">
+                            {item.helper}
+                          </span>
+                        )}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+
+              <div className="rounded-[1.25rem] border border-[#e1e8dc] bg-[#eef2e8] px-4 py-3 text-sm leading-5 text-[#5d6c55]">
+                Your safety is our priority. Every profile goes through
+                verification and continuous review.
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-[1.25rem] border border-border bg-secondary/70 p-3">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Trust cue
+            <div className="space-y-3 pt-1">
+              {limitReached ? (
+                <p className="rounded-2xl bg-muted px-4 py-3 text-center text-sm text-foreground">
+                  You&apos;ve used your daily likes. Passes are still available.
                 </p>
-                <div className="mt-1 flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-accent" />
-                  <p className="text-sm font-semibold leading-5 text-foreground">
-                    {trustCue}
-                  </p>
-                </div>
+              ) : null}
+
+              {actionError ? (
+                <p className="rounded-2xl bg-muted px-4 py-3 text-center text-sm text-foreground">
+                  {actionError}
+                </p>
+              ) : null}
+
+              <div className="hidden grid-cols-2 gap-3 sm:grid">
+                <button
+                  type="button"
+                  onClick={handlePass}
+                  disabled={pending}
+                  className="h-14 rounded-2xl border border-[#d8d0c3] bg-[#fffdf8] text-sm font-semibold text-foreground shadow-sm transition hover:bg-[#f3eee5] active:scale-[0.98] disabled:opacity-50"
+                  aria-label="Not for me"
+                >
+                  Not for me
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleLike}
+                  disabled={pending || limitReached}
+                  className="h-14 rounded-2xl bg-[#75886b] text-sm font-semibold text-white shadow-[0_10px_28px_rgba(83,104,73,0.24)] transition hover:bg-[#697b60] active:scale-[0.98] disabled:opacity-50"
+                  aria-label="I’m interested"
+                >
+                  I’m interested
+                </button>
               </div>
-
-              <div className="rounded-[1.25rem] border border-border bg-background p-3">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Availability
-                </p>
-                <p className="mt-1 text-sm font-semibold leading-5 text-foreground">
-                  {availability}
-                </p>
-              </div>
-
-              <div className="rounded-[1.25rem] border border-border bg-background p-3">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Completeness
-                </p>
-                <p className="mt-1 text-sm font-semibold leading-5 text-foreground">
-                  {photos} · prompt added
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <span className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-                Guided Vibe Check before chat
-              </span>
-              <span className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-                Private mutual reveal
-              </span>
-              <span className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-                Choose how you appear
-              </span>
-            </div>
-
-            {limitReached ? (
-              <p className="rounded-2xl bg-muted px-4 py-3 text-center text-sm text-foreground">
-                You&apos;ve used your daily likes. Passes are still available.
-              </p>
-            ) : null}
-
-            {actionError ? (
-              <p className="rounded-2xl bg-muted px-4 py-3 text-center text-sm text-foreground">
-                {actionError}
-              </p>
-            ) : null}
-
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={handlePass}
-                disabled={pending}
-                className="h-14 rounded-2xl border border-border bg-background text-sm font-semibold text-foreground shadow-sm transition hover:bg-muted active:scale-[0.98] disabled:opacity-50"
-                aria-label="Not for me"
-              >
-                Not for me
-              </button>
-
-              <button
-                type="button"
-                onClick={handleLike}
-                disabled={pending || limitReached}
-                className="h-14 rounded-2xl bg-accent text-sm font-semibold text-accent-foreground shadow-sm transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
-                aria-label="I’m interested"
-              >
-                I’m interested
-              </button>
-            </div>
-
-            <div className="rounded-[1.25rem] bg-secondary/70 px-4 py-3 text-center text-xs leading-5 text-muted-foreground">
-              If they like you back, you&apos;ll match. Then either of you can
-              send a Vibe Check invite.
             </div>
           </div>
         </section>
 
-        <nav className="fixed inset-x-4 bottom-4 z-40 mx-auto grid max-w-md grid-cols-2 rounded-[1.5rem] border border-border bg-card/95 p-2 text-center text-xs shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur md:max-w-3xl lg:max-w-5xl">
+        <nav className="fixed inset-x-4 bottom-4 z-40 mx-auto grid max-w-md grid-cols-2 rounded-[1.5rem] border border-border bg-card/95 p-2 text-center text-xs shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur md:max-w-3xl lg:hidden">
           <Link
             href="/discover"
             className="rounded-2xl bg-accent px-2 py-3 font-semibold text-accent-foreground"
@@ -398,6 +432,28 @@ export function DiscoverDeck({
             Profile
           </Link>
         </nav>
+
+        <div className="fixed inset-x-4 bottom-[5.25rem] z-50 mx-auto grid max-w-md grid-cols-2 gap-3 rounded-[1.35rem] border border-[#e6ded0] bg-[#fffaf3]/96 p-2 shadow-[0_14px_38px_rgba(74,59,42,0.18)] backdrop-blur sm:hidden">
+          <button
+            type="button"
+            onClick={handlePass}
+            disabled={pending}
+            className="h-13 rounded-2xl border border-[#d8d0c3] bg-[#fffdf8] text-sm font-semibold text-foreground transition hover:bg-[#f3eee5] active:scale-[0.98] disabled:opacity-50"
+            aria-label="Not for me"
+          >
+            Not for me
+          </button>
+
+          <button
+            type="button"
+            onClick={handleLike}
+            disabled={pending || limitReached}
+            className="h-13 rounded-2xl bg-[#75886b] text-sm font-semibold text-white shadow-[0_10px_24px_rgba(83,104,73,0.22)] transition hover:bg-[#697b60] active:scale-[0.98] disabled:opacity-50"
+            aria-label="I’m interested"
+          >
+            I’m interested
+          </button>
+        </div>
       </div>
 
       {activeMatch ? (

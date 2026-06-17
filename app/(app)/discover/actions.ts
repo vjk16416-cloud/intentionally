@@ -1,7 +1,13 @@
 "use server";
 
+import { createClient as createServiceRoleClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 
+import {
+  isInternalDemoProfile,
+  shouldAutoMatchInternalDemoProfile,
+} from "@/lib/internal-demo/profiles";
+import { getServiceRoleKey, SUPABASE_URL } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 import { PROFILE_PHOTOS_BUCKET } from "@/lib/storage/photos";
 
@@ -19,6 +25,91 @@ export type LikeResult =
   | { ok: true; matched: false }
   | { ok: true; matched: true; matchId: string; with: MatchedCard }
   | { ok: false; error: "limit" | "failed" };
+
+function admin() {
+  return createServiceRoleClient(SUPABASE_URL, getServiceRoleKey(), {
+    auth: { persistSession: false },
+  });
+}
+
+type DemoProfile = {
+  id: string;
+  display_name: string | null;
+  date_of_birth: string | null;
+  photos: string[] | null;
+};
+
+type SwipeRow = {
+  id: string;
+  direction: string;
+};
+
+async function ensureSwipeLike(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  swiperId: string,
+  swipeeId: string,
+) {
+  const { error } = await supabase.from("swipes").insert({
+    swiper_id: swiperId,
+    swipee_id: swipeeId,
+    direction: "like",
+  });
+
+  if (error && error.code !== "23505") {
+    throw error;
+  }
+}
+
+async function ensureDemoReciprocalMatch(userId: string, swipeeId: string) {
+  const adminClient = admin();
+
+  // Internal demo/testing only: synthesize a reciprocal like for the
+  // seeded demo profiles that are meant to auto-match. This keeps the
+  // real user flow unchanged while making the demo journey usable.
+  const { data: existingSwipe, error: swipeReadError } = await adminClient
+    .from("swipes")
+    .select("id, direction")
+    .eq("swiper_id", swipeeId)
+    .eq("swipee_id", userId)
+    .maybeSingle<SwipeRow>();
+
+  if (swipeReadError) {
+    throw swipeReadError;
+  }
+
+  if (!existingSwipe) {
+    const { error: insertError } = await adminClient.from("swipes").insert({
+      swiper_id: swipeeId,
+      swipee_id: userId,
+      direction: "like",
+    });
+
+    if (insertError && insertError.code !== "23505") {
+      throw insertError;
+    }
+  } else if (existingSwipe.direction !== "like") {
+    const { error: updateError } = await adminClient
+      .from("swipes")
+      .update({ direction: "like" })
+      .eq("id", existingSwipe.id);
+
+    if (updateError) {
+      throw updateError;
+    }
+  }
+
+  const user_a = userId < swipeeId ? userId : swipeeId;
+  const user_b = userId < swipeeId ? swipeeId : userId;
+
+  const { error: matchInsertError } = await adminClient.from("matches").insert({
+    user_a,
+    user_b,
+  });
+
+  if (matchInsertError && matchInsertError.code !== "23505") {
+    throw matchInsertError;
+  }
+}
 
 export async function likeProfile(swipeeId: string): Promise<LikeResult> {
   const supabase = await createClient();
@@ -45,22 +136,42 @@ export async function likeProfile(swipeeId: string): Promise<LikeResult> {
     return { ok: false, error: "limit" };
   }
 
-  const { error: insertError } = await supabase
-    .from("swipes")
-    .insert({
-      swiper_id: user.id,
-      swipee_id: swipeeId,
-      direction: "like",
-    });
-
-  // Unique-violation (already swiped) is treated as a no-op success
-  // so a double-tap race doesn't surface as an error.
-  if (insertError && insertError.code !== "23505") {
+  try {
+    await ensureSwipeLike(supabase, user.id, swipeeId);
+  } catch {
     return { ok: false, error: "failed" };
   }
 
-  // The reciprocal-like trigger may have created a matches row.
-  // Canonical match identity is (user_a < user_b).
+  const { data: other } = await supabase
+    .from("profiles")
+    .select("id, display_name, date_of_birth, photos")
+    .eq("id", swipeeId)
+    .maybeSingle<DemoProfile>();
+
+  if (
+    !other ||
+    !other.display_name ||
+    !other.date_of_birth ||
+    !other.photos ||
+    other.photos.length < 1
+  ) {
+    // Match exists but the other side's data isn't renderable. Don't
+    // error — just skip the modal this round.
+    return { ok: true, matched: false };
+  }
+
+  if (isInternalDemoProfile(other.display_name)) {
+    if (shouldAutoMatchInternalDemoProfile(other.display_name)) {
+      try {
+        await ensureDemoReciprocalMatch(user.id, swipeeId);
+      } catch {
+        return { ok: false, error: "failed" };
+      }
+    }
+  }
+
+  // The reciprocal-like trigger or the demo helper may have created
+  // a matches row. Canonical match identity is (user_a < user_b).
   const ua = user.id < swipeeId ? user.id : swipeeId;
   const ub = user.id < swipeeId ? swipeeId : user.id;
   const { data: match } = await supabase
@@ -75,29 +186,6 @@ export async function likeProfile(swipeeId: string): Promise<LikeResult> {
   }
 
   // TODO(posthog): capture `match_created` here.
-
-  const { data: other } = await supabase
-    .from("profiles")
-    .select("id, display_name, date_of_birth, photos")
-    .eq("id", swipeeId)
-    .maybeSingle<{
-      id: string;
-      display_name: string | null;
-      date_of_birth: string | null;
-      photos: string[] | null;
-    }>();
-
-  if (
-    !other ||
-    !other.display_name ||
-    !other.date_of_birth ||
-    !other.photos ||
-    other.photos.length < 1
-  ) {
-    // Match exists but the other side's data isn't renderable. Don't
-    // error — just skip the modal this round.
-    return { ok: true, matched: false };
-  }
 
   const photo_urls = other.photos.map(
     (path) =>

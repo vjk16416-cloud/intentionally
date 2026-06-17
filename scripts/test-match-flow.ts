@@ -2,6 +2,11 @@ import { createClient } from "@supabase/supabase-js";
 import { existsSync, readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 
+import {
+  isInternalDemoProfile,
+  shouldAutoMatchInternalDemoProfile,
+} from "../lib/internal-demo/profiles";
+
 function loadEnvFile(path: string) {
   if (!existsSync(path)) return;
 
@@ -51,6 +56,29 @@ const supabase = createClient(
 async function main() {
   const runId = Date.now();
   const password = `TestPassword-${randomUUID()}!`;
+
+  const demoAssertions: Array<[string, boolean, boolean]> = [
+    ["Internal Test Alex", true, false],
+    ["Internal Test Maya", true, true],
+    ["Daniel Brooks", true, false],
+    ["Priya Shah", true, true],
+    ["Not A Demo Profile", false, false],
+  ];
+
+  for (const [name, expectedInternal, expectedMatch] of demoAssertions) {
+    if (isInternalDemoProfile(name) !== expectedInternal) {
+      throw new Error(
+        `Internal demo detection mismatch for ${name}: expected ${expectedInternal}`,
+      );
+    }
+    if (shouldAutoMatchInternalDemoProfile(name) !== expectedMatch) {
+      throw new Error(
+        `Internal demo alternating rule mismatch for ${name}: expected ${expectedMatch}`,
+      );
+    }
+  }
+
+  console.log("Verified internal demo matching rule.");
 
   const userAEmail = `test-a-${runId}@intentionally.local`;
   const userBEmail = `test-b-${runId}@intentionally.local`;
