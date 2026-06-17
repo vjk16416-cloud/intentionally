@@ -13,19 +13,19 @@ export const QA_VISIBILITY_OPTIONS: Record<
   }
 > = {
   open: {
-    label: "Open Mode",
-    shortLabel: "Open",
-    copy: "Be visible during the Guided Vibe Check.",
-    helper: "Best if you're comfortable being seen clearly.",
-    roomCopy: "Visible during the Guided Vibe Check.",
+    label: "Open Video",
+    shortLabel: "Open Video",
+    copy: "Both videos are clear for this Vibe Check.",
+    helper: "Only turns on when both people agree.",
+    roomCopy:
+      "Open Video is on. Either of you can return to Soft Reveal at any time.",
   },
   dynamic: {
-    label: "Dynamic Mode",
-    shortLabel: "Dynamic",
-    copy: "Softens the listener while someone answers.",
-    helper: "Helps the speaker feel less watched and more comfortable.",
-    roomCopy:
-      "The listener softens while someone answers, helping the speaker feel more comfortable.",
+    label: "Soft Reveal",
+    shortLabel: "Soft Reveal",
+    copy: "Only the person answering is clear.",
+    helper: "The listener stays softened to reduce pressure.",
+    roomCopy: "Only the person answering is clear. The listener stays softened.",
   },
   audio: {
     label: "Audio-first Mode",
@@ -39,13 +39,8 @@ export const QA_VISIBILITY_OPTIONS: Record<
 export function parseQaVisibilityMode(
   value: string | string[] | null | undefined,
 ): QaVisibilityMode {
-  const raw = Array.isArray(value) ? value[0] : value;
-
-  if (raw === "dynamic" || raw === "audio") {
-    return raw;
-  }
-
-  return "open";
+  void value;
+  return "dynamic";
 }
 
 export function qaVisibilitySearchParam(mode: QaVisibilityMode) {

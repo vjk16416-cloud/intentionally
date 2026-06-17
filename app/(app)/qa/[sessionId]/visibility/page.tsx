@@ -1,23 +1,17 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import {
-  QA_VISIBILITY_OPTIONS,
-  VISIBILITY_MODES,
-  parseQaVisibilityMode,
-} from "@/lib/qa/visibility";
+import { QA_VISIBILITY_OPTIONS } from "@/lib/qa/visibility";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function QaVisibilityPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ sessionId: string }>;
   searchParams: Promise<{ visibility?: string }>;
 }) {
   const { sessionId } = await params;
-  const query = await searchParams;
-  const selectedMode = parseQaVisibilityMode(query.visibility);
+  const softReveal = QA_VISIBILITY_OPTIONS.dynamic;
 
   const supabase = await createClient();
   const {
@@ -60,67 +54,46 @@ export default async function QaVisibilityPage({
           </Link>
 
           <p className="mt-6 text-xs uppercase tracking-[0.24em] text-muted-foreground">
-            Guided Vibe Check. Chosen visibility. Mutual Continue.
+            Guided Vibe Check. Soft Reveal. Mutual Continue.
           </p>
 
           <h1 className="mt-4 text-3xl font-semibold tracking-tight">
-            Choose how you appear
+            Start in Soft Reveal
           </h1>
 
           <p className="mt-4 text-sm leading-6 text-muted-foreground">
-            You can change this during the Guided Vibe Check. Chat unlocks only
-            if you both choose Continue.
+            Soft Reveal is the default for every Vibe Check. Only the person
+            answering is clear. The listener stays softened.
           </p>
 
           <form
             action={`/qa/${sessionId}`}
-            className="mt-6 grid gap-3 md:grid-cols-3"
+            className="mt-6 grid gap-3"
           >
             <input type="hidden" name="started" value="true" />
+            <input type="hidden" name="visibility" value="dynamic" />
 
-            {VISIBILITY_MODES.map((mode) => {
-              const option = QA_VISIBILITY_OPTIONS[mode];
-
-              return (
-                <label key={mode} className="block cursor-pointer">
-                  <input
-                    type="radio"
-                    name="visibility"
-                    value={mode}
-                    defaultChecked={selectedMode === mode}
-                    className="peer sr-only"
-                  />
-                  <span className="block rounded-[1.5rem] border border-border bg-background p-4 transition peer-checked:border-accent peer-checked:bg-secondary">
-                    <span className="flex items-start justify-between gap-4">
-                      <span>
-                        <span className="block text-base font-semibold">
-                          {option.label}
-                        </span>
-                        <span className="mt-1 block text-sm leading-6 text-foreground">
-                          {option.copy}
-                        </span>
-                      </span>
-                      <span className="mt-1 h-4 w-4 rounded-full border border-accent bg-card peer-checked:bg-accent" />
-                    </span>
-                    <span className="mt-2 block text-xs leading-5 text-muted-foreground">
-                      {option.helper}
-                    </span>
-                  </span>
-                </label>
-              );
-            })}
+            <div className="rounded-[1.5rem] border border-border bg-background p-4">
+              <p className="text-base font-semibold">{softReveal.label}</p>
+              <p className="mt-1 text-sm leading-6 text-foreground">
+                {softReveal.copy}
+              </p>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                {softReveal.helper}
+              </p>
+            </div>
 
             <button
               type="submit"
-              className="w-full rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground md:col-span-3"
+              className="w-full rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
             >
               Join Vibe Check
             </button>
           </form>
 
           <div className="mt-5 rounded-[1.25rem] bg-secondary p-4 text-sm leading-6 text-muted-foreground">
-            Your choice is about comfort, not judgement. You can change it
-            anytime.
+            Either of you can request Open Video inside the room. It only turns
+            on if both of you agree.
           </div>
         </section>
       </div>

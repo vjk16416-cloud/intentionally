@@ -170,7 +170,7 @@ export default async function QaSessionPage({
               href={`/qa/${sessionId}/visibility?${visibilityParam}`}
               className="mt-6 block rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground shadow-sm"
             >
-              Choose how you appear
+              Prepare to join
             </Link>
           </section>
         </div>

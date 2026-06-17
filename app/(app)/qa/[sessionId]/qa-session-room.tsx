@@ -11,7 +11,10 @@ import {
 } from "@/lib/qa/visibility";
 
 import { LocalMediaPreview } from "./local-media-preview";
-import { VisibilitySelector } from "./visibility-selector";
+import {
+  VisibilitySelector,
+  type OpenVideoRequestState,
+} from "./visibility-selector";
 
 const EXTRA_QUESTIONS = [
   "What would make dating feel healthier for you?",
@@ -57,6 +60,9 @@ export function QaSessionRoom({
   const [extraAccepted, setExtraAccepted] = useState(initialExtraAccepted);
   const [extraRequest, setExtraRequest] =
     useState<ExtraRequestState>(initialExtraRequest);
+  const [openVideoRequest, setOpenVideoRequest] =
+    useState<OpenVideoRequestState>("idle");
+  const [isOpenVideo, setIsOpenVideo] = useState(false);
   const questions = extraAccepted
     ? [...baseQuestions, ...EXTRA_QUESTIONS]
     : baseQuestions;
@@ -72,10 +78,13 @@ export function QaSessionRoom({
     safeQuestionIndex % 2 === 0 ? "you" : "them";
   const isYouAnswering = demoAnsweringParticipant === "you";
   const isThemAnswering = demoAnsweringParticipant === "them";
+  const effectiveVisibilityMode: QaVisibilityMode = isOpenVideo
+    ? "open"
+    : "dynamic";
   const shouldSoftenYourTile =
-    visibilityMode === "dynamic" && isThemAnswering;
+    effectiveVisibilityMode === "dynamic" && isThemAnswering;
   const shouldSoftenTheirTile =
-    visibilityMode === "dynamic" && isYouAnswering;
+    effectiveVisibilityMode === "dynamic" && isYouAnswering;
   const yourTileStatus = shouldSoftenYourTile
     ? "Listening softened"
     : isYouAnswering
@@ -87,7 +96,7 @@ export function QaSessionRoom({
       ? "Answering"
       : "Listening";
   const progressPercent = ((safeQuestionIndex + 1) / questions.length) * 100;
-  const visibility = QA_VISIBILITY_OPTIONS[visibilityMode];
+  const visibility = QA_VISIBILITY_OPTIONS[effectiveVisibilityMode];
   const activeSpeakerLabel = isYouAnswering ? "Your turn" : "Their turn";
   const nextActionLabel = isLastQuestion ? "Review choices" : "Next question";
   const showExtraQuestionOption =
@@ -103,6 +112,7 @@ export function QaSessionRoom({
       properties: {
         session_id: sessionId,
         visibility_mode: visibilityMode,
+        effective_visibility_mode: effectiveVisibilityMode,
         surface: "room_entry",
       },
     });
@@ -112,14 +122,15 @@ export function QaSessionRoom({
       qa_session_id: sessionId,
       source: "qa",
       visibility_mode: visibilityMode,
+      effective_visibility_mode: effectiveVisibilityMode,
     });
-  }, [matchId, sessionId, userId, visibilityMode]);
+  }, [effectiveVisibilityMode, matchId, sessionId, userId, visibilityMode]);
 
   function finishSession(extraState: ExtraRequestState = extraRequest) {
     const params = new URLSearchParams({
       started: "true",
       finished: "true",
-      visibility: visibilityMode,
+      visibility: effectiveVisibilityMode,
     });
 
     if (extraAccepted) {
@@ -134,7 +145,7 @@ export function QaSessionRoom({
       match_id: matchId,
       qa_session_id: sessionId,
       source: "qa",
-      visibility_mode: visibilityMode,
+      visibility_mode: effectiveVisibilityMode,
       question_count: questions.length,
       extra_questions: extraAccepted,
       extra_request_state: extraState,
@@ -157,7 +168,7 @@ export function QaSessionRoom({
     trackAnalyticsEvent("qaQuestionAnswered", {
       properties: {
         session_id: sessionId,
-        visibility_mode: visibilityMode,
+        visibility_mode: effectiveVisibilityMode,
         question_index: safeQuestionIndex,
         question_total: questions.length,
         is_last_question: isLastQuestion,
@@ -175,6 +186,28 @@ export function QaSessionRoom({
   function declineExtraQuestions() {
     setExtraRequest("declined");
     finishSession("declined");
+  }
+
+  function requestOpenVideo() {
+    // TODO: Persist this request to Supabase and broadcast it over realtime so
+    // the match can accept or decline from their own session.
+    setOpenVideoRequest("pending");
+  }
+
+  function previewIncomingOpenVideoRequest() {
+    // TODO: Replace this demo-only preview with the match's realtime request.
+    setOpenVideoRequest("incoming");
+  }
+
+  function allowOpenVideo() {
+    // TODO: Activate only after both Supabase consent records are present.
+    setIsOpenVideo(true);
+    setOpenVideoRequest("idle");
+  }
+
+  function keepSoftReveal() {
+    setIsOpenVideo(false);
+    setOpenVideoRequest("idle");
   }
 
   return (
@@ -198,7 +231,6 @@ export function QaSessionRoom({
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
-              <VisibilitySelector mode={visibilityMode} />
               <button
                 type="button"
                 className="flex h-10 w-14 items-center justify-center rounded-full border border-border bg-background text-xs font-semibold text-foreground shadow-sm"
@@ -266,12 +298,12 @@ export function QaSessionRoom({
                   </div>
                 ) : (
                   <LocalMediaPreview
-                    visibilityMode={visibilityMode}
+                    visibilityMode={effectiveVisibilityMode}
                     isSoftened={shouldSoftenYourTile}
                     statusLabel={yourTileStatus}
                     helperText={
                       shouldSoftenYourTile
-                        ? "Dynamic Mode softens the listener so the speaker feels less watched."
+                        ? "Soft Reveal keeps the listener softened so the speaker feels less watched."
                         : isYouAnswering
                           ? "Take a breath. A short, honest answer is enough."
                           : "Listen without rushing your response."
@@ -318,7 +350,11 @@ export function QaSessionRoom({
                       src={dailyRoomUrl}
                       title="Guided Vibe Check video room"
                       allow="camera; microphone; fullscreen; speaker; display-capture"
-                      className="h-[320px] w-full border-0 lg:h-[420px]"
+                      className={`h-[320px] w-full border-0 transition duration-500 lg:h-[420px] ${
+                        shouldSoftenTheirTile
+                          ? "scale-105 blur-sm opacity-75"
+                          : ""
+                      }`}
                     />
                   </div>
                 ) : (
@@ -416,6 +452,18 @@ export function QaSessionRoom({
                 <p>Two more questions have been added.</p>
               </div>
             ) : null}
+
+            <div className="mx-auto w-full max-w-2xl">
+              <VisibilitySelector
+                isOpenVideo={isOpenVideo}
+                requestState={openVideoRequest}
+                onRequestOpenVideo={requestOpenVideo}
+                onPreviewIncomingRequest={previewIncomingOpenVideoRequest}
+                onAllowOpenVideo={allowOpenVideo}
+                onKeepSoftReveal={keepSoftReveal}
+                onReturnToSoftReveal={keepSoftReveal}
+              />
+            </div>
 
             <div className="mx-auto grid w-full max-w-md grid-cols-[1fr_auto_1fr] items-center gap-3">
               <button

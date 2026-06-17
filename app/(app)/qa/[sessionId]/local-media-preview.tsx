@@ -16,7 +16,7 @@ type LocalMediaPreviewProps = {
 };
 
 export function LocalMediaPreview({
-  visibilityMode = "open",
+  visibilityMode = "dynamic",
   isSoftened = false,
   statusLabel,
   helperText,
