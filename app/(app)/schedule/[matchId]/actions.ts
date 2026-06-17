@@ -255,7 +255,8 @@ export async function confirmSlot(
 
   // Best-effort email to both participants. Phone-OTP users won't
   // have an email on auth.users, in which case we silently skip;
-  // they'll see the same details in-app at /qa/[sessionId].
+  // they'll see the same details in-app on the confirmed schedule
+  // page and later in /qa/[sessionId].
   const otherId = match.user_a === user.id ? match.user_b : match.user_a;
   const thisDisplayName =
     profiles.find((p) => p.id === user.id)?.display_name ?? "your match";
@@ -297,5 +298,7 @@ export async function confirmSlot(
     // Best effort; don't block the user.
   }
 
-  redirect(`/qa/${updated.id}`);
+  revalidatePath(`/schedule/${matchId}`);
+  revalidatePath(`/qa/${updated.id}`);
+  redirect(`/schedule/${matchId}`);
 }

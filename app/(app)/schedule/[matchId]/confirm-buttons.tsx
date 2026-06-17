@@ -32,7 +32,7 @@ export function ConfirmButtons({ matchId }: { matchId: string }) {
         }
         className="w-full"
       >
-        {pending ? "Confirming…" : "Confirm this time"}
+        {pending ? "Confirming…" : "Accept time"}
       </Button>
     </form>
   );

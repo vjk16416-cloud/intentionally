@@ -280,14 +280,14 @@ export default async function SchedulePage({
           <section className={`${softPanel} px-5 py-5 sm:px-6`}>
             <div className="space-y-3 text-center">
               <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-                Their Vibe Check invite
+                Invite received
               </p>
               <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                {otherName} proposed {when}.
+                {otherName} invited you to a Vibe Check.
               </h2>
               <p className="mx-auto max-w-xl text-sm leading-6 text-muted-foreground">
-                London time. Confirm to lock the slot, or counter with a
-                different time.
+                Proposed time: {when}. London time. Accept this slot, or
+                suggest another time.
               </p>
             </div>
             <div className="mt-5">
@@ -295,7 +295,7 @@ export default async function SchedulePage({
             </div>
             <div className="mt-5 space-y-3">
               <p className="text-center text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                Or counter with one of these
+                Suggest another time
               </p>
               <SlotPicker matchId={matchId} slots={slots} />
             </div>

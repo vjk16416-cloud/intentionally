@@ -334,7 +334,7 @@ async function main() {
       throw new Error(`Expected match status pending_qa, got ${match.status}`);
     }
 
-    console.log("Creating Q&A session proposal...");
+    console.log("Creating Vibe Check invite...");
 
     const scheduledAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
 
@@ -353,28 +353,77 @@ async function main() {
     }
 
     if (qaSession.confirmed_at !== null) {
-      throw new Error("Expected Q&A session to be unconfirmed at proposal stage.");
+      throw new Error("Expected Vibe Check invite to be unconfirmed at proposal stage.");
     }
 
-    console.log("Confirming Q&A session...");
+    if (qaSession.proposed_by_id !== userAId) {
+      throw new Error("Expected User A to be the initial Vibe Check proposer.");
+    }
+
+    console.log("Checking Vibe Check counter-proposal...");
+
+    const counterScheduledAt = new Date(
+      Date.now() + 72 * 60 * 60 * 1000,
+    ).toISOString();
+
+    const { data: counterSession, error: counterError } = await supabase
+      .from("qa_sessions")
+      .update({
+        scheduled_at: counterScheduledAt,
+        proposed_at: new Date().toISOString(),
+        proposed_by_id: userBId,
+        confirmed_at: null,
+      })
+      .eq("id", qaSession.id)
+      .select("id, scheduled_at, proposed_by_id, confirmed_at")
+      .single();
+
+    if (counterError || !counterSession) {
+      throw new Error(
+        `Failed to create Vibe Check counter-proposal: ${counterError?.message}`,
+      );
+    }
+
+    if (counterSession.proposed_by_id !== userBId) {
+      throw new Error("Expected User B to own the Vibe Check counter-proposal.");
+    }
+
+    if (counterSession.confirmed_at !== null) {
+      throw new Error("Expected counter-proposed Vibe Check to remain unconfirmed.");
+    }
+
+    console.log("Accepting Vibe Check invite...");
 
     const confirmedAt = new Date().toISOString();
+    const dailyRoomUrl = `https://example.daily.co/test-${runId}`;
 
     const { data: confirmedSession, error: qaConfirmError } = await supabase
       .from("qa_sessions")
       .update({
         confirmed_at: confirmedAt,
+        daily_room_url: dailyRoomUrl,
+        daily_room_name: `test-${runId}`,
       })
       .eq("id", qaSession.id)
-      .select("id, confirmed_at")
+      .select(
+        "id, match_id, scheduled_at, proposed_by_id, confirmed_at, daily_room_url",
+      )
       .single();
 
     if (qaConfirmError || !confirmedSession) {
-      throw new Error(`Failed to confirm Q&A session: ${qaConfirmError?.message}`);
+      throw new Error(`Failed to accept Vibe Check invite: ${qaConfirmError?.message}`);
     }
 
     if (!confirmedSession.confirmed_at) {
-      throw new Error("Expected Q&A session to have confirmed_at set.");
+      throw new Error("Expected accepted Vibe Check invite to have confirmed_at set.");
+    }
+
+    if (confirmedSession.match_id !== match.id) {
+      throw new Error("Expected accepted Vibe Check to stay attached to the match.");
+    }
+
+    if (confirmedSession.daily_room_url !== dailyRoomUrl) {
+      throw new Error("Expected accepted Vibe Check to have a joinable Daily room URL.");
     }
 
     console.log("Updating match status to qa_scheduled...");
@@ -396,15 +445,22 @@ async function main() {
       throw new Error(`Expected match status qa_scheduled, got ${scheduledMatch.status}`);
     }
 
+    const joinPath = `/qa/${confirmedSession.id}`;
+    if (joinPath !== `/qa/${qaSession.id}`) {
+      throw new Error(`Expected Join Vibe Check path to use the session id, got ${joinPath}`);
+    }
+
     console.log("Product-flow test passed:");
     console.log("- User A liked User B");
     console.log("- User B liked User A");
     console.log(`- Match created with status: ${match.status}`);
-    console.log("- Q&A session proposal created");
-    console.log("- Q&A session confirmed");
+    console.log("- Vibe Check invite created");
+    console.log("- Vibe Check counter-proposal stays unconfirmed");
+    console.log("- Vibe Check invite accepted");
     console.log(`- Match moved to status: ${scheduledMatch.status}`);
+    console.log(`- Join Vibe Check path: ${joinPath}`);
     console.log(`- Match ID: ${match.id}`);
-    console.log(`- Q&A Session ID: ${qaSession.id}`);
+    console.log(`- Vibe Check Session ID: ${qaSession.id}`);
   } finally {
     console.log("Cleaning up test users...");
 

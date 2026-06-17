@@ -110,40 +110,41 @@ function SelectionForm({
     <div className="space-y-4">
       {children}
       <form action={action} className="space-y-3">
-      <input type="hidden" name="matchId" value={matchId} />
-      <input type="hidden" name="scheduledAt" value={hiddenScheduledAt} />
-      <button
-        type="submit"
-        disabled={pending || !selectedSlot}
-        onClick={() => {
-          if (!selectedSlot) return;
-          trackAnalyticsEvent("scheduleClicked", {
-            properties: {
-              match_id: matchId,
-              scheduled_at: selectedSlot.scheduledAtIso,
-              source: "slot_picker",
-            },
-          });
-        }}
-        className="w-full rounded-2xl bg-[#75886b] px-4 py-3.5 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(83,104,73,0.24)] transition hover:bg-[#697b60] disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {pending
-          ? "Sending invite..."
-          : selectedLabel
-            ? `Continue with ${selectedLabel}`
-            : "Select a time to continue"}
-      </button>
-      <p className="text-center text-xs leading-5 text-muted-foreground">
-        They&apos;ll receive your invite and can accept or suggest another time.
-      </p>
+        <input type="hidden" name="matchId" value={matchId} />
+        <input type="hidden" name="scheduledAt" value={hiddenScheduledAt} />
+        <button
+          type="submit"
+          disabled={pending || !selectedSlot}
+          onClick={() => {
+            if (!selectedSlot) return;
+            trackAnalyticsEvent("scheduleClicked", {
+              properties: {
+                match_id: matchId,
+                scheduled_at: selectedSlot.scheduledAtIso,
+                source: "slot_picker",
+              },
+            });
+          }}
+          className="w-full rounded-2xl bg-[#75886b] px-4 py-3.5 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(83,104,73,0.24)] transition hover:bg-[#697b60] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {pending
+            ? "Sending invite..."
+            : selectedLabel
+              ? `Continue with ${selectedLabel}`
+              : "Select a time to continue"}
+        </button>
+        <p className="text-center text-xs leading-5 text-muted-foreground">
+          They&apos;ll receive your invite and can accept or suggest another
+          time.
+        </p>
         {pending ? (
           <p className="text-center text-xs font-medium text-muted-foreground">
             Sending invite…
           </p>
         ) : null}
-      {state.error ? (
-        <p className="text-center text-xs text-destructive">{state.error}</p>
-      ) : null}
+        {state.error ? (
+          <p className="text-center text-xs text-destructive">{state.error}</p>
+        ) : null}
       </form>
     </div>
   );
