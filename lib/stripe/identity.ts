@@ -40,3 +40,10 @@ export async function createIdentityVerificationSession(
 
   return { url: session.url, sessionId: session.id };
 }
+
+export async function getLatestIdentityVerificationSession(userId: string) {
+  const sessions = await stripe.identity.verificationSessions.list({ limit: 10 });
+  return (
+    sessions.data.find((session) => session.metadata?.user_id === userId) ?? null
+  );
+}
