@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
@@ -241,7 +240,7 @@ export function DiscoverDeck({
   }
 
   return (
-    <main className="min-h-[calc(100vh-57px)] bg-[#f8f4ec] pb-44 text-foreground sm:pb-28 lg:pb-6">
+    <main className="min-h-[calc(100vh-57px)] bg-[#f8f4ec] pb-36 text-foreground sm:pb-28 lg:pb-6">
       <div className="mx-auto flex w-full max-w-md flex-col px-4 py-5 sm:px-5 md:max-w-3xl lg:max-w-6xl lg:px-6 lg:py-4 xl:max-w-6xl">
         <header className="mb-3 shrink-0 lg:mb-2">
           <h1 className="text-3xl font-semibold tracking-tight lg:text-[2rem]">
@@ -419,22 +418,6 @@ export function DiscoverDeck({
             </div>
           </div>
         </section>
-
-        <nav className="fixed inset-x-4 bottom-4 z-40 mx-auto grid max-w-md grid-cols-2 rounded-[1.5rem] border border-border bg-card/95 p-2 text-center text-xs shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur md:max-w-3xl lg:hidden">
-          <Link
-            href="/discover"
-            className="rounded-2xl bg-accent px-2 py-3 font-semibold text-accent-foreground"
-          >
-            Discover
-          </Link>
-
-          <Link
-            href="/onboarding/profile"
-            className="rounded-2xl px-2 py-3 font-semibold text-muted-foreground"
-          >
-            Profile
-          </Link>
-        </nav>
 
         <div className="fixed inset-x-4 bottom-[5.25rem] z-50 mx-auto grid max-w-md grid-cols-2 gap-3 rounded-[1.35rem] border border-[#e6ded0] bg-[#fffaf3]/96 p-2 shadow-[0_14px_38px_rgba(74,59,42,0.18)] backdrop-blur sm:hidden">
           <button

@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { isUserVerified } from "@/lib/verification";
 
 import { signOut } from "./actions";
+import { AppNavigation } from "./app-navigation";
 
 export default async function AppLayout({
   children,
@@ -41,17 +42,19 @@ export default async function AppLayout({
   const verified = await isUserVerified(supabase, user.id);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border bg-background/90 px-5 py-3 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-md items-center justify-between md:max-w-4xl lg:max-w-6xl xl:max-w-7xl">
+    <div className="min-h-screen bg-[#f8f4ec] pb-24 text-foreground md:pb-0">
+      <header className="sticky top-0 z-40 border-b border-[#e6ded0] bg-[#fffaf3]/92 px-4 py-3 shadow-[0_8px_30px_rgba(74,59,42,0.06)] backdrop-blur md:px-5">
+        <div className="mx-auto flex w-full max-w-md items-center justify-between gap-3 md:max-w-4xl lg:max-w-6xl xl:max-w-7xl">
           <Link
             href="/discover"
-            className="text-base font-semibold tracking-tight"
+            className="min-w-0 text-base font-semibold tracking-tight text-foreground"
           >
             Intentionally
           </Link>
 
-          <div className="flex items-center gap-2">
+          <AppNavigation />
+
+          <div className="flex shrink-0 items-center gap-2">
             {!verified ? (
               <Link
                 href="/verify"
