@@ -2,6 +2,7 @@
 
 import { useActionState, useState, type ReactNode } from "react";
 
+import { FallbackActionLink, FallbackPanel } from "@/components/fallback-state";
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import type { SlotProposal } from "@/lib/scheduling/slots";
 import { cn } from "@/lib/utils";
@@ -38,23 +39,18 @@ export function SlotPicker({
 
   if (slots.length === 0) {
     return (
-      <div className="space-y-3 rounded-[1.6rem] border border-[#e6ded0] bg-[#fffdf8] p-4 text-center text-sm shadow-[0_10px_28px_rgba(74,59,42,0.06)] sm:p-5">
-        <p className="font-semibold text-foreground">
-          No mutual times in the next 7 days.
-        </p>
-        <p className="text-xs leading-5 text-muted-foreground">
-          One of you needs to widen availability. Either of you can do that.
-          You can update yours and try again.
-        </p>
-        <p>
-          <a
-            href={`/onboarding/availability?return=/schedule/${matchId}`}
-            className="text-xs font-semibold text-[#75886b] underline-offset-4 hover:underline"
-          >
-            Edit your availability
-          </a>
-        </p>
-      </div>
+      <FallbackPanel
+        eyebrow="Schedule"
+        title="No mutual times in the next 7 days"
+        description="One of you needs to widen availability. Either of you can do that, then try again."
+        note="You can update your availability without leaving this flow."
+        action={
+          <FallbackActionLink href={`/onboarding/availability?return=/schedule/${matchId}`}>
+            Edit availability
+          </FallbackActionLink>
+        }
+        className="text-center"
+      />
     );
   }
 

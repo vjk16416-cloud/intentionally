@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useEffect, useRef } from "react";
 
+import { FallbackActionLink, FallbackPanel } from "@/components/fallback-state";
 import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import {
@@ -92,9 +93,20 @@ export function DatePlanPicker({
         </section>
 
         {state.error ? (
-          <p className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            {state.error}
-          </p>
+          <FallbackPanel
+            eyebrow="Date plan"
+            title="We couldn&apos;t share that plan"
+            description="Try again in a moment. Your chat is still there."
+            tone="error"
+            note={state.error}
+            action={
+              <div className="flex flex-wrap gap-3">
+                <FallbackActionLink href={`/chat/${chatId}`} primary={false}>
+                  Back to Chat
+                </FallbackActionLink>
+              </div>
+            }
+          />
         ) : null}
 
         <section className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">

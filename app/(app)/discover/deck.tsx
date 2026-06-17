@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 
 import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
+import { FallbackActionLink, FallbackPanel } from "@/components/fallback-state";
 import type { DiscoverCard } from "@/lib/discover/feed";
 import { BIO_PROMPTS } from "@/lib/onboarding/constants";
 
@@ -153,28 +154,25 @@ export function DiscoverDeck({
 
   if (cards.length === 0 || !card) {
     return (
-      <main className="min-h-[calc(100vh-57px)] bg-background px-5 py-8 text-foreground">
+      <main className="min-h-[calc(100vh-57px)] bg-[#f8f4ec] px-5 py-8 text-foreground">
         <div className="mx-auto flex min-h-[70vh] w-full max-w-md items-center justify-center md:max-w-2xl">
-          <div className="space-y-5 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-border bg-card text-2xl shadow-sm">
-              ✦
-            </div>
-
-            <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                Discover
-              </p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight">
-                You&apos;re all caught up.
-              </h2>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                No more profiles for now. New people will appear here when they
-                match your preferences.
-              </p>
-            </div>
-
-            <DemoResetButton />
-          </div>
+          <FallbackPanel
+            eyebrow="Discover"
+            title="You&apos;re all caught up"
+            description="No more profiles for now. New people will appear here when they match your preferences."
+            note="You can review your profile while you wait."
+            action={
+              <div className="space-y-3">
+                <FallbackActionLink href="/onboarding/review">
+                  Review profile
+                </FallbackActionLink>
+                <div className="flex justify-center">
+                  <DemoResetButton />
+                </div>
+              </div>
+            }
+            className="text-center"
+          />
         </div>
       </main>
     );

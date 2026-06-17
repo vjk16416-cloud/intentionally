@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { FallbackPanel } from "@/components/fallback-state";
 import { createClient } from "@/lib/supabase/server";
 
 import { ChatMessageForm } from "./chat-message-form";
@@ -147,20 +148,13 @@ export default async function ChatPage({
         <section className="mt-4 flex-1 rounded-[2rem] border border-[#e6ded0] bg-[#fffaf3] p-4 shadow-[0_18px_60px_rgba(74,59,42,0.08)]">
           <div className="space-y-4">
             {(messages ?? []).length === 0 ? (
-              <div className="rounded-[1.5rem] border border-[#eadfce] bg-background/70 p-5 text-center">
-                <p className="text-lg font-semibold tracking-tight text-foreground">
-                  Your chat is ready
-                </p>
-                <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-                  A simple first message is enough. Mention something from your
-                  Vibe Check, ask one thoughtful question, or suggest a gentle
-                  next step.
-                </p>
-                <p className="mx-auto mt-4 max-w-md rounded-2xl bg-secondary px-4 py-3 text-sm leading-6 text-muted-foreground">
-                  Safety note: keep early plans public, simple, and easy to
-                  leave.
-                </p>
-              </div>
+              <FallbackPanel
+                eyebrow="Messages"
+                title="Your chat is ready"
+                description="A simple first message is enough. Mention something from your Vibe Check, ask one thoughtful question, or suggest a gentle next step."
+                note="Safety note: keep early plans public, simple, and easy to leave."
+                className="text-center"
+              />
             ) : null}
 
             {(messages ?? []).map((message) => {

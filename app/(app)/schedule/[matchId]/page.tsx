@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, CalendarDays, Clock3, ShieldCheck } from "lucide-react";
 
+import { FallbackActionLink, FallbackPanel } from "@/components/fallback-state";
 import { buttonVariants } from "@/components/ui/button";
 import { computeMutualSlots } from "@/lib/scheduling/slots";
 import { createClient } from "@/lib/supabase/server";
@@ -96,17 +97,14 @@ export default async function SchedulePage({
     return (
       <main className={pageShell}>
         <div className={outer}>
-          <section className={`${panel} px-5 py-8 text-center sm:px-6 sm:py-10`}>
-            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-              Guided Vibe Check
-            </p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
-              This match isn&apos;t ready yet.
-            </h1>
-            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-              Head back to Discover to find someone new.
-            </p>
-          </section>
+          <FallbackPanel
+            eyebrow="Guided Vibe Check"
+            title="This match isn&apos;t ready yet"
+            description="The invite flow hasn&apos;t opened for this match."
+            note="Head back to Discover and try again from there."
+            action={<FallbackActionLink href="/discover">Back to Discover</FallbackActionLink>}
+            className="text-center"
+          />
         </div>
       </main>
     );
