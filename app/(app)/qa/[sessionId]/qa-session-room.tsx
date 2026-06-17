@@ -88,6 +88,8 @@ export function QaSessionRoom({
       : "Listening";
   const progressPercent = ((safeQuestionIndex + 1) / questions.length) * 100;
   const visibility = QA_VISIBILITY_OPTIONS[visibilityMode];
+  const activeSpeakerLabel = isYouAnswering ? "Your turn" : "Their turn";
+  const nextActionLabel = isLastQuestion ? "Review choices" : "Next question";
   const showExtraQuestionOption =
     !extraAccepted && safeQuestionIndex >= baseQuestions.length - 1;
   const showAcceptedNotice =
@@ -176,24 +178,22 @@ export function QaSessionRoom({
   }
 
   return (
-    <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background via-[#f6ecdf] to-muted px-4 py-5 text-foreground md:px-6 lg:px-8">
+    <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background via-[#fbf3e8] to-muted px-4 py-5 text-foreground md:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-md md:max-w-4xl lg:max-w-6xl xl:max-w-7xl">
-        <section className="overflow-hidden rounded-[2.25rem] border border-border bg-card p-4 shadow-xl md:p-5 lg:p-6">
+        <section className="overflow-hidden rounded-[2.25rem] border border-[#e6ded0] bg-[#fffaf3] p-4 shadow-[0_24px_80px_rgba(74,59,42,0.12)] md:p-5 lg:p-6">
           <header className="flex items-center justify-between gap-3 border-b border-border pb-4">
             <a
               href="/discover"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-background text-xl text-muted-foreground"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-background text-xl text-muted-foreground shadow-sm"
               aria-label="Exit Vibe Check"
             >
               ×
             </a>
 
             <div className="min-w-0 text-center">
-              <p className="text-sm font-semibold tracking-tight">
-                Guided Vibe Check
-              </p>
+              <p className="text-sm font-semibold tracking-tight">Vibe Check</p>
               <p className="text-[11px] text-muted-foreground">
-                Guided conversation
+                A guided conversation, not a performance
               </p>
             </div>
 
@@ -201,22 +201,22 @@ export function QaSessionRoom({
               <VisibilitySelector mode={visibilityMode} />
               <button
                 type="button"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-lg"
+                className="flex h-10 w-14 items-center justify-center rounded-full border border-border bg-background text-xs font-semibold text-foreground shadow-sm"
                 aria-label="Safety options"
               >
-                🛡
+                Safe
               </button>
             </div>
           </header>
 
           <div className="space-y-4 pt-5 md:space-y-5">
-            <div className="rounded-[1.35rem] border border-border bg-background p-3 md:px-4">
+            <div className="rounded-[1.35rem] border border-[#eadfce] bg-background/75 p-3 md:px-4">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-xs font-semibold text-muted-foreground">
+                <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                   Question {safeQuestionIndex + 1} of {questions.length}
                 </span>
                 <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
-                  08:42
+                  {activeSpeakerLabel}
                 </span>
               </div>
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
@@ -225,12 +225,16 @@ export function QaSessionRoom({
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
+              <p className="mt-3 text-xs leading-5 text-muted-foreground">
+                Move forward when the answer feels complete. Skipping is always
+                okay.
+              </p>
             </div>
 
             <div className="relative grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(280px,360px)_minmax(0,1fr)] md:items-center lg:grid-cols-[minmax(0,1fr)_minmax(340px,440px)_minmax(0,1fr)]">
               <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-border md:hidden" />
 
-              <div className="relative z-10 rounded-[1.75rem] border border-border bg-background p-3 shadow-sm md:order-1">
+              <div className="relative z-10 rounded-[1.75rem] border border-[#eadfce] bg-background/85 p-3 shadow-sm md:order-1">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="rounded-full bg-card px-3 py-1 text-xs font-semibold">
                     You
@@ -269,25 +273,26 @@ export function QaSessionRoom({
                       shouldSoftenYourTile
                         ? "Dynamic Mode softens the listener so the speaker feels less watched."
                         : isYouAnswering
-                          ? "You stay clear while you answer."
-                          : "You stay clear while listening."
+                          ? "Take a breath. A short, honest answer is enough."
+                          : "Listen without rushing your response."
                     }
                     isCompact
                   />
                 )}
               </div>
 
-              <div className="relative z-10 rounded-[1.75rem] border border-[#d8ccbd] bg-[#fff8ef] p-6 text-center shadow-sm md:order-2 md:p-6 lg:p-8">
-                <div className="mx-auto mb-4 h-8 w-8 rounded-full bg-secondary text-lg leading-8 text-accent">
-                  ✦
+              <div className="relative z-10 rounded-[1.75rem] border border-[#d8ccbd] bg-[#fff8ef] p-6 text-center shadow-[0_16px_48px_rgba(74,59,42,0.10)] md:order-2 md:p-6 lg:p-8">
+                <div className="mx-auto mb-4 flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-accent">
+                  {safeQuestionIndex + 1}
                 </div>
                 <h1 className="text-2xl font-semibold leading-8 tracking-tight md:text-3xl md:leading-10">
                   {currentQuestion}
                 </h1>
                 <p className="mx-auto mt-4 max-w-xs text-sm leading-6 text-muted-foreground">
-                  No perfect answer. Just be honest.
+                  There is no perfect answer. Stay honest, kind, and within
+                  what feels comfortable.
                 </p>
-                <div className="mx-auto mt-4 max-w-xs rounded-2xl bg-secondary px-4 py-3">
+                <div className="mx-auto mt-5 max-w-xs rounded-2xl border border-[#eadfce] bg-background/70 px-4 py-3">
                   <p className="text-xs font-semibold text-foreground">
                     {visibility.shortLabel}
                   </p>
@@ -297,7 +302,7 @@ export function QaSessionRoom({
                 </div>
               </div>
 
-              <div className="relative z-10 rounded-[1.75rem] border border-border bg-background p-3 shadow-sm md:order-3">
+              <div className="relative z-10 rounded-[1.75rem] border border-[#eadfce] bg-background/85 p-3 shadow-sm md:order-3">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="rounded-full bg-card px-3 py-1 text-xs font-semibold">
                     Your match
@@ -326,14 +331,14 @@ export function QaSessionRoom({
             </div>
 
             {showExtraQuestionOption ? (
-              <div className="mx-auto w-full max-w-2xl rounded-[1.35rem] border border-border bg-background p-4 shadow-sm">
+              <div className="mx-auto w-full max-w-2xl rounded-[1.35rem] border border-[#eadfce] bg-background/75 p-4 shadow-sm">
                 {extraRequest === "sent" ? (
                   <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
                     <div>
                       <p className="text-sm font-semibold">Request sent</p>
                       <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                        Waiting for them to accept. We&apos;ll only add more if
-                        you both agree.
+                        We&apos;ll only add more if you both still have energy
+                        for it.
                       </p>
                     </div>
                     <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-1">
@@ -342,7 +347,7 @@ export function QaSessionRoom({
                         onClick={acceptExtraQuestions}
                         className="rounded-2xl bg-accent px-4 py-3 text-center text-sm font-semibold text-accent-foreground"
                       >
-                        They accept
+                        Accepted
                       </button>
                       <button
                         type="button"
@@ -357,10 +362,10 @@ export function QaSessionRoom({
                   <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
                     <div>
                       <p className="text-sm font-semibold">
-                        Your match wants to add more questions.
+                        Your match wants to keep going
                       </p>
                       <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                        Only continue if you both want to.
+                        Add two more questions only if this still feels good.
                       </p>
                     </div>
                     <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-1">
@@ -384,11 +389,11 @@ export function QaSessionRoom({
                   <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
                     <div>
                       <p className="text-sm font-semibold">
-                        Want to keep going?
+                        Want a little more time?
                       </p>
                       <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                        Add more questions only if you both agree. This is
-                        optional.
+                        You can invite two more questions. It only continues if
+                        you both agree.
                       </p>
                     </div>
                     <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-1">
@@ -408,7 +413,7 @@ export function QaSessionRoom({
                 <p className="font-semibold text-foreground">
                   You both agreed to keep going.
                 </p>
-                <p>Adding 2 more questions.</p>
+                <p>Two more questions have been added.</p>
               </div>
             ) : null}
 
@@ -416,31 +421,31 @@ export function QaSessionRoom({
               <button
                 type="button"
                 onClick={advanceQuestion}
-                className="rounded-2xl border border-border bg-background px-4 py-4 text-center text-sm font-semibold text-foreground"
+                className="rounded-2xl border border-border bg-background px-4 py-4 text-center text-sm font-semibold text-foreground shadow-sm"
               >
                 Skip
               </button>
 
               <button
                 type="button"
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-2xl text-accent-foreground shadow-sm"
+                className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground shadow-sm"
                 aria-label="Tap to speak"
               >
-                🎙
+                Speak
               </button>
 
               <button
                 type="button"
                 onClick={answerQuestion}
-                className="rounded-2xl bg-accent px-4 py-4 text-center text-sm font-semibold text-accent-foreground"
+                className="rounded-2xl bg-accent px-4 py-4 text-center text-sm font-semibold text-accent-foreground shadow-sm"
               >
-                {isLastQuestion ? "Finish" : "Next"}
+                {nextActionLabel}
               </button>
             </div>
 
             <div className="mx-auto w-full max-w-2xl rounded-[1.35rem] bg-secondary p-4 text-sm leading-6 text-muted-foreground md:text-center">
-              <p>Chat unlocks only if you both choose Continue.</p>
-              <p>Your answers stay private. You can skip any question.</p>
+              <p>Chat opens only if you both choose Continue.</p>
+              <p>Your answers are not posted anywhere. You can skip any question.</p>
             </div>
           </div>
         </section>

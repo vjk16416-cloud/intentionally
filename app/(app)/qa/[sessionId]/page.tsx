@@ -131,35 +131,44 @@ export default async function QaSessionPage({
 
   if (!started && !finished) {
     return (
-      <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
+      <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background via-[#fbf3e8] to-muted px-4 py-5">
         <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center md:max-w-2xl">
-          <section className="rounded-[2rem] border bg-background p-6 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-              Guided Vibe Check
+          <section className="w-full rounded-[2rem] border border-[#e6ded0] bg-[#fffaf3] p-6 shadow-[0_18px_60px_rgba(74,59,42,0.10)] md:p-8">
+            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+              Vibe Check
             </p>
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight">
-              Before we begin
+            <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-tight">
+              Start with a calmer conversation
             </h1>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              Conversation comes first here. Profiles stay softly blurred so
-              there is less pressure to perform or decide too quickly.
+              This is a short guided moment to hear how it feels to talk, not a
+              test to pass. Take your time and answer in your own words.
             </p>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Simply listen, be curious, and answer honestly. After the Guided
-              Vibe Check, you both privately choose Continue or Pass.
+              After the Vibe Check, you both privately choose Continue or Pass
+              privately. Chat opens only when you both want to keep going.
             </p>
-            <div className="mt-6 space-y-3 rounded-[1.5rem] bg-muted/60 p-4 text-sm leading-6 text-muted-foreground">
-              <p>• Three thoughtful questions</p>
-              <p>• Move on when you&apos;re both ready</p>
-              <p>• Your choice stays private</p>
-              <p>• Chat unlocks only if you both choose Continue</p>
+            <div className="mt-6 grid gap-3 rounded-[1.5rem] border border-[#eadfce] bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
+              <p>
+                <span className="font-semibold text-foreground">3 questions.</span>{" "}
+                Enough structure to begin, without overthinking it.
+              </p>
+              <p>
+                <span className="font-semibold text-foreground">Private choice.</span>{" "}
+                Passing is quiet. Continuing must be mutual.
+              </p>
+              <p>
+                <span className="font-semibold text-foreground">Low pressure.</span>{" "}
+                You can skip anything that does not feel right.
+              </p>
             </div>
-            <p className="mt-5 text-sm font-medium text-foreground">
-              Estimated time: 10 minutes
+            <p className="mt-5 rounded-2xl bg-secondary px-4 py-3 text-sm leading-6 text-muted-foreground">
+              Safety note: stay with what feels comfortable. You never need to
+              share anything personal before you are ready.
             </p>
             <Link
               href={`/qa/${sessionId}/visibility?${visibilityParam}`}
-              className="mt-6 block rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
+              className="mt-6 block rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground shadow-sm"
             >
               Choose how you appear
             </Link>
@@ -171,40 +180,50 @@ export default async function QaSessionPage({
 
   if (finished) {
     return (
-      <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
+      <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background via-[#fbf3e8] to-muted px-4 py-5">
         <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center md:max-w-2xl">
-          <section className="w-full rounded-[2rem] border border-border bg-card p-6 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-              Private decision
+          <section className="w-full rounded-[2rem] border border-[#e6ded0] bg-[#fffaf3] p-6 shadow-[0_18px_60px_rgba(74,59,42,0.10)] md:p-8">
+            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+              After your Vibe Check
             </p>
 
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight">
-              Choose what feels right
+            <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-tight">
+              Take a moment, then choose
             </h1>
 
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Your choice stays private. They&apos;ll only know if you both
-              choose Continue.
+              There is no public rejection here. They only know you chose
+              Continue if they choose Continue too.
             </p>
 
             {decision ? (
-              <div className="mt-6 rounded-[1.5rem] bg-secondary p-4 text-sm leading-6 text-muted-foreground">
+              <div className="mt-6 rounded-[1.5rem] border border-[#eadfce] bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
                 <p className="font-semibold text-foreground">
                   {decision === "continue"
-                    ? "You both chose Continue."
-                    : "No problem."}
+                    ? "You both chose Continue"
+                    : "You passed privately"}
                 </p>
                 <p className="mt-1">
                   {decision === "continue"
-                    ? "Chats are now unlocked because you both chose Continue."
-                    : "We&apos;ll quietly close this match. They won&apos;t be told you passed."}
+                    ? "Chat is now open because the feeling was mutual."
+                    : "We'll quietly close this match. They won't be told you passed."}
                 </p>
               </div>
             ) : (
               <div className="mt-6 space-y-4">
-                <div className="grid gap-3 rounded-[1.5rem] bg-background p-4 text-sm leading-6 text-muted-foreground">
-                  <p>Choose Continue if you&apos;d like to keep talking.</p>
-                  <p>Choose Pass privately if it doesn&apos;t feel right.</p>
+                <div className="grid gap-3 rounded-[1.5rem] border border-[#eadfce] bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
+                  <p>
+                    <span className="font-semibold text-foreground">
+                      Continue
+                    </span>{" "}
+                    if you would like to keep talking.
+                  </p>
+                  <p>
+                    <span className="font-semibold text-foreground">
+                      Pass privately
+                    </span>{" "}
+                    if it does not feel right.
+                  </p>
                 </div>
 
                 <div className="grid gap-3">
@@ -218,7 +237,7 @@ export default async function QaSessionPage({
                       matchId={matchId}
                       sessionId={sessionId}
                       visibilityMode={visibilityMode}
-                      className="w-full rounded-2xl bg-accent px-4 py-4 text-base font-semibold text-accent-foreground"
+                      className="w-full rounded-2xl bg-accent px-4 py-4 text-base font-semibold text-accent-foreground shadow-sm"
                     >
                       Continue
                     </QaDecisionButton>
@@ -234,7 +253,7 @@ export default async function QaSessionPage({
                       matchId={matchId}
                       sessionId={sessionId}
                       visibilityMode={visibilityMode}
-                      className="w-full rounded-2xl border border-[#d9a6a0]/40 bg-[#f3d8d3] px-4 py-4 text-base font-semibold text-[#5a2d2a]"
+                      className="w-full rounded-2xl border border-[#d9a6a0]/40 bg-[#f6e4df] px-4 py-4 text-base font-semibold text-[#5a2d2a]"
                     >
                       Pass privately
                     </QaDecisionButton>
@@ -244,8 +263,8 @@ export default async function QaSessionPage({
             )}
 
             <div className="mt-6 rounded-[1.5rem] bg-secondary p-4 text-sm leading-6 text-muted-foreground">
-              No awkward notifications. No pressure. Chat unlocks only if you
-              both choose Continue.
+              Your choice is handled with care. Chat opens only if you both
+              choose Continue.
             </div>
           </section>
         </div>

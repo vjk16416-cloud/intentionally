@@ -91,39 +91,39 @@ export default async function QaWaitingPage({
   }
 
   return (
-    <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
+    <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background via-[#fbf3e8] to-muted px-4 py-5">
       <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center md:max-w-2xl">
-        <section className="w-full rounded-[2rem] border bg-background p-6 text-center shadow-sm">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-accent text-2xl text-accent-foreground">
-            ✓
+        <section className="w-full rounded-[2rem] border border-[#e6ded0] bg-[#fffaf3] p-6 text-center shadow-[0_18px_60px_rgba(74,59,42,0.10)] md:p-8">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-accent text-base font-semibold text-accent-foreground">
+            Done
           </div>
 
           <h1 className="mt-5 text-2xl font-semibold tracking-tight">
             {bothDecided
               ? bothContinue
-                ? "You both chose Continue."
-                : "No problem."
+                ? "You both chose Continue"
+                : "You passed privately"
               : "Decision saved"}
           </h1>
 
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
             {bothDecided
               ? bothContinue
-                ? "Chats are now unlocked because you both chose Continue."
-                : "We&apos;ll quietly close this match. They won&apos;t be told you passed."
-              : "Your choice stays private. They&apos;ll only know if you both choose Continue."}
+                ? "Chat is now open because the feeling was mutual."
+                : "We'll quietly close this match. They won't be told you passed."
+              : "Your choice is private. They'll only know if you both choose Continue."}
           </p>
 
           {!bothDecided ? (
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              No awkward notifications. No pressure. Full profiles unlock only
-              if you both choose Continue.
-            </p>
+            <div className="mt-5 rounded-[1.5rem] bg-secondary p-4 text-sm leading-6 text-muted-foreground">
+              No awkward notifications. No pressure. Chat opens only if you both
+              choose Continue.
+            </div>
           ) : null}
 
           <Link
             href="/discover"
-            className="mt-6 block rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground"
+            className="mt-6 block rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground shadow-sm"
           >
             Return to Discover
           </Link>
