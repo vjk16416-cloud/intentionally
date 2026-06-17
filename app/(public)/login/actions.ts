@@ -28,13 +28,29 @@ function withoutTrailingSlash(value: string) {
   return value.replace(/\/+$/, "");
 }
 
-function getProductionAppOrigin(headersOrigin: string | null) {
-  if (process.env.NEXT_PUBLIC_SITE_URL) {
-    return withoutTrailingSlash(process.env.NEXT_PUBLIC_SITE_URL);
+function configuredAppOrigin() {
+  const configuredUrl =
+    process.env.NEXT_PUBLIC_APP_URL ??
+    process.env.SITE_URL ??
+    process.env.NEXT_PUBLIC_SITE_URL;
+
+  if (!configuredUrl) {
+    return null;
   }
 
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    return withoutTrailingSlash(process.env.NEXT_PUBLIC_APP_URL);
+  try {
+    const url = new URL(configuredUrl);
+    return withoutTrailingSlash(url.origin);
+  } catch {
+    console.warn("Ignoring invalid configured app URL for email auth redirect.");
+    return null;
+  }
+}
+
+function getAppOrigin(headersOrigin: string | null) {
+  const configuredOrigin = configuredAppOrigin();
+  if (configuredOrigin) {
+    return configuredOrigin;
   }
 
   if (process.env.VERCEL_URL) {
@@ -44,12 +60,10 @@ function getProductionAppOrigin(headersOrigin: string | null) {
   return headersOrigin ? withoutTrailingSlash(headersOrigin) : LOCAL_APP_ORIGIN;
 }
 
-function getAppOrigin(headersOrigin: string | null) {
-  if (process.env.NODE_ENV !== "production") {
-    return LOCAL_APP_ORIGIN;
-  }
-
-  return getProductionAppOrigin(headersOrigin);
+function getEmailRedirectTo(origin: string) {
+  const redirectUrl = new URL("/auth/callback", origin);
+  redirectUrl.searchParams.set("next", EMAIL_SIGN_IN_NEXT_PATH);
+  return redirectUrl.toString();
 }
 
 export async function requestOtp(
@@ -76,7 +90,7 @@ export async function requestOtp(
       ? await supabase.auth.signInWithOtp({
           email: identifier,
           options: {
-            emailRedirectTo: `${origin}/auth/callback?next=${EMAIL_SIGN_IN_NEXT_PATH}`,
+            emailRedirectTo: getEmailRedirectTo(origin),
           },
         })
       : await supabase.auth.signInWithOtp({ phone: identifier });
