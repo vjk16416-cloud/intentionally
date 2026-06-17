@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient as createServiceRoleClient } from "@supabase/supabase-js";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { createDailyRoom } from "@/lib/daily/rooms";
@@ -153,6 +154,7 @@ export async function proposeSlot(
     if (error) return { error: error.message };
   }
 
+  revalidatePath(`/schedule/${matchId}`);
   redirect(`/schedule/${matchId}`);
 }
 
