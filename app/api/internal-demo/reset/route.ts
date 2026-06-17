@@ -1,15 +1,54 @@
+import { createServerClient } from "@supabase/ssr";
 import { createClient as createServiceRoleClient } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 import { resetInternalDemoJourney } from "@/lib/internal-demo/reset";
-import { getServiceRoleKey, SUPABASE_URL } from "@/lib/supabase/env";
-import { createClient } from "@/lib/supabase/server";
+
+function requiredEnv(name: string) {
+  const value = process.env[name];
+
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+
+  return value;
+}
 
 function admin() {
-  return createServiceRoleClient(SUPABASE_URL, getServiceRoleKey(), {
-    auth: { persistSession: false },
-  });
+  return createServiceRoleClient(
+    requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    requiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
+    {
+      auth: { persistSession: false },
+    },
+  );
+}
+
+async function userClient() {
+  const cookieStore = await cookies();
+
+  return createServerClient(
+    requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    requiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            for (const { name, value, options } of cookiesToSet) {
+              cookieStore.set(name, value, options);
+            }
+          } catch {
+            // The reset route only needs to read the current session.
+          }
+        },
+      },
+    },
+  );
 }
 
 function resetAllowed() {
@@ -27,7 +66,7 @@ export async function POST() {
   try {
     console.log("[demo-reset] reset API called");
 
-    const supabase = await createClient();
+    const supabase = await userClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

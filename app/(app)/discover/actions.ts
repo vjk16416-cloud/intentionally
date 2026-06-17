@@ -4,6 +4,7 @@ import { createClient as createServiceRoleClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 
 import {
+  getInternalDemoOrdinal,
   isInternalDemoProfile,
   shouldAutoMatchInternalDemoProfile,
 } from "@/lib/internal-demo/profiles";
@@ -44,6 +45,90 @@ type SwipeRow = {
   direction: string;
 };
 
+type ExistingMatchRow = {
+  id: string;
+};
+
+type DemoReciprocalResult = {
+  reciprocalCreated: boolean;
+};
+
+function matchPair(userId: string, swipeeId: string) {
+  return {
+    user_a: userId < swipeeId ? userId : swipeeId,
+    user_b: userId < swipeeId ? swipeeId : userId,
+  };
+}
+
+async function findExistingMatch(
+  adminClient: ReturnType<typeof admin>,
+  userId: string,
+  swipeeId: string,
+) {
+  const { user_a, user_b } = matchPair(userId, swipeeId);
+  const { data, error } = await adminClient
+    .from("matches")
+    .select("id")
+    .eq("user_a", user_a)
+    .eq("user_b", user_b)
+    .maybeSingle<ExistingMatchRow>();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+async function deleteDemoPairState(userId: string, swipeeId: string) {
+  const adminClient = admin();
+  const { user_a, user_b } = matchPair(userId, swipeeId);
+
+  const { error: matchDeleteError } = await adminClient
+    .from("matches")
+    .delete()
+    .eq("user_a", user_a)
+    .eq("user_b", user_b);
+
+  if (matchDeleteError) {
+    throw matchDeleteError;
+  }
+
+  const { error: reciprocalDeleteError } = await adminClient
+    .from("swipes")
+    .delete()
+    .eq("swiper_id", swipeeId)
+    .eq("swipee_id", userId);
+
+  if (reciprocalDeleteError) {
+    throw reciprocalDeleteError;
+  }
+}
+
+function logInternalDemoLike(details: {
+  displayName: string;
+  ordinal: number | null;
+  shouldAutoMatch: boolean;
+  existingMatchBeforeSynthetic: boolean;
+  reciprocalCreated: boolean;
+  matchExistsAfterLike: boolean;
+  returnedMatched: boolean;
+  returnedMatchId: string | null;
+}) {
+  if (process.env.NODE_ENV === "production") return;
+
+  console.log("[internal-demo-like]", {
+    likedProfileDisplayName: details.displayName,
+    demoOrdinal: details.ordinal,
+    shouldAutoMatch: details.shouldAutoMatch,
+    existingMatchBeforeSynthetic: details.existingMatchBeforeSynthetic,
+    reciprocalDemoLikeCreated: details.reciprocalCreated,
+    matchRowExistsAfterLike: details.matchExistsAfterLike,
+    returnedMatched: details.returnedMatched,
+    returnedMatchId: details.returnedMatchId,
+  });
+}
+
 async function ensureSwipeLike(
   supabase: Awaited<ReturnType<typeof createClient>>,
   swiperId: string,
@@ -60,8 +145,12 @@ async function ensureSwipeLike(
   }
 }
 
-async function ensureDemoReciprocalMatch(userId: string, swipeeId: string) {
+async function ensureDemoReciprocalMatch(
+  userId: string,
+  swipeeId: string,
+): Promise<DemoReciprocalResult> {
   const adminClient = admin();
+  let reciprocalCreated = false;
 
   // Internal demo/testing only: synthesize a reciprocal like for the
   // seeded demo profiles that are meant to auto-match. This keeps the
@@ -87,6 +176,8 @@ async function ensureDemoReciprocalMatch(userId: string, swipeeId: string) {
     if (insertError && insertError.code !== "23505") {
       throw insertError;
     }
+
+    reciprocalCreated = true;
   } else if (existingSwipe.direction !== "like") {
     const { error: updateError } = await adminClient
       .from("swipes")
@@ -98,8 +189,7 @@ async function ensureDemoReciprocalMatch(userId: string, swipeeId: string) {
     }
   }
 
-  const user_a = userId < swipeeId ? userId : swipeeId;
-  const user_b = userId < swipeeId ? swipeeId : userId;
+  const { user_a, user_b } = matchPair(userId, swipeeId);
 
   const { error: matchInsertError } = await adminClient.from("matches").insert({
     user_a,
@@ -109,6 +199,8 @@ async function ensureDemoReciprocalMatch(userId: string, swipeeId: string) {
   if (matchInsertError && matchInsertError.code !== "23505") {
     throw matchInsertError;
   }
+
+  return { reciprocalCreated };
 }
 
 export async function likeProfile(swipeeId: string): Promise<LikeResult> {
@@ -136,17 +228,31 @@ export async function likeProfile(swipeeId: string): Promise<LikeResult> {
     return { ok: false, error: "limit" };
   }
 
-  try {
-    await ensureSwipeLike(supabase, user.id, swipeeId);
-  } catch {
-    return { ok: false, error: "failed" };
-  }
-
   const { data: other } = await supabase
     .from("profiles")
     .select("id, display_name, date_of_birth, photos")
     .eq("id", swipeeId)
     .maybeSingle<DemoProfile>();
+
+  const demoOrdinal = getInternalDemoOrdinal(other?.display_name);
+  const shouldAutoMatch =
+    demoOrdinal !== null &&
+    shouldAutoMatchInternalDemoProfile(other?.display_name);
+  const isDemoProfile = demoOrdinal !== null;
+
+  if (isDemoProfile && !shouldAutoMatch) {
+    try {
+      await deleteDemoPairState(user.id, swipeeId);
+    } catch {
+      return { ok: false, error: "failed" };
+    }
+  }
+
+  try {
+    await ensureSwipeLike(supabase, user.id, swipeeId);
+  } catch {
+    return { ok: false, error: "failed" };
+  }
 
   if (
     !other ||
@@ -160,10 +266,22 @@ export async function likeProfile(swipeeId: string): Promise<LikeResult> {
     return { ok: true, matched: false };
   }
 
+  let reciprocalCreated = false;
+  let existingMatchBeforeSynthetic = false;
+
   if (isInternalDemoProfile(other.display_name)) {
-    if (shouldAutoMatchInternalDemoProfile(other.display_name)) {
+    try {
+      existingMatchBeforeSynthetic = Boolean(
+        await findExistingMatch(admin(), user.id, swipeeId),
+      );
+    } catch {
+      return { ok: false, error: "failed" };
+    }
+
+    if (shouldAutoMatch) {
       try {
-        await ensureDemoReciprocalMatch(user.id, swipeeId);
+        const result = await ensureDemoReciprocalMatch(user.id, swipeeId);
+        reciprocalCreated = result.reciprocalCreated;
       } catch {
         return { ok: false, error: "failed" };
       }
@@ -172,14 +290,49 @@ export async function likeProfile(swipeeId: string): Promise<LikeResult> {
 
   // The reciprocal-like trigger or the demo helper may have created
   // a matches row. Canonical match identity is (user_a < user_b).
-  const ua = user.id < swipeeId ? user.id : swipeeId;
-  const ub = user.id < swipeeId ? swipeeId : user.id;
+  const { user_a: ua, user_b: ub } = matchPair(user.id, swipeeId);
   const { data: match } = await supabase
     .from("matches")
     .select("id")
     .eq("user_a", ua)
     .eq("user_b", ub)
     .maybeSingle<{ id: string }>();
+
+  if (isInternalDemoProfile(other.display_name)) {
+    if (!shouldAutoMatch && match) {
+      try {
+        await deleteDemoPairState(user.id, swipeeId);
+      } catch {
+        return { ok: false, error: "failed" };
+      }
+
+      logInternalDemoLike({
+        displayName: other.display_name,
+        ordinal: demoOrdinal,
+        shouldAutoMatch,
+        existingMatchBeforeSynthetic,
+        reciprocalCreated,
+        matchExistsAfterLike: false,
+        returnedMatched: false,
+        returnedMatchId: null,
+      });
+
+      return { ok: true, matched: false };
+    }
+  }
+
+  if (isInternalDemoProfile(other.display_name)) {
+    logInternalDemoLike({
+      displayName: other.display_name,
+      ordinal: demoOrdinal,
+      shouldAutoMatch,
+      existingMatchBeforeSynthetic,
+      reciprocalCreated,
+      matchExistsAfterLike: Boolean(match),
+      returnedMatched: Boolean(match),
+      returnedMatchId: match?.id ?? null,
+    });
+  }
 
   if (!match) {
     return { ok: true, matched: false };

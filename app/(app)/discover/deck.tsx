@@ -192,6 +192,7 @@ export function DiscoverDeck({
 
   function handleLike() {
     setActionError(null);
+    setActiveMatch(null);
     trackEvent(AnalyticsEvents.PROFILE_LIKED, {
       target_profile_id: card.id,
       source: "discover",
@@ -217,6 +218,7 @@ export function DiscoverDeck({
           source: "discover",
         });
         setActiveMatch({ matchId: result.matchId, match: result.with });
+        return;
       }
 
       setIndex((current) => current + 1);
@@ -225,6 +227,7 @@ export function DiscoverDeck({
 
   function handlePass() {
     setActionError(null);
+    setActiveMatch(null);
     trackEvent(AnalyticsEvents.PROFILE_PASSED, {
       target_profile_id: card.id,
       source: "discover",

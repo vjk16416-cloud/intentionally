@@ -3,9 +3,12 @@ import { existsSync, readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 
 import {
+  getInternalDemoOrdinal,
+  INTERNAL_DEMO_PROFILE_NAMES,
   isInternalDemoProfile,
   shouldAutoMatchInternalDemoProfile,
 } from "../lib/internal-demo/profiles";
+import { resetInternalDemoJourney } from "../lib/internal-demo/reset";
 
 function loadEnvFile(path: string) {
   if (!existsSync(path)) return;
@@ -52,6 +55,126 @@ const supabase = createClient(
     },
   },
 );
+
+type DemoProfileRow = {
+  id: string;
+  display_name: string | null;
+  created_at: string;
+};
+
+function matchPair(userId: string, profileId: string) {
+  return {
+    user_a: userId < profileId ? userId : profileId,
+    user_b: userId < profileId ? profileId : userId,
+  };
+}
+
+async function findMatch(userId: string, profileId: string) {
+  const { user_a, user_b } = matchPair(userId, profileId);
+  const { data, error } = await supabase
+    .from("matches")
+    .select("id")
+    .eq("user_a", user_a)
+    .eq("user_b", user_b)
+    .maybeSingle<{ id: string }>();
+
+  if (error) {
+    throw new Error(`Failed to check demo match: ${error.message}`);
+  }
+
+  return data;
+}
+
+async function insertLike(swiperId: string, swipeeId: string) {
+  const { error } = await supabase.from("swipes").insert({
+    swiper_id: swiperId,
+    swipee_id: swipeeId,
+    direction: "like",
+  });
+
+  if (error && error.code !== "23505") {
+    throw new Error(`Failed to insert demo like: ${error.message}`);
+  }
+}
+
+async function verifyInternalDemoAlternatingMatches(userId: string) {
+  console.log("Checking internal demo alternating matches...");
+
+  const { data: demoProfiles, error } = await supabase
+    .from("profiles")
+    .select("id, display_name, created_at")
+    .in("display_name", Array.from(INTERNAL_DEMO_PROFILE_NAMES))
+    .order("created_at", { ascending: false })
+    .returns<DemoProfileRow[]>();
+
+  if (error || !demoProfiles) {
+    throw new Error(
+      `Failed to read internal demo profiles: ${error?.message ?? "No rows returned"}`,
+    );
+  }
+
+  const orderedInternalProfiles = demoProfiles.filter((profile) =>
+    isInternalDemoProfile(profile.display_name),
+  );
+
+  if (orderedInternalProfiles.length < 4) {
+    throw new Error(
+      `Expected at least 4 internal demo profiles, found ${orderedInternalProfiles.length}.`,
+    );
+  }
+
+  const actualFirstFour = orderedInternalProfiles
+    .slice(0, 4)
+    .map((profile) => profile.display_name);
+  const expectedFirstFour = INTERNAL_DEMO_PROFILE_NAMES.slice(0, 4);
+
+  for (const [index, expectedName] of expectedFirstFour.entries()) {
+    const actualName = actualFirstFour[index];
+    if (actualName !== expectedName) {
+      throw new Error(
+        `Internal demo Discover order mismatch at position ${index + 1}: expected ${expectedName}, got ${actualName ?? "(missing)"}.`,
+      );
+    }
+  }
+
+  for (const profile of orderedInternalProfiles.slice(0, 4)) {
+    const ordinal = getInternalDemoOrdinal(profile.display_name);
+    const expectedMatch = shouldAutoMatchInternalDemoProfile(profile.display_name);
+
+    if (!ordinal || !profile.display_name) {
+      throw new Error("Internal demo profile was missing its ordinal or display name.");
+    }
+
+    await resetInternalDemoJourney(supabase, userId);
+    await insertLike(userId, profile.id);
+
+    if (expectedMatch) {
+      await insertLike(profile.id, userId);
+    }
+
+    const match = await findMatch(userId, profile.id);
+
+    if (expectedMatch && !match) {
+      throw new Error(
+        `Expected seeded demo position ${ordinal} (${profile.display_name}) to auto-match.`,
+      );
+    }
+
+    if (!expectedMatch && match) {
+      throw new Error(
+        `Expected seeded demo position ${ordinal} (${profile.display_name}) not to auto-match.`,
+      );
+    }
+
+    console.log(
+      `- Demo position ${ordinal}: ${profile.display_name} -> ${
+        expectedMatch ? "match" : "no match"
+      }`,
+    );
+  }
+
+  await resetInternalDemoJourney(supabase, userId);
+}
 
 async function main() {
   const runId = Date.now();
@@ -161,6 +284,8 @@ async function main() {
     if (profileBError) {
       throw new Error(`Failed to update User B profile: ${profileBError.message}`);
     }
+
+    await verifyInternalDemoAlternatingMatches(userAId);
 
     console.log("Creating reciprocal likes...");
 
