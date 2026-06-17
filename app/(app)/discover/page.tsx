@@ -2,9 +2,11 @@ import { redirect } from "next/navigation";
 
 import { getDiscoverFeedWithDiagnostics } from "@/lib/discover/feed";
 import { getPendingMatches } from "@/lib/discover/pending";
+import { canUseInternalTestingShortcuts } from "@/lib/internal-demo/access";
 import { createClient } from "@/lib/supabase/server";
 
 import { DiscoverDeck } from "./deck";
+import { InternalTestingShortcuts } from "./internal-testing-shortcuts";
 import { PendingMatchesBanner } from "./pending-banner";
 
 export default async function DiscoverPage() {
@@ -22,9 +24,11 @@ export default async function DiscoverPage() {
     getPendingMatches(supabase, user.id),
   ]);
   const { cards } = feed;
+  const showInternalTestingShortcuts = canUseInternalTestingShortcuts(user.email);
 
   return (
     <>
+      {showInternalTestingShortcuts ? <InternalTestingShortcuts /> : null}
       <PendingMatchesBanner pending={pending} />
       <DiscoverDeck
         key={cards.length > 0 ? cards.map((card) => card.id).join(",") : "empty"}
