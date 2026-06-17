@@ -22,6 +22,8 @@ const EXTRA_QUESTIONS = [
   "What helps you feel safe opening up to someone?",
 ];
 
+type QaQuestionPayload = string | { text?: unknown };
+
 type ExtraRequestState = "idle" | "sent" | "incoming" | "accepted" | "declined";
 
 function safeQuestionIndex(value: string | string[] | undefined, total: number) {
@@ -51,6 +53,12 @@ function parseExtraRequestState(
   }
 
   return "idle";
+}
+
+function questionText(question: QaQuestionPayload) {
+  if (typeof question === "string") return question;
+  if (typeof question.text === "string") return question.text;
+  return null;
 }
 
 export default async function QaSessionPage({
@@ -102,7 +110,10 @@ export default async function QaSessionPage({
 
   const baseQuestions =
     Array.isArray(session?.questions) && session.questions.length > 0
-      ? session.questions.map(String)
+      ? (session.questions as QaQuestionPayload[]).flatMap((question) => {
+          const text = questionText(question);
+          return text ? [text] : [];
+        })
       : QUESTIONS;
   const extraQuestionsAccepted = query.extra === "true";
   const questions = extraQuestionsAccepted

@@ -1,10 +1,18 @@
 "use server";
 
+import { createClient as createServiceRoleClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 
+import { getServiceRoleKey, SUPABASE_URL } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 
 type Decision = "continue" | "pass";
+
+function admin() {
+  return createServiceRoleClient(SUPABASE_URL, getServiceRoleKey(), {
+    auth: { persistSession: false },
+  });
+}
 
 export async function saveQaOutcome(formData: FormData) {
   const sessionId = String(formData.get("sessionId") ?? "");
@@ -43,7 +51,7 @@ export async function saveQaOutcome(formData: FormData) {
     redirect("/discover");
   }
 
-  await supabase.from("qa_outcomes").upsert(
+  const { error } = await admin().from("qa_outcomes").upsert(
     {
       qa_session_id: sessionId,
       user_id: user.id,
@@ -51,6 +59,11 @@ export async function saveQaOutcome(formData: FormData) {
     },
     { onConflict: "qa_session_id,user_id" },
   );
+
+  if (error) {
+    console.error("[qa] outcome save failed", error);
+    redirect(`/qa/${sessionId}?started=true&finished=true`);
+  }
 
   redirect(`/qa/${sessionId}/waiting`);
 }

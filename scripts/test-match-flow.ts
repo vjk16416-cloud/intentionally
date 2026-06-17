@@ -396,6 +396,20 @@ async function main() {
 
     const confirmedAt = new Date().toISOString();
     const dailyRoomUrl = `https://example.daily.co/test-${runId}`;
+    const vibeCheckQuestions = [
+      {
+        id: "test-communication",
+        text: "What helps you feel understood in a conversation?",
+      },
+      {
+        id: "test-effort",
+        text: "What does effort look like to you in early dating?",
+      },
+      {
+        id: "test-comfort",
+        text: "What would make this Vibe Check feel comfortable?",
+      },
+    ];
 
     const { data: confirmedSession, error: qaConfirmError } = await supabase
       .from("qa_sessions")
@@ -403,10 +417,11 @@ async function main() {
         confirmed_at: confirmedAt,
         daily_room_url: dailyRoomUrl,
         daily_room_name: `test-${runId}`,
+        questions: vibeCheckQuestions,
       })
       .eq("id", qaSession.id)
       .select(
-        "id, match_id, scheduled_at, proposed_by_id, confirmed_at, daily_room_url",
+        "id, match_id, scheduled_at, proposed_by_id, confirmed_at, daily_room_url, questions",
       )
       .single();
 
@@ -424,6 +439,22 @@ async function main() {
 
     if (confirmedSession.daily_room_url !== dailyRoomUrl) {
       throw new Error("Expected accepted Vibe Check to have a joinable Daily room URL.");
+    }
+
+    const storedQuestions = Array.isArray(confirmedSession.questions)
+      ? confirmedSession.questions
+      : [];
+    if (
+      storedQuestions.length !== 3 ||
+      !storedQuestions.every(
+        (question) =>
+          question &&
+          typeof question === "object" &&
+          "text" in question &&
+          typeof question.text === "string",
+      )
+    ) {
+      throw new Error("Expected accepted Vibe Check to store renderable questions.");
     }
 
     console.log("Updating match status to qa_scheduled...");
@@ -450,6 +481,68 @@ async function main() {
       throw new Error(`Expected Join Vibe Check path to use the session id, got ${joinPath}`);
     }
 
+    console.log("Checking post-session Continue / Pass decisions...");
+
+    const { error: continueAError } = await supabase.from("qa_outcomes").insert({
+      qa_session_id: qaSession.id,
+      user_id: userAId,
+      decision: "continue",
+    });
+
+    if (continueAError) {
+      throw new Error(
+        `Failed to save User A Vibe Check Continue: ${continueAError.message}`,
+      );
+    }
+
+    const { error: passBError } = await supabase.from("qa_outcomes").insert({
+      qa_session_id: qaSession.id,
+      user_id: userBId,
+      decision: "pass",
+    });
+
+    if (passBError) {
+      throw new Error(`Failed to save User B Vibe Check Pass: ${passBError.message}`);
+    }
+
+    const { data: chatAfterPass, error: chatAfterPassError } = await supabase
+      .from("chats")
+      .select("id")
+      .eq("match_id", match.id)
+      .maybeSingle();
+
+    if (chatAfterPassError) {
+      throw new Error(
+        `Failed to check chat after private Pass: ${chatAfterPassError.message}`,
+      );
+    }
+
+    if (chatAfterPass) {
+      throw new Error("Expected private Pass not to unlock chat.");
+    }
+
+    const { error: updateOutcomeError } = await supabase
+      .from("qa_outcomes")
+      .update({ decision: "continue" })
+      .eq("qa_session_id", qaSession.id)
+      .eq("user_id", userBId);
+
+    if (updateOutcomeError) {
+      throw new Error(
+        `Failed to update User B Vibe Check decision: ${updateOutcomeError.message}`,
+      );
+    }
+
+    const { data: chat, error: chatError } = await supabase
+      .from("chats")
+      .insert({ match_id: match.id })
+      .select("id")
+      .single();
+
+    if (chatError || !chat) {
+      throw new Error(`Failed to unlock chat after mutual Continue: ${chatError?.message}`);
+    }
+
     console.log("Product-flow test passed:");
     console.log("- User A liked User B");
     console.log("- User B liked User A");
@@ -457,10 +550,14 @@ async function main() {
     console.log("- Vibe Check invite created");
     console.log("- Vibe Check counter-proposal stays unconfirmed");
     console.log("- Vibe Check invite accepted");
+    console.log("- Vibe Check questions are renderable");
+    console.log("- Private Pass does not unlock chat");
+    console.log("- Mutual Continue unlocks chat");
     console.log(`- Match moved to status: ${scheduledMatch.status}`);
     console.log(`- Join Vibe Check path: ${joinPath}`);
     console.log(`- Match ID: ${match.id}`);
     console.log(`- Vibe Check Session ID: ${qaSession.id}`);
+    console.log(`- Chat ID: ${chat.id}`);
   } finally {
     console.log("Cleaning up test users...");
 

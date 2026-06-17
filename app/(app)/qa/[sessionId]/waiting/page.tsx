@@ -1,7 +1,15 @@
 import Link from "next/link";
+import { createClient as createServiceRoleClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 
+import { getServiceRoleKey, SUPABASE_URL } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
+
+function admin() {
+  return createServiceRoleClient(SUPABASE_URL, getServiceRoleKey(), {
+    auth: { persistSession: false },
+  });
+}
 
 export default async function QaWaitingPage({
   params,
@@ -29,6 +37,16 @@ export default async function QaWaitingPage({
     redirect("/discover");
   }
 
+  const { data: match } = await supabase
+    .from("matches")
+    .select("id, user_a, user_b")
+    .eq("id", session.match_id)
+    .maybeSingle();
+
+  if (!match || (match.user_a !== user.id && match.user_b !== user.id)) {
+    redirect("/discover");
+  }
+
   const { data: outcome } = await supabase
     .from("qa_outcomes")
     .select("id, decision")
@@ -50,7 +68,8 @@ export default async function QaWaitingPage({
     bothDecided && (outcomes ?? []).every((row) => row.decision === "continue");
 
   if (bothContinue) {
-    const { data: existingChat } = await supabase
+    const adminClient = admin();
+    const { data: existingChat } = await adminClient
       .from("chats")
       .select("id")
       .eq("match_id", session.match_id)
@@ -60,7 +79,7 @@ export default async function QaWaitingPage({
       redirect(`/chat/${existingChat.id}`);
     }
 
-    const { data: newChat, error } = await supabase
+    const { data: newChat, error } = await adminClient
       .from("chats")
       .insert({ match_id: session.match_id })
       .select("id")
