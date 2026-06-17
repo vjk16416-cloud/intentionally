@@ -30,6 +30,13 @@ type MessageRow = {
   created_at: string;
 };
 
+function messageTime(value: string) {
+  return new Intl.DateTimeFormat("en", {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
 export default async function ChatPage({
   params,
   searchParams,
@@ -87,41 +94,71 @@ export default async function ChatPage({
     .returns<MessageRow[]>();
 
   return (
-    <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background to-muted px-4 py-5">
+    <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background via-[#fbf3e8] to-muted px-4 py-5">
       <ChatSentTracker
         userId={user.id}
         matchId={match.id}
         sentMessageId={query.sent ?? null}
       />
       <div className="mx-auto flex min-h-[calc(100vh-97px)] w-full max-w-md flex-col md:max-w-3xl lg:max-w-5xl">
-        <header className="rounded-[1.75rem] border bg-background p-4 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            Chats unlocked
-          </p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-            You and {otherName} both chose to continue.
-          </h1>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Chats unlock only after your Guided Vibe Check and mutual Continue.
-          </p>
-          <Link
-            href={`/date-plan/${match.id}`}
-            className="mt-4 block rounded-2xl bg-accent px-4 py-3 text-center text-sm font-semibold text-accent-foreground"
-          >
-            Plan a date
-          </Link>
+        <header className="rounded-[2rem] border border-[#e6ded0] bg-[#fffaf3] p-5 shadow-[0_18px_60px_rgba(74,59,42,0.10)]">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+                Chat unlocked
+              </p>
+              <h1 className="mt-2 text-3xl font-semibold leading-tight tracking-tight">
+                You and {otherName}
+              </h1>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                You both chose Continue after your Vibe Check. This chat is a
+                quieter space to keep building trust.
+              </p>
+            </div>
+
+            <Link
+              href={`/date-plan/${match.id}`}
+              className="rounded-2xl bg-accent px-4 py-3 text-center text-sm font-semibold text-accent-foreground shadow-sm md:min-w-36"
+            >
+              Plan a date
+            </Link>
+          </div>
+
+          <div className="mt-5 grid gap-2 text-sm text-muted-foreground sm:grid-cols-3">
+            <div className="rounded-2xl border border-[#eadfce] bg-background/70 px-4 py-3">
+              <p className="font-semibold text-foreground">Mutual match</p>
+              <p className="mt-1 text-xs leading-5">You both liked each other.</p>
+            </div>
+            <div className="rounded-2xl border border-[#eadfce] bg-background/70 px-4 py-3">
+              <p className="font-semibold text-foreground">
+                Vibe Check complete
+              </p>
+              <p className="mt-1 text-xs leading-5">Continue was mutual.</p>
+            </div>
+            <div className="rounded-2xl border border-[#eadfce] bg-background/70 px-4 py-3">
+              <p className="font-semibold text-foreground">Keep it steady</p>
+              <p className="mt-1 text-xs leading-5">
+                Share at your own pace.
+              </p>
+            </div>
+          </div>
         </header>
 
-        <section className="mt-4 flex-1 rounded-[2rem] border bg-background p-4 shadow-sm">
-          <div className="space-y-3">
+        <section className="mt-4 flex-1 rounded-[2rem] border border-[#e6ded0] bg-[#fffaf3] p-4 shadow-[0_18px_60px_rgba(74,59,42,0.08)]">
+          <div className="space-y-4">
             {(messages ?? []).length === 0 ? (
-              <div className="rounded-[1.5rem] bg-muted/60 p-4 text-center">
-                <p className="text-sm font-medium text-foreground">
-                  Your chat is ready.
+              <div className="rounded-[1.5rem] border border-[#eadfce] bg-background/70 p-5 text-center">
+                <p className="text-lg font-semibold tracking-tight text-foreground">
+                  Your chat is ready
                 </p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  You both chose Continue after your Vibe Check. Send a message
-                  when you are ready to keep talking.
+                <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+                  A simple first message is enough. Mention something from your
+                  Vibe Check, ask one thoughtful question, or suggest a gentle
+                  next step.
+                </p>
+                <p className="mx-auto mt-4 max-w-md rounded-2xl bg-secondary px-4 py-3 text-sm leading-6 text-muted-foreground">
+                  Safety note: keep early plans public, simple, and easy to
+                  leave.
                 </p>
               </div>
             ) : null}
@@ -134,14 +171,25 @@ export default async function ChatPage({
                   key={message.id}
                   className={isMine ? "flex justify-end" : "flex justify-start"}
                 >
-                  <div
-                    className={
-                      isMine
-                        ? "max-w-[80%] rounded-[1.25rem] bg-accent px-4 py-3 text-sm leading-6 text-accent-foreground md:max-w-[68%]"
-                        : "max-w-[80%] rounded-[1.25rem] bg-muted px-4 py-3 text-sm leading-6 text-foreground md:max-w-[68%]"
-                    }
-                  >
-                    {message.body}
+                  <div className="max-w-[82%] md:max-w-[68%]">
+                    <div
+                      className={
+                        isMine
+                          ? "rounded-[1.25rem] rounded-br-md bg-accent px-4 py-3 text-sm leading-6 text-accent-foreground shadow-sm"
+                          : "rounded-[1.25rem] rounded-bl-md border border-[#eadfce] bg-background px-4 py-3 text-sm leading-6 text-foreground shadow-sm"
+                      }
+                    >
+                      {message.body}
+                    </div>
+                    <p
+                      className={
+                        isMine
+                          ? "mt-1 px-2 text-right text-[11px] text-muted-foreground"
+                          : "mt-1 px-2 text-left text-[11px] text-muted-foreground"
+                      }
+                    >
+                      {messageTime(message.created_at)}
+                    </p>
                   </div>
                 </div>
               );
@@ -157,7 +205,7 @@ export default async function ChatPage({
 
         <Link
           href="/discover"
-          className="mt-4 block rounded-2xl border bg-background px-4 py-4 text-center text-base font-semibold"
+          className="mt-4 block rounded-2xl border border-[#e6ded0] bg-background px-4 py-4 text-center text-base font-semibold shadow-sm"
         >
           Back to Discover
         </Link>
