@@ -120,8 +120,8 @@ export default async function ChatPage({
                   Your chat is ready.
                 </p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  You both chose to continue after your guided conversation.
-                  Great conversations deserve another one.
+                  You both chose Continue after your Vibe Check. Send a message
+                  when you are ready to keep talking.
                 </p>
               </div>
             ) : null}

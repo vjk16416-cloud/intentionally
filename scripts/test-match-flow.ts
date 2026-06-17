@@ -45,8 +45,11 @@ function requiredEnv(name: string) {
   return value;
 }
 
+const SUPABASE_URL = requiredEnv("NEXT_PUBLIC_SUPABASE_URL");
+const SUPABASE_ANON_KEY = requiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+
 const supabase = createClient(
-  requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
+  SUPABASE_URL,
   requiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
   {
     auth: {
@@ -55,6 +58,26 @@ const supabase = createClient(
     },
   },
 );
+
+async function signedInClient(email: string, password: string) {
+  const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+
+  const { error } = await client.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    throw new Error(`Failed to sign in ${email}: ${error.message}`);
+  }
+
+  return client;
+}
 
 type DemoProfileRow = {
   id: string;
@@ -205,9 +228,11 @@ async function main() {
 
   const userAEmail = `test-a-${runId}@intentionally.local`;
   const userBEmail = `test-b-${runId}@intentionally.local`;
+  const userCEmail = `test-c-${runId}@intentionally.local`;
 
   let userAId: string | undefined;
   let userBId: string | undefined;
+  let userCId: string | undefined;
 
   try {
     console.log("Creating test users...");
@@ -234,8 +259,20 @@ async function main() {
       throw new Error(`Failed to create User B: ${userBError?.message}`);
     }
 
+    const { data: userC, error: userCError } =
+      await supabase.auth.admin.createUser({
+        email: userCEmail,
+        password,
+        email_confirm: true,
+      });
+
+    if (userCError || !userC.user) {
+      throw new Error(`Failed to create User C: ${userCError?.message}`);
+    }
+
     userAId = userA.user.id;
     userBId = userB.user.id;
+    userCId = userC.user.id;
 
     console.log("Updating test profiles...");
 
@@ -283,6 +320,29 @@ async function main() {
 
     if (profileBError) {
       throw new Error(`Failed to update User B profile: ${profileBError.message}`);
+    }
+
+    const { error: profileCError } = await supabase
+      .from("profiles")
+      .update({
+        display_name: "Test Casey",
+        date_of_birth: "1996-01-01",
+        gender: "non-binary",
+        seeking: ["man", "woman", "non-binary"],
+        intention: "figuring-it-out",
+        bio_prompt_key: "best-sunday",
+        bio_answer: "A calm chat and clear expectations.",
+        photos: ["test/casey-1.jpg", "test/casey-2.jpg"],
+        neighbourhood: "London",
+        availability: [66, 67, 68, 69],
+        id_verified: true,
+        id_verified_at: new Date().toISOString(),
+        paused: false,
+      })
+      .eq("id", userCId);
+
+    if (profileCError) {
+      throw new Error(`Failed to update User C profile: ${profileCError.message}`);
     }
 
     await verifyInternalDemoAlternatingMatches(userAId);
@@ -543,6 +603,89 @@ async function main() {
       throw new Error(`Failed to unlock chat after mutual Continue: ${chatError?.message}`);
     }
 
+    console.log("Checking chat access and messaging...");
+
+    const [userAClient, userBClient, userCClient] = await Promise.all([
+      signedInClient(userAEmail, password),
+      signedInClient(userBEmail, password),
+      signedInClient(userCEmail, password),
+    ]);
+
+    const { data: userAChat, error: userAChatError } = await userAClient
+      .from("chats")
+      .select("id, match_id")
+      .eq("id", chat.id)
+      .maybeSingle();
+
+    if (userAChatError || !userAChat) {
+      throw new Error(
+        `Expected User A to read unlocked chat: ${userAChatError?.message}`,
+      );
+    }
+
+    if (userAChat.match_id !== match.id) {
+      throw new Error("Expected unlocked chat to belong to the current match.");
+    }
+
+    const { data: userCChat, error: userCChatError } = await userCClient
+      .from("chats")
+      .select("id")
+      .eq("id", chat.id)
+      .maybeSingle();
+
+    if (userCChatError) {
+      throw new Error(
+        `Failed to check unauthorized chat access: ${userCChatError.message}`,
+      );
+    }
+
+    if (userCChat) {
+      throw new Error("Expected non-participant not to read unlocked chat.");
+    }
+
+    const { data: sentMessage, error: messageError } = await userAClient
+      .from("messages")
+      .insert({
+        chat_id: chat.id,
+        sender_id: userAId,
+        body: "Really enjoyed the Vibe Check.",
+      })
+      .select("id, body")
+      .single();
+
+    if (messageError || !sentMessage) {
+      throw new Error(`Expected User A to send a message: ${messageError?.message}`);
+    }
+
+    const { data: visibleMessages, error: visibleMessagesError } =
+      await userBClient
+        .from("messages")
+        .select("id, sender_id, body")
+        .eq("chat_id", chat.id)
+        .order("created_at", { ascending: true });
+
+    if (visibleMessagesError) {
+      throw new Error(
+        `Expected User B to read persisted messages: ${visibleMessagesError.message}`,
+      );
+    }
+
+    if (!visibleMessages?.some((message) => message.id === sentMessage.id)) {
+      throw new Error("Expected sent message to persist after refresh/read.");
+    }
+
+    const { error: unauthorizedMessageError } = await userCClient
+      .from("messages")
+      .insert({
+        chat_id: chat.id,
+        sender_id: userCId,
+        body: "I should not be able to send this.",
+      });
+
+    if (!unauthorizedMessageError) {
+      throw new Error("Expected non-participant not to send messages to this chat.");
+    }
+
     console.log("Product-flow test passed:");
     console.log("- User A liked User B");
     console.log("- User B liked User A");
@@ -553,6 +696,8 @@ async function main() {
     console.log("- Vibe Check questions are renderable");
     console.log("- Private Pass does not unlock chat");
     console.log("- Mutual Continue unlocks chat");
+    console.log("- Chat participants can send and read messages");
+    console.log("- Non-participants cannot access the chat");
     console.log(`- Match moved to status: ${scheduledMatch.status}`);
     console.log(`- Join Vibe Check path: ${joinPath}`);
     console.log(`- Match ID: ${match.id}`);
@@ -567,6 +712,10 @@ async function main() {
 
     if (userBId) {
       await supabase.auth.admin.deleteUser(userBId);
+    }
+
+    if (userCId) {
+      await supabase.auth.admin.deleteUser(userCId);
     }
   }
 }
