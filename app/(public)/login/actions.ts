@@ -17,7 +17,7 @@ export type LoginActionState = {
 
 const E164_PATTERN = /^\+[1-9]\d{6,14}$/;
 const LOCAL_APP_ORIGIN = "http://localhost:3000";
-const EMAIL_SIGN_IN_NEXT_PATH = "/discover";
+const EMAIL_SIGN_IN_NEXT_PATH = "/onboarding";
 
 function detectKind(value: string): LoginIdentifierKind | null {
   if (value.includes("@")) return "email";
