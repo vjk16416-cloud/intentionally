@@ -1,4 +1,4 @@
-export const DEFAULT_POST_AUTH_PATH = "/discover";
+export const DEFAULT_POST_AUTH_PATH = "/onboarding";
 
 export function getSafeNextPath(url: URL) {
   const next = url.searchParams.get("next");
