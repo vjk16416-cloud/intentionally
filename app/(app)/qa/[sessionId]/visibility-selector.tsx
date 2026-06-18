@@ -183,6 +183,11 @@ export function VisibilitySelector({
           </div>
         </div>
       )}
+
+      <p className="mt-3 rounded-2xl bg-secondary/70 px-3 py-2 text-xs leading-5 text-muted-foreground">
+        Alpha preview: Open Video consent is shown locally for testing today.
+        A later alpha update will connect this between both people in the room.
+      </p>
     </div>
   );
 }

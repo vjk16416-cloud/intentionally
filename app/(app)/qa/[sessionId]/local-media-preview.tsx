@@ -96,8 +96,8 @@ export function LocalMediaPreview({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-black shadow-xl",
-        isCompact ? "min-h-44 lg:min-h-72" : "min-h-72",
+        "relative overflow-hidden rounded-[1.25rem] border border-white/10 bg-black shadow-xl md:rounded-[1.75rem]",
+        isCompact ? "min-h-36 sm:min-h-44 lg:min-h-72" : "min-h-72",
       )}
     >
       <video
@@ -134,7 +134,7 @@ export function LocalMediaPreview({
         <div
           className={cn(
             "relative z-10 flex items-center justify-center px-4 text-center text-sm leading-6 text-white/80",
-            isCompact ? "min-h-44 lg:min-h-72" : "min-h-72",
+            isCompact ? "min-h-36 sm:min-h-44 lg:min-h-72" : "min-h-72",
           )}
         >
           {permissionState === "requesting"

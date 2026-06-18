@@ -211,10 +211,10 @@ export function QaSessionRoom({
   }
 
   return (
-    <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background via-[#fbf3e8] to-muted px-4 py-5 text-foreground md:px-6 lg:px-8">
+    <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background via-[#fbf3e8] to-muted px-3 py-3 text-foreground md:px-6 md:py-5 lg:px-8">
       <div className="mx-auto w-full max-w-md md:max-w-4xl lg:max-w-6xl xl:max-w-7xl">
-        <section className="overflow-hidden rounded-[2.25rem] border border-[#e6ded0] bg-[#fffaf3] p-4 shadow-[0_24px_80px_rgba(74,59,42,0.12)] md:p-5 lg:p-6">
-          <header className="flex items-center justify-between gap-3 border-b border-border pb-4">
+        <section className="overflow-hidden rounded-[1.75rem] border border-[#e6ded0] bg-[#fffaf3] p-3 shadow-[0_24px_80px_rgba(74,59,42,0.12)] md:rounded-[2.25rem] md:p-5 lg:p-6">
+          <header className="flex items-center justify-between gap-3 border-b border-border pb-3 md:pb-4">
             <a
               href="/discover"
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-background text-xl text-muted-foreground shadow-sm"
@@ -241,8 +241,8 @@ export function QaSessionRoom({
             </div>
           </header>
 
-          <div className="space-y-4 pt-5 md:space-y-5">
-            <div className="rounded-[1.35rem] border border-[#eadfce] bg-background/75 p-3 md:px-4">
+          <div className="space-y-3 pt-3 md:space-y-5 md:pt-5">
+            <div className="rounded-[1.25rem] border border-[#eadfce] bg-background/75 p-2.5 md:rounded-[1.35rem] md:p-3 md:px-4">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                   Question {safeQuestionIndex + 1} of {questions.length}
@@ -257,16 +257,14 @@ export function QaSessionRoom({
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
-              <p className="mt-3 text-xs leading-5 text-muted-foreground">
+              <p className="mt-3 hidden text-xs leading-5 text-muted-foreground sm:block">
                 Move forward when the answer feels complete. Skipping is always
                 okay.
               </p>
             </div>
 
             <div className="relative grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(280px,360px)_minmax(0,1fr)] md:items-center lg:grid-cols-[minmax(0,1fr)_minmax(340px,440px)_minmax(0,1fr)]">
-              <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-border md:hidden" />
-
-              <div className="relative z-10 rounded-[1.75rem] border border-[#eadfce] bg-background/85 p-3 shadow-sm md:order-1">
+              <div className="relative z-10 order-2 rounded-[1.35rem] border border-[#eadfce] bg-background/85 p-2.5 shadow-sm md:order-1 md:rounded-[1.75rem] md:p-3">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="rounded-full bg-card px-3 py-1 text-xs font-semibold">
                     You
@@ -277,8 +275,8 @@ export function QaSessionRoom({
                 </div>
 
                 {visibilityMode === "audio" ? (
-                  <div className="relative min-h-44 overflow-hidden rounded-[1.5rem] bg-[#2d3028] p-4 text-white lg:min-h-72">
-                    <div className="flex min-h-28 flex-col items-center justify-center gap-4 lg:min-h-56">
+                  <div className="relative min-h-36 overflow-hidden rounded-[1.25rem] bg-[#2d3028] p-4 text-white sm:min-h-44 md:rounded-[1.5rem] lg:min-h-72">
+                    <div className="flex min-h-24 flex-col items-center justify-center gap-4 sm:min-h-28 lg:min-h-56">
                       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#e2e8dc] text-xl font-semibold text-[#241c17]">
                         Y
                       </div>
@@ -313,18 +311,18 @@ export function QaSessionRoom({
                 )}
               </div>
 
-              <div className="relative z-10 rounded-[1.75rem] border border-[#d8ccbd] bg-[#fff8ef] p-6 text-center shadow-[0_16px_48px_rgba(74,59,42,0.10)] md:order-2 md:p-6 lg:p-8">
-                <div className="mx-auto mb-4 flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-accent">
+              <div className="relative z-10 order-1 rounded-[1.5rem] border border-[#d8ccbd] bg-[#fff8ef] p-4 text-center shadow-[0_16px_48px_rgba(74,59,42,0.10)] md:order-2 md:rounded-[1.75rem] md:p-6 lg:p-8">
+                <div className="mx-auto mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-accent md:mb-4 md:h-9 md:w-9">
                   {safeQuestionIndex + 1}
                 </div>
-                <h1 className="text-2xl font-semibold leading-8 tracking-tight md:text-3xl md:leading-10">
+                <h1 className="text-xl font-semibold leading-7 tracking-tight sm:text-2xl sm:leading-8 md:text-3xl md:leading-10">
                   {currentQuestion}
                 </h1>
-                <p className="mx-auto mt-4 max-w-xs text-sm leading-6 text-muted-foreground">
+                <p className="mx-auto mt-3 max-w-xs text-sm leading-5 text-muted-foreground md:mt-4 md:leading-6">
                   There is no perfect answer. Stay honest, kind, and within
                   what feels comfortable.
                 </p>
-                <div className="mx-auto mt-5 max-w-xs rounded-2xl border border-[#eadfce] bg-background/70 px-4 py-3">
+                <div className="mx-auto mt-4 max-w-xs rounded-2xl border border-[#eadfce] bg-background/70 px-3 py-2.5 md:mt-5 md:px-4 md:py-3">
                   <p className="text-xs font-semibold text-foreground">
                     {visibility.shortLabel}
                   </p>
@@ -332,9 +330,35 @@ export function QaSessionRoom({
                     {visibility.roomCopy}
                   </p>
                 </div>
+
+                <div className="mx-auto mt-4 grid w-full max-w-md grid-cols-[1fr_auto_1fr] items-center gap-2 md:gap-3">
+                  <button
+                    type="button"
+                    onClick={advanceQuestion}
+                    className="rounded-2xl border border-border bg-background px-3 py-3 text-center text-sm font-semibold text-foreground shadow-sm md:px-4 md:py-4"
+                  >
+                    Skip
+                  </button>
+
+                  <button
+                    type="button"
+                    className="flex h-14 w-14 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground shadow-sm md:h-16 md:w-16"
+                    aria-label="Tap to speak"
+                  >
+                    Speak
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={answerQuestion}
+                    className="rounded-2xl bg-accent px-3 py-3 text-center text-sm font-semibold text-accent-foreground shadow-sm md:px-4 md:py-4"
+                  >
+                    {nextActionLabel}
+                  </button>
+                </div>
               </div>
 
-              <div className="relative z-10 rounded-[1.75rem] border border-[#eadfce] bg-background/85 p-3 shadow-sm md:order-3">
+              <div className="relative z-10 order-3 rounded-[1.35rem] border border-[#eadfce] bg-background/85 p-2.5 shadow-sm md:rounded-[1.75rem] md:p-3">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="rounded-full bg-card px-3 py-1 text-xs font-semibold">
                     Your match
@@ -350,7 +374,7 @@ export function QaSessionRoom({
                       src={dailyRoomUrl}
                       title="Guided Vibe Check video room"
                       allow="camera; microphone; fullscreen; speaker; display-capture"
-                      className={`h-[320px] w-full border-0 transition duration-500 lg:h-[420px] ${
+                      className={`h-40 w-full border-0 transition duration-500 sm:h-52 md:h-[320px] lg:h-[420px] ${
                         shouldSoftenTheirTile
                           ? "scale-105 blur-sm opacity-75"
                           : ""
@@ -463,32 +487,6 @@ export function QaSessionRoom({
                 onKeepSoftReveal={keepSoftReveal}
                 onReturnToSoftReveal={keepSoftReveal}
               />
-            </div>
-
-            <div className="mx-auto grid w-full max-w-md grid-cols-[1fr_auto_1fr] items-center gap-3">
-              <button
-                type="button"
-                onClick={advanceQuestion}
-                className="rounded-2xl border border-border bg-background px-4 py-4 text-center text-sm font-semibold text-foreground shadow-sm"
-              >
-                Skip
-              </button>
-
-              <button
-                type="button"
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground shadow-sm"
-                aria-label="Tap to speak"
-              >
-                Speak
-              </button>
-
-              <button
-                type="button"
-                onClick={answerQuestion}
-                className="rounded-2xl bg-accent px-4 py-4 text-center text-sm font-semibold text-accent-foreground shadow-sm"
-              >
-                {nextActionLabel}
-              </button>
             </div>
 
             <div className="mx-auto w-full max-w-2xl rounded-[1.35rem] bg-secondary p-4 text-sm leading-6 text-muted-foreground md:text-center">
