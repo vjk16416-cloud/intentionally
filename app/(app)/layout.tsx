@@ -42,19 +42,48 @@ export default async function AppLayout({
   const verified = await isUserVerified(supabase, user.id);
 
   return (
-    <div className="min-h-screen bg-[#f8f4ec] pb-24 text-foreground md:pb-0">
-      <header className="sticky top-0 z-40 border-b border-[#e6ded0] bg-[#fffaf3]/92 px-4 py-3 shadow-[0_8px_30px_rgba(74,59,42,0.06)] backdrop-blur md:px-5">
-        <div className="mx-auto flex w-full max-w-md items-center justify-between gap-3 md:max-w-4xl lg:max-w-6xl xl:max-w-7xl">
-          <Link
-            href="/discover"
-            className="min-w-0 text-base font-semibold tracking-tight text-foreground"
-          >
-            Intentionally
-          </Link>
+    <div className="min-h-[100dvh] overflow-x-hidden bg-[#f8f4ec] pb-[calc(80px+env(safe-area-inset-bottom))] pt-[max(1rem,calc(env(safe-area-inset-top)+1rem))] text-foreground lg:pb-6 lg:pt-0">
+      <header className="relative z-40 mx-3 overflow-visible rounded-[1.75rem] border border-[#e6ded0] bg-[#fffaf3]/95 px-3 py-3 shadow-[0_8px_30px_rgba(74,59,42,0.06)] backdrop-blur lg:sticky lg:top-0 lg:mx-0 lg:rounded-none lg:border-x-0 lg:border-t-0 lg:px-5">
+        <div className="mx-auto flex w-full max-w-md items-center justify-between gap-3 lg:grid lg:max-w-6xl lg:grid-cols-[1fr_auto_1fr] lg:items-center xl:max-w-7xl">
+          <div className="flex min-w-0 items-center justify-between gap-3 md:justify-start">
+            <Link
+              href="/discover"
+              className="min-w-0 text-base font-semibold tracking-tight text-foreground"
+            >
+              Intentionally
+            </Link>
 
-          <AppNavigation />
+            <div className="flex shrink-0 items-center gap-2 md:hidden">
+              {!verified ? (
+                <Link
+                  href="/verify"
+                  className={cn(
+                    buttonVariants({ variant: "outline", size: "sm" }),
+                    "rounded-full border-border bg-card px-4 text-xs font-medium",
+                  )}
+                >
+                  Verify
+                </Link>
+              ) : null}
 
-          <div className="flex shrink-0 items-center gap-2">
+              <form action={signOut}>
+                <Button
+                  type="submit"
+                  variant="ghost"
+                  size="sm"
+                  className="rounded-full px-3 text-xs text-neutral-500"
+                >
+                  Sign out
+                </Button>
+              </form>
+            </div>
+          </div>
+
+          <div className="hidden lg:flex lg:justify-center">
+            <AppNavigation variant="desktop" />
+          </div>
+
+          <div className="hidden shrink-0 items-center gap-2 lg:flex lg:justify-end">
             {!verified ? (
               <Link
                 href="/verify"
@@ -82,6 +111,7 @@ export default async function AppLayout({
       </header>
 
       {children}
+      <AppNavigation variant="mobile" />
       <AlphaFeedbackWidget />
     </div>
   );
