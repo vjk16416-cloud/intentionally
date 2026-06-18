@@ -29,9 +29,9 @@ const navItems: NavItem[] = [
     icon: Compass,
   },
   {
+    href: "/vibe-checks",
     label: "Vibe Checks",
     icon: MessagesSquare,
-    disabled: true,
   },
   {
     href: "/profile",

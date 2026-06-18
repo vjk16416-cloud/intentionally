@@ -28,7 +28,9 @@ export default async function DiscoverPage() {
 
   return (
     <>
-      <PendingMatchesBanner pending={pending} />
+      <div id="vibe-checks" className="scroll-mt-24">
+        <PendingMatchesBanner pending={pending} />
+      </div>
       <DiscoverDeck
         key={cards.length > 0 ? cards.map((card) => card.id).join(",") : "empty"}
         cards={cards}
