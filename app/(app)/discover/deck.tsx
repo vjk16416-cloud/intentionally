@@ -154,8 +154,8 @@ export function DiscoverDeck({
 
   if (cards.length === 0 || !card) {
     return (
-      <main className="min-h-[calc(100vh-57px)] bg-[#f8f4ec] px-5 py-8 text-foreground">
-        <div className="mx-auto flex min-h-[70vh] w-full max-w-md items-center justify-center md:max-w-2xl">
+      <main className="min-h-[calc(100vh-57px)] bg-[#f8f4ec] px-5 py-4 text-foreground md:py-8">
+        <div className="mx-auto flex min-h-[58vh] w-full max-w-md items-center justify-center md:min-h-[70vh] md:max-w-2xl">
           <FallbackPanel
             eyebrow="Discover"
             title="You&apos;re all caught up"
@@ -238,15 +238,15 @@ export function DiscoverDeck({
   }
 
   return (
-    <main className="min-h-[calc(100vh-57px)] bg-[#f8f4ec] pb-36 text-foreground sm:pb-28 lg:pb-6">
-      <div className="mx-auto flex w-full max-w-md flex-col px-4 py-5 sm:px-5 md:max-w-3xl lg:max-w-6xl lg:px-6 lg:py-4 xl:max-w-6xl">
-        <header className="mb-3 shrink-0 lg:mb-2">
-          <h1 className="text-3xl font-semibold tracking-tight lg:text-[2rem]">
+    <main className="min-h-[calc(100vh-57px)] bg-[#f8f4ec] pb-[calc(9rem+env(safe-area-inset-bottom))] text-foreground sm:pb-28 lg:pb-6">
+      <div className="mx-auto flex w-full max-w-md flex-col px-4 py-3 sm:px-5 md:max-w-3xl md:py-5 lg:max-w-6xl lg:px-6 lg:py-4 xl:max-w-6xl">
+        <header className="mb-2 shrink-0 lg:mb-2">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl lg:text-[2rem]">
             Discover
           </h1>
         </header>
 
-        <p className="mb-4 max-w-2xl shrink-0 text-sm leading-6 text-muted-foreground lg:mb-4">
+        <p className="mb-3 max-w-2xl shrink-0 text-sm leading-5 text-muted-foreground sm:leading-6 lg:mb-4">
           Browse slowly. Mutual interest creates a match. A Vibe Check invite
           happens before chat can unlock.
         </p>
@@ -259,9 +259,8 @@ export function DiscoverDeck({
                 <img
                   src={primaryPhoto}
                   alt=""
-                  className="absolute inset-0 h-full w-full scale-[1.03] object-cover grayscale"
+                  className="absolute inset-0 h-full w-full object-cover"
                 />
-                <div className="absolute inset-0 bg-[#d9d5ce]/20 backdrop-blur-[1px]" />
               </>
             ) : (
               <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_center,#f6f1e8_0%,#ded9d1_55%,#cfc9bf_100%)]">
@@ -274,18 +273,18 @@ export function DiscoverDeck({
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/24 to-black/0" />
 
             <div className="absolute left-4 top-4 flex max-w-[calc(100%-7rem)] flex-wrap items-center gap-2 sm:left-5 sm:top-5">
-              <span className="rounded-full border border-white/25 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm backdrop-blur">
+              <span className="rounded-full border border-white/25 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm">
                 Verified
               </span>
-              <span className="rounded-full border border-white/25 bg-background/90 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm backdrop-blur">
+              <span className="rounded-full border border-white/25 bg-background/90 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm">
                 Intentional
               </span>
-              <span className="rounded-full border border-white/25 bg-background/90 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm backdrop-blur">
+              <span className="rounded-full border border-white/25 bg-background/90 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm">
                 Vibe Check Ready
               </span>
             </div>
 
-            <div className="absolute right-4 top-4 rounded-full border border-white/25 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm backdrop-blur sm:right-5 sm:top-5">
+            <div className="absolute right-4 top-4 rounded-full border border-white/25 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm sm:right-5 sm:top-5">
               {index + 1}/{cards.length}
             </div>
 
@@ -300,7 +299,7 @@ export function DiscoverDeck({
                   </p>
                 </div>
 
-                <div className="rounded-[1.5rem] border border-white/18 bg-white/14 p-4 shadow-sm backdrop-blur-xl lg:max-w-[92%] lg:p-3.5">
+                <div className="rounded-[1.5rem] border border-white/18 bg-black/35 p-4 shadow-sm lg:max-w-[92%] lg:p-3.5">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary-foreground/68">
                     PROMPT PREVIEW
                   </p>
@@ -373,7 +372,7 @@ export function DiscoverDeck({
                 </ul>
               </section>
 
-              <div className="rounded-[1.25rem] border border-[#e1e8dc] bg-[#eef2e8] px-4 py-3 text-sm leading-5 text-[#5d6c55]">
+              <div className="rounded-[1.25rem] border border-[#e1e8dc] bg-[#eef2e8] px-3 py-2.5 text-xs leading-5 text-[#5d6c55] sm:px-4 sm:py-3 sm:text-sm">
                 Your safety is our priority. Every profile goes through
                 verification and continuous review.
               </div>
@@ -417,7 +416,7 @@ export function DiscoverDeck({
           </div>
         </section>
 
-        <div className="fixed inset-x-4 bottom-[5.25rem] z-50 mx-auto grid max-w-md grid-cols-2 gap-3 rounded-[1.35rem] border border-[#e6ded0] bg-[#fffaf3]/96 p-2 shadow-[0_14px_38px_rgba(74,59,42,0.18)] backdrop-blur sm:hidden">
+        <div className="fixed inset-x-4 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-50 mx-auto grid max-w-md grid-cols-2 gap-3 rounded-[1.35rem] border border-[#e6ded0] bg-[#fffaf3]/96 p-2 shadow-[0_14px_38px_rgba(74,59,42,0.18)] backdrop-blur sm:hidden">
           <button
             type="button"
             onClick={handlePass}

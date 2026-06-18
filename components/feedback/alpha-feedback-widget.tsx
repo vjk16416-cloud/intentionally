@@ -42,13 +42,13 @@ export function AlphaFeedbackWidget() {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-5 right-5 z-50 rounded-full border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground shadow-lg transition hover:bg-muted"
+        className="fixed bottom-[calc(10.25rem+env(safe-area-inset-bottom))] right-4 z-30 rounded-full border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground shadow-lg transition hover:bg-muted sm:bottom-[calc(1.25rem+env(safe-area-inset-bottom))] sm:right-5 sm:px-4 sm:text-sm"
       >
         Feedback
       </button>
 
       {isOpen ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/35 px-4 py-5 sm:items-center">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/35 px-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-[calc(1.25rem+env(safe-area-inset-top))] sm:items-center">
           <div className="w-full max-w-md rounded-[1.75rem] border border-border bg-background p-5 shadow-2xl">
             <div className="mb-4 flex items-start justify-between gap-4">
               <div>

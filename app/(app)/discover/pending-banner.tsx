@@ -17,9 +17,9 @@ export function PendingMatchesBanner({
   const label = count === 1 ? "new match" : "new matches";
 
   return (
-    <div className="mx-auto w-full max-w-md p-4 pb-0 md:max-w-3xl lg:max-w-5xl">
-      <div className="flex flex-col gap-3 rounded-2xl border border-[#e6ded0] bg-[#fffdf8] px-4 py-3 shadow-[0_8px_24px_rgba(74,59,42,0.05)] sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm leading-6 text-foreground">
+    <div className="mx-auto w-full max-w-md px-4 pt-3 md:max-w-3xl lg:max-w-5xl lg:pt-4">
+      <div className="flex flex-col gap-2 rounded-2xl border border-[#e6ded0] bg-[#fffdf8] px-3 py-2.5 shadow-[0_8px_24px_rgba(74,59,42,0.05)] sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:py-3">
+        <p className="text-sm leading-5 text-foreground sm:leading-6">
           <span className="font-semibold">{count}</span> {label} ready for a
           Vibe Check invite
         </p>

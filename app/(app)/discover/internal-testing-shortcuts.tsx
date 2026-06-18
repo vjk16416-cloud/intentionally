@@ -5,6 +5,7 @@ import {
   openInternalTestSchedule,
   openInternalTestVibeCheck,
 } from "./internal-testing-actions";
+import { ShortcutSubmitButton } from "./shortcut-submit-button";
 
 function ShortcutButton({
   action,
@@ -15,12 +16,9 @@ function ShortcutButton({
 }) {
   return (
     <form action={action}>
-      <button
-        type="submit"
-        className="h-10 w-full rounded-2xl border border-[#d8d0c3] bg-[#fffdf8] px-3 text-sm font-semibold text-foreground transition hover:bg-[#f3eee5]"
-      >
+      <ShortcutSubmitButton>
         {children}
-      </button>
+      </ShortcutSubmitButton>
     </form>
   );
 }
