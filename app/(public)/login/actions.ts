@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { getOnboardingState } from "@/lib/onboarding/state";
 import { createClient } from "@/lib/supabase/server";
 
 export type LoginIdentifierKind = "email" | "phone";
@@ -134,5 +135,14 @@ export async function verifyOtp(
     return { identifier, kind: "phone", error: error.message };
   }
 
-  redirect("/discover");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login?error=auth_callback");
+  }
+
+  const onboarding = await getOnboardingState(supabase, user);
+  redirect(onboarding.status === "complete" ? "/discover" : "/onboarding");
 }
