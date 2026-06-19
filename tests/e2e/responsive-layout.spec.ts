@@ -35,7 +35,16 @@ for (const viewport of viewports) {
       await page.goto(`${baseUrl}/login`);
 
       await expect(page.getByRole("heading", { name: /start with intention/i })).toBeVisible();
+      await expect(page.getByRole("link", { name: /try the demo/i })).toBeVisible();
       await expect(page.getByRole("button", { name: /send secure sign-in link/i })).toBeVisible();
+      await expectNoHorizontalOverflow(page);
+
+      await page.getByRole("link", { name: /try the demo/i }).click();
+
+      await expect(page).toHaveURL(/\/demo/);
+      await expect(page.getByRole("heading", { name: /explore the vibe check journey/i })).toBeVisible();
+      await expect(page.getByRole("link", { name: /preview demo invite/i })).toBeVisible();
+      await expect(page.getByText(/mock profiles/i)).toBeVisible();
       await expectNoHorizontalOverflow(page);
     });
 

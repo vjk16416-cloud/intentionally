@@ -3,11 +3,13 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, CalendarDays, Clock3, ShieldCheck } from "lucide-react";
 
 import { FallbackActionLink, FallbackPanel } from "@/components/fallback-state";
+import { canUseInternalTestingShortcuts } from "@/lib/internal-demo/access";
 import { buttonVariants } from "@/components/ui/button";
 import { computeMutualSlots } from "@/lib/scheduling/slots";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { isUserVerified } from "@/lib/verification";
+import { openInternalTestVibeCheck } from "../../discover/internal-testing-actions";
 
 import { ConfirmButtons } from "./confirm-buttons";
 import { SlotPicker } from "./slot-picker";
@@ -76,6 +78,7 @@ export default async function SchedulePage({
   const viewerProfile = profiles?.find((p) => p.id === user.id);
   const otherProfile = profiles?.find((p) => p.id === otherId);
   const otherName = otherProfile?.display_name ?? "your match";
+  const showInternalDemoActions = canUseInternalTestingShortcuts(user.email);
 
   const { data: session } = await supabase
     .from("qa_sessions")
@@ -127,7 +130,7 @@ export default async function SchedulePage({
                 {when}. London time. Open the call when it&apos;s time to
                 start.
               </p>
-              <div className="mx-auto w-full max-w-sm">
+              <div className="mx-auto grid w-full max-w-sm gap-3">
                 <Link
                   href={`/qa/${session.id}`}
                   className={cn(
@@ -137,6 +140,16 @@ export default async function SchedulePage({
                 >
                   Join Vibe Check
                 </Link>
+                {showInternalDemoActions ? (
+                  <form action={openInternalTestVibeCheck}>
+                    <button
+                      type="submit"
+                      className="w-full rounded-2xl border border-[#d8d0c3] bg-[#fffdf8] px-4 py-3 text-sm font-semibold text-foreground shadow-[0_6px_16px_rgba(74,59,42,0.03)] transition hover:bg-[#faf6ee]"
+                    >
+                      Start demo Vibe Check
+                    </button>
+                  </form>
+                ) : null}
               </div>
             </div>
           </section>
@@ -214,6 +227,21 @@ export default async function SchedulePage({
           })}
         </ul>
       </div>
+
+      <div className="mt-4 max-w-2xl rounded-[1.4rem] border border-[#e6ded0] bg-[#fffdf8]/92 px-4 py-3 shadow-[0_4px_14px_rgba(74,59,42,0.03)]">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm leading-6 text-[#6f6258]">
+            Want to see the flow first? Preview a sandbox invite with mock
+            details only.
+          </p>
+          <Link
+            href="/demo#demo-invite"
+            className="inline-flex h-11 shrink-0 items-center justify-center rounded-2xl border border-[#d8d0c3] bg-[#fffdf8] px-4 text-sm font-semibold text-[#3d342d] shadow-[0_6px_16px_rgba(74,59,42,0.03)] transition hover:bg-[#faf6ee] focus-visible:ring-3 focus-visible:ring-[#7d916f]/30"
+          >
+            Preview demo invite
+          </Link>
+        </div>
+      </div>
     </section>
   );
 
@@ -247,14 +275,24 @@ export default async function SchedulePage({
                 You proposed {when}.
               </h2>
               <p className="mx-auto max-w-xl text-sm leading-6 text-muted-foreground">
-                They&apos;ll see this Vibe Check invite on Discover next time
-                they visit. They can accept it or suggest a different time.
+                Invite sent. They can accept or suggest another time. When
+                accepted, your Vibe Check will unlock here.
               </p>
             </div>
             <div className="mt-5">
               <SlotPicker matchId={matchId} slots={slots} />
             </div>
             <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:justify-center">
+              {showInternalDemoActions ? (
+                <form action={openInternalTestVibeCheck}>
+                  <button
+                    type="submit"
+                    className="inline-flex h-11 w-full items-center justify-center rounded-2xl bg-[#75886b] px-4 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(83,104,73,0.20)] transition hover:bg-[#697b60] sm:w-auto"
+                  >
+                    Start demo Vibe Check
+                  </button>
+                </form>
+              ) : null}
               <Link
                 href="/discover"
                 className="inline-flex h-11 items-center justify-center rounded-2xl border border-[#d8d0c3] bg-[#fffdf8] px-4 text-sm font-semibold text-foreground shadow-[0_6px_16px_rgba(74,59,42,0.03)] transition hover:bg-[#faf6ee]"

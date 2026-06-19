@@ -1,7 +1,10 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { buttonVariants } from "@/components/ui/button";
 import { getOnboardingState } from "@/lib/onboarding/state";
 import { createClient } from "@/lib/supabase/server";
+import { cn } from "@/lib/utils";
 
 import { LoginForm } from "./login-form";
 
@@ -33,6 +36,21 @@ export default async function LoginPage() {
               </h1>
               <p className="mx-auto max-w-sm text-sm leading-6 text-muted-foreground md:mx-0">
                 A calmer way to meet with clarity, safety and intention.
+              </p>
+            </div>
+
+            <div className="rounded-[1.5rem] border border-[#d8ccbd] bg-[#fff8ef]/80 p-3 shadow-[0_8px_22px_rgba(74,59,42,0.04)]">
+              <Link
+                href="/demo"
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "lg" }),
+                  "h-11 w-full rounded-2xl border-[#d8ccbd] bg-[#fffdf8] text-sm font-semibold text-[#3d342d] hover:bg-[#f7f1e8]",
+                )}
+              >
+                Try the demo
+              </Link>
+              <p className="mt-2 text-center text-xs leading-5 text-muted-foreground md:text-left">
+                Explore Intentionally without creating an account.
               </p>
             </div>
 
