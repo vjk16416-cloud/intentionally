@@ -42,8 +42,8 @@ export default async function AppLayout({
   const verified = await isUserVerified(supabase, user.id);
 
   return (
-    <div className="min-h-[100dvh] overflow-x-hidden bg-[#f8f4ec] pb-[calc(80px+env(safe-area-inset-bottom))] pt-[max(1rem,calc(env(safe-area-inset-top)+1rem))] text-[#241c17] lg:pb-6 lg:pt-0">
-      <header className="relative z-40 mx-3 overflow-visible rounded-[1.75rem] border border-[#e6ded0] bg-[#fffaf3]/95 px-3 py-3 shadow-[0_8px_30px_rgba(74,59,42,0.06)] backdrop-blur lg:sticky lg:top-0 lg:mx-0 lg:rounded-none lg:border-x-0 lg:border-t-0 lg:px-5">
+    <div className="flex h-[100dvh] min-h-[100dvh] flex-col overflow-hidden bg-[#f8f4ec] pt-[max(1rem,calc(env(safe-area-inset-top)+1rem))] text-[#241c17] lg:block lg:h-auto lg:min-h-[100dvh] lg:overflow-x-hidden lg:pb-6 lg:pt-0">
+      <header className="relative z-40 shrink-0 mx-3 overflow-visible rounded-[1.75rem] border border-[#e6ded0] bg-[#fffaf3]/95 px-3 py-3 shadow-[0_8px_30px_rgba(74,59,42,0.06)] backdrop-blur lg:sticky lg:top-0 lg:mx-0 lg:rounded-none lg:border-x-0 lg:border-t-0 lg:px-5">
         <div className="mx-auto flex w-full max-w-md items-center justify-between gap-3 lg:grid lg:max-w-6xl lg:grid-cols-[1fr_auto_1fr] lg:items-center xl:max-w-7xl">
           <div className="flex min-w-0 items-center justify-between gap-3 md:justify-start">
             <Link
@@ -110,7 +110,9 @@ export default async function AppLayout({
         </div>
       </header>
 
-      {children}
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain lg:min-h-auto lg:overflow-visible">
+        {children}
+      </div>
       <AppNavigation variant="mobile" />
       <AlphaFeedbackWidget />
     </div>

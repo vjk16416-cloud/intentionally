@@ -138,7 +138,7 @@ export function AppNavigation({
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden"
+      className="z-40 shrink-0 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-2 lg:hidden"
       aria-label="Primary"
     >
       <div className="mx-auto grid w-full max-w-md grid-cols-3 gap-1 rounded-[1.5rem] border border-[#e6ded0] bg-[#fffaf3]/96 p-2 shadow-[0_14px_38px_rgba(74,59,42,0.16)] backdrop-blur md:max-w-2xl">
