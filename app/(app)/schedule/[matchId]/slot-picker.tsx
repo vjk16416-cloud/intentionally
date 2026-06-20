@@ -41,8 +41,8 @@ export function SlotPicker({
     return (
       <FallbackPanel
         eyebrow="Schedule"
-        title="No mutual times in the next 7 days"
-        description="One of you needs to widen availability. Either of you can do that, then try again."
+        title="No shared times yet"
+        description="There is not enough overlap in the next 7 days. Either of you can add more availability, then try again."
         note="You can update your availability without leaving this flow."
         action={
           <FallbackActionLink href={`/onboarding/availability?return=/schedule/${matchId}`}>
@@ -78,7 +78,7 @@ export function SlotPicker({
               key={slot.scheduledAtIso}
               slot={slot}
               selected={selected}
-              tag={["Best match", "Great option", "Also good"][index] ?? "Option"}
+              tag={["Soonest overlap", "Another good time", "Also available"][index] ?? "Option"}
               onSelect={() => setSelectedIndex(index)}
             />
           );
@@ -139,7 +139,9 @@ function SelectionForm({
           </p>
         ) : null}
         {state.error ? (
-          <p className="text-center text-xs text-destructive">{state.error}</p>
+          <p className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-center text-sm text-destructive">
+            {state.error}
+          </p>
         ) : null}
       </form>
     </div>

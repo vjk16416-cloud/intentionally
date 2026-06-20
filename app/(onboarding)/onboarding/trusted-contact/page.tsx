@@ -39,7 +39,7 @@ export default async function TrustedContactStepPage({
     <StepShell
       stepLabel="Step 8 of 8"
       title="Add a trusted contact for extra peace of mind"
-      description="Choose someone you trust who could be contacted if you ever use a safety feature. This is only for support and is not shown on your profile."
+      description="Choose someone you trust who could be contacted if you ever use a safety feature. This is private and not shown on your profile."
       progress={100}
       className="mx-auto w-full max-w-md"
     >

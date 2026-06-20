@@ -38,7 +38,7 @@ export default async function NeighbourhoodStepPage({
     <StepShell
       stepLabel="Step 6 of 8"
       title="Where do you live?"
-      description="Pick your city, then the neighbourhood you spend the most time in. You can change it later."
+      description="Pick your city, then the neighbourhood you spend the most time in. Your exact address is never shown."
       progress={75}
       className="mx-auto w-full max-w-md"
     >

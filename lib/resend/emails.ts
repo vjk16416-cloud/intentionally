@@ -55,7 +55,7 @@ ${questionsList}
 
 Join here: ${joinUrl}
 
-The call is 10 minutes. Whoever isn't speaking is gently blurred. At the end, you both decide privately if you want to keep talking.`,
+The call is about 10 minutes. Soft Reveal keeps the listener gently softened. At the end, you both decide privately if you want to keep talking.`,
   });
 }
 
@@ -84,7 +84,9 @@ export async function sendQaMorningOfEmail({
     subject: `Your Guided Vibe Check with ${otherName} is today`,
     text: `Quick reminder: your Guided Vibe Check with ${otherName} is today at ${time} London time.
 
-Join here when it's time: ${joinUrl}`,
+Join here when it's time: ${joinUrl}
+
+It lasts about 10 minutes. Soft Reveal stays on, and you stay in control throughout.`,
   });
 }
 
@@ -120,6 +122,8 @@ export async function sendQaOneHourBeforeEmail({
 Three questions, same as before:
 ${questionsList}
 
-Join here: ${joinUrl}`,
+Join here: ${joinUrl}
+
+No need to prepare a perfect answer. You can skip anything that does not feel right.`,
   });
 }

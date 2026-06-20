@@ -34,11 +34,11 @@ export function ProfileCard({ card }: { card: DiscoverCard }) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/20" />
 
           <div className="absolute left-4 right-4 top-4 flex items-center justify-between gap-3">
-            <span className="rounded-full bg-white/95 px-3.5 py-1.5 text-xs font-medium text-black shadow-sm backdrop-blur">
+            <span className="rounded-full bg-white/95 px-3.5 py-1.5 text-xs font-medium text-black shadow-sm">
               {intentionLabel}
             </span>
 
-            <span className="rounded-full border border-white/20 bg-black/25 px-3.5 py-1.5 text-xs font-medium text-white shadow-sm backdrop-blur">
+            <span className="rounded-full border border-white/20 bg-black/35 px-3.5 py-1.5 text-xs font-medium text-white shadow-sm">
               {card.neighbourhood}
             </span>
           </div>
@@ -64,7 +64,8 @@ export function ProfileCard({ card }: { card: DiscoverCard }) {
             </h2>
 
             <p className="mt-2 max-w-xs text-sm leading-5 text-white/75">
-              A short Guided Vibe Check before chat unlocks.
+              An approximately 10-minute Vibe Check with Soft Reveal before
+              chat unlocks.
             </p>
           </div>
         </div>
@@ -101,9 +102,9 @@ export function ProfileCard({ card }: { card: DiscoverCard }) {
           </div>
 
           <div className="rounded-2xl border bg-background px-3 py-3">
-            <p className="text-xs font-semibold">Reveal</p>
+            <p className="text-xs font-semibold">Vibe Check</p>
             <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
-              Safety-led
+              Before chat
             </p>
           </div>
         </section>

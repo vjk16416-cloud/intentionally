@@ -154,6 +154,8 @@ export function TrustedContactForm({
         <p className="text-xs leading-5 text-muted-foreground">
           Enter their number normally. We&apos;ll format it as{" "}
           {localNumber ? fullPhoneNumber : `${countryCode}...`}.
+          {" "}This is only used for safety support and is not shown on your
+          profile.
         </p>
       </div>
 
@@ -188,7 +190,9 @@ export function TrustedContactForm({
       </div>
 
       {state.error ? (
-        <p className="text-sm text-destructive">{state.error}</p>
+        <p className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {state.error}
+        </p>
       ) : null}
 
       <StepNav

@@ -141,12 +141,13 @@ export default async function QaSessionPage({
               Start with a calmer conversation
             </h1>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              This is a short guided moment to hear how it feels to talk, not a
-              test to pass. Take your time and answer in your own words.
+              This is an approximately 10-minute guided moment to hear how it
+              feels to talk, not a test to pass. Soft Reveal keeps the listener
+              softened, and you can skip anything that does not feel right.
             </p>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              After the Vibe Check, you both privately choose Continue or Pass
-              privately. Chat opens only when you both want to keep going.
+              After the Vibe Check, you both privately choose Continue or Pass.
+              Chat opens only when you both want to keep going.
             </p>
             <div className="mt-6 grid gap-3 rounded-[1.5rem] border border-[#eadfce] bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
               <p>

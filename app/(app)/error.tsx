@@ -19,7 +19,7 @@ export default function Error({
     <main className="min-h-[calc(100vh-57px)] bg-[#f8f4ec] px-4 py-5">
       <div className="mx-auto flex min-h-[72vh] w-full max-w-md items-center md:max-w-3xl lg:max-w-5xl">
         <FallbackPanel
-          eyebrow="Something went wrong"
+          eyebrow="Temporary issue"
           title="We hit a temporary problem"
           description="Try again in a moment. Your profile and messages are still there."
           tone="error"
@@ -29,7 +29,7 @@ export default function Error({
               <button
                 type="button"
                 onClick={reset}
-                className="inline-flex h-11 items-center justify-center rounded-2xl bg-accent px-4 text-sm font-semibold text-accent-foreground shadow-sm hover:opacity-90"
+                className="inline-flex h-12 items-center justify-center rounded-2xl bg-accent px-5 text-sm font-semibold text-accent-foreground shadow-sm hover:opacity-90"
               >
                 Try again
               </button>

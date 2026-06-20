@@ -71,7 +71,7 @@ export function DatePlanPicker({
             Date prompt
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-            Ready to meet {otherName}?
+            Thinking about meeting {otherName}?
           </h1>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
             Now that chat is unlocked, pick a simple, public first-date plan.
@@ -145,7 +145,7 @@ export function DatePlanPicker({
                   <button
                     type="submit"
                     disabled={pending}
-                    className="mt-4 w-full rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground disabled:opacity-50"
+                    className="mt-4 h-12 w-full rounded-2xl bg-accent px-4 text-sm font-semibold text-accent-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-55"
                   >
                     {selected ? "Shared" : "Share this plan"}
                   </button>
@@ -174,7 +174,7 @@ export function DatePlanPicker({
 
       {state.sharedPlanKey && sharedPlan ? (
         <div
-          className="fixed inset-0 z-50 flex items-end bg-foreground/30 px-3 pb-3"
+          className="fixed inset-0 z-50 flex items-end bg-foreground/30 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
           role="presentation"
         >
           <div
@@ -198,7 +198,7 @@ export function DatePlanPicker({
             </p>
             <Link
               href={`/chat/${chatId}`}
-              className="mt-5 block w-full rounded-2xl bg-accent px-4 py-3 text-center text-sm font-semibold text-accent-foreground"
+              className="mt-5 flex h-12 w-full items-center justify-center rounded-2xl bg-accent px-4 text-center text-sm font-semibold text-accent-foreground"
             >
               Done
             </Link>

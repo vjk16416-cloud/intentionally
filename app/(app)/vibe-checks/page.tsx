@@ -28,22 +28,26 @@ export default async function VibeChecksPage() {
           Your guided conversations
         </h1>
         <p className="mt-2 text-sm leading-6 text-[#6f6258]">
-          See pending invites and start the next step before chat unlocks.
+          See pending invites for approximately 10-minute Vibe Checks with
+          Soft Reveal. Chat opens only if you both privately choose Continue.
         </p>
       </section>
 
       <PendingMatchesBanner pending={pending} />
 
       <section className="rounded-[2rem] border border-dashed border-[#d8cbbb] bg-white/80 p-5 text-sm text-[#6f6258]">
-        <p className="font-semibold text-[#3d342d]">No Vibe Check scheduled yet?</p>
+        <p className="font-semibold text-[#3d342d]">
+          No Vibe Checks waiting right now
+        </p>
         <p className="mt-2">
-          Head back to Discover and match with someone first.
+          You&apos;re all caught up. Discover is the best place to find someone
+          you may want to invite when the fit feels right.
         </p>
         <Link
           href="/discover"
           className="mt-4 inline-flex rounded-full bg-[#6f8f72] px-4 py-2 text-sm font-semibold text-white"
         >
-          Find people to invite
+          Back to Discover
         </Link>
       </section>
     </main>

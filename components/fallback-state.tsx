@@ -111,7 +111,7 @@ export function FallbackActionLink({
     <Link
       href={href}
       className={cn(
-        "inline-flex h-11 items-center justify-center rounded-2xl px-4 text-sm font-semibold shadow-sm transition",
+        "inline-flex h-12 items-center justify-center rounded-2xl px-5 text-sm font-semibold shadow-sm transition",
         primary
           ? "bg-accent text-accent-foreground hover:opacity-90"
           : "border border-[#d8d0c3] bg-[#fffdf8] text-foreground hover:bg-[#f3eee5]",

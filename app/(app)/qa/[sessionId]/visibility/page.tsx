@@ -92,8 +92,8 @@ export default async function QaVisibilityPage({
           </form>
 
           <div className="mt-5 rounded-[1.25rem] bg-secondary p-4 text-sm leading-6 text-muted-foreground">
-            Either of you can request Open Video inside the room. It only turns
-            on if both of you agree.
+            Open Video is not available in this beta room yet. Soft Reveal
+            stays on so visibility remains clear, consistent, and low pressure.
           </div>
         </section>
       </div>

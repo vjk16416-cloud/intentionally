@@ -16,7 +16,9 @@ export function ConfirmButtons({ matchId }: { matchId: string }) {
     <form action={action} className="space-y-2">
       <input type="hidden" name="matchId" value={matchId} />
       {state.error ? (
-        <p className="text-center text-sm text-destructive">{state.error}</p>
+        <p className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-center text-sm text-destructive">
+          {state.error}
+        </p>
       ) : null}
       <Button
         type="submit"

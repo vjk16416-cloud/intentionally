@@ -110,8 +110,8 @@ function readinessItems(card: DiscoverCard) {
 
   return [
     {
-      label: "Verified basics",
-      helper: "Photo, age, location & intention verified",
+      label: "ID check",
+      helper: "Verification status shown where available",
       checked: Boolean(card.id_verified),
     },
     {
@@ -159,8 +159,8 @@ export function DiscoverDeck({
           <FallbackPanel
             eyebrow="Discover"
             title="You&apos;re all caught up"
-            description="No more profiles for now. New people will appear here when they match your preferences."
-            note="You can review your profile while you wait."
+            description="You have seen everyone available for now. New profiles will appear as the community grows around your preferences."
+            note="Reviewing your profile can help future matches understand you more clearly."
             action={
               <div className="space-y-3">
                 <FallbackActionLink href="/onboarding/review">
@@ -203,7 +203,7 @@ export function DiscoverDeck({
         if (result.error === "limit") {
           setLimitReached(true);
         } else {
-          setActionError("Something went wrong. Try again.");
+          setActionError("We could not save that choice. Try again in a moment.");
         }
         return;
       }
@@ -274,7 +274,7 @@ export function DiscoverDeck({
 
             <div className="absolute left-4 top-4 flex max-w-[calc(100%-7rem)] flex-wrap items-center gap-2 sm:left-5 sm:top-5">
               <span className="rounded-full border border-white/25 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm">
-                Verified
+                Safety signals
               </span>
               <span className="rounded-full border border-white/25 bg-background/90 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm">
                 Intentional
@@ -373,8 +373,8 @@ export function DiscoverDeck({
               </section>
 
               <div className="rounded-[1.25rem] border border-[#e1e8dc] bg-[#eef2e8] px-3 py-2.5 text-xs leading-5 text-[#5d6c55] sm:px-4 sm:py-3 sm:text-sm">
-                Your safety is our priority. Every profile goes through
-                verification and continuous review.
+                Safety signals are shown where available. Reports and trust
+                checks help us keep improving the experience.
               </div>
             </div>
 
@@ -421,7 +421,7 @@ export function DiscoverDeck({
             type="button"
             onClick={handlePass}
             disabled={pending}
-            className="h-13 rounded-2xl border border-[#d8d0c3] bg-[#fffdf8] text-sm font-semibold text-foreground transition hover:bg-[#f3eee5] active:scale-[0.98] disabled:opacity-50"
+            className="h-12 rounded-2xl border border-[#d8d0c3] bg-[#fffdf8] text-sm font-semibold text-foreground transition hover:bg-[#f3eee5] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-55"
             aria-label="Not for me"
           >
             Not for me
@@ -431,7 +431,7 @@ export function DiscoverDeck({
             type="button"
             onClick={handleLike}
             disabled={pending || limitReached}
-            className="h-13 rounded-2xl bg-[#75886b] text-sm font-semibold text-white shadow-[0_10px_24px_rgba(83,104,73,0.22)] transition hover:bg-[#697b60] active:scale-[0.98] disabled:opacity-50"
+            className="h-12 rounded-2xl bg-[#75886b] text-sm font-semibold text-white shadow-[0_10px_24px_rgba(83,104,73,0.22)] transition hover:bg-[#697b60] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-55"
             aria-label="I’m interested"
           >
             I’m interested

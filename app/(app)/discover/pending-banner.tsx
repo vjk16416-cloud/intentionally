@@ -113,8 +113,8 @@ export function PendingMatchesBanner({
               id="pending-vibe-checks-description"
               className="mt-3 text-sm leading-6 text-[#6f6258]"
             >
-              You matched. Invite them into a guided conversation before chat
-              unlocks.
+              You matched. Invite them into an approximately 10-minute Vibe
+              Check with Soft Reveal before chat unlocks.
             </p>
 
             <div className="mt-6 space-y-3">

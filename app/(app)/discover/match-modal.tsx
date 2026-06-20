@@ -24,12 +24,12 @@ export function MatchModal({
   return (
     <div
       // Full-screen overlay above the deck. Fixed + flex centres the
-      // card on every breakpoint. Inert background blur keeps focus
-      // on the modal without needing a portal in MVP.
+      // card on every breakpoint without changing the clarity of the
+      // profile behind it.
       role="dialog"
       aria-modal="true"
       aria-labelledby="match-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#2f2a23]/32 px-4 py-6 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#2f2a23]/42 px-4 py-6"
     >
       <div className="w-full max-w-md rounded-[2rem] border border-[#e6ded0] bg-[#fffaf3] p-5 shadow-[0_24px_80px_rgba(47,42,35,0.22)] sm:p-7">
         <div className="space-y-5 text-center">
@@ -53,7 +53,7 @@ export function MatchModal({
                 <img
                   src={primaryPhoto}
                   alt={`${match.display_name}, ${age}`}
-                  className="h-20 w-20 shrink-0 rounded-[1.25rem] border border-[#e6ded0] object-cover grayscale"
+                  className="h-20 w-20 shrink-0 rounded-[1.25rem] border border-[#e6ded0] object-cover"
                 />
               </>
             ) : (
@@ -67,14 +67,14 @@ export function MatchModal({
                 {firstName}, {age}
               </p>
               <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                Ready for a guided Vibe Check.
+                Ready for an approximately 10-minute Vibe Check.
               </p>
             </div>
           </div>
 
           <p className="mx-auto max-w-sm text-sm leading-6 text-muted-foreground">
-            You both showed interest. Before chat opens, send a guided Vibe
-            Check invite and see if the conversation feels natural.
+            You both showed interest. Before chat opens, send a Vibe Check
+            invite with Soft Reveal and see if the conversation feels natural.
           </p>
 
           <div className="space-y-3">
@@ -84,15 +84,15 @@ export function MatchModal({
               eventProperties={{ match_id: matchId, source: "match_modal" }}
               className={cn(
                 buttonVariants({ size: "lg" }),
-                "h-13 w-full rounded-2xl bg-[#75886b] text-base font-semibold text-white shadow-[0_12px_30px_rgba(83,104,73,0.24)] hover:bg-[#697b60]",
+                "h-12 w-full rounded-2xl bg-[#75886b] text-base font-semibold text-white shadow-[0_12px_30px_rgba(83,104,73,0.24)] hover:bg-[#697b60]",
               )}
             >
               Send Vibe Check invite
             </TrackedLink>
 
             <p className="text-xs leading-5 text-muted-foreground">
-              Chat unlocks only if you both choose to continue after the Vibe
-              Check.
+              Chat unlocks only if you both privately choose Continue after
+              the Vibe Check.
             </p>
 
             <Button
@@ -102,7 +102,7 @@ export function MatchModal({
               onClick={onDismiss}
               className="h-12 w-full rounded-2xl text-muted-foreground hover:bg-[#f3eee5] hover:text-foreground"
             >
-              Continue browsing
+              Keep discovering
             </Button>
           </div>
         </div>

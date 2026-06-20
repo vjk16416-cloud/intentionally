@@ -70,7 +70,9 @@ export function PromptForm({
       </div>
 
       {state.error ? (
-        <p className="text-sm text-destructive">{state.error}</p>
+        <p className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {state.error}
+        </p>
       ) : null}
       <StepNav
         returnTo={returnTo}

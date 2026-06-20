@@ -150,8 +150,8 @@ export default async function ChatPage({
             {(messages ?? []).length === 0 ? (
               <FallbackPanel
                 eyebrow="Messages"
-                title="Your chat is ready"
-                description="A simple first message is enough. Mention something from your Vibe Check, ask one thoughtful question, or suggest a gentle next step."
+                title="Chat is open"
+                description="You both chose Continue after the Vibe Check. A simple first message is enough: mention something you noticed, ask one thoughtful question, or suggest a gentle next step."
                 note="Safety note: keep early plans public, simple, and easy to leave."
                 className="text-center"
               />

@@ -159,8 +159,10 @@ export default async function SchedulePage({
               What happens next?
             </p>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              You&apos;ll join the guided call at the scheduled time. After you
-              both choose Continue, chat opens.
+              You&apos;ll join the approximately 10-minute Vibe Check at the
+              scheduled time. Soft Reveal keeps the conversation lower
+              pressure, and chat opens only if you both privately choose
+              Continue.
             </p>
           </section>
         </div>
@@ -170,15 +172,15 @@ export default async function SchedulePage({
 
   const trustItems = [
     {
-      label: "Safe & verified",
+      label: "Safety first",
       icon: ShieldCheck,
     },
     {
-      label: "15–30 min guided call",
+      label: "About 10 min Vibe Check",
       icon: Clock3,
     },
     {
-      label: "Private & secure",
+      label: "Private decision",
       icon: CalendarDays,
     },
   ];
@@ -198,8 +200,9 @@ export default async function SchedulePage({
             With {otherName}.
           </h1>
           <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-            You both chose to connect. Pick a time for a short guided video
-            call. They can accept or suggest another time.
+            You both chose to connect. Pick a time for an approximately
+            10-minute Vibe Check with Soft Reveal. They can accept or suggest
+            another time.
           </p>
         </div>
       </div>
@@ -276,7 +279,8 @@ export default async function SchedulePage({
               </h2>
               <p className="mx-auto max-w-xl text-sm leading-6 text-muted-foreground">
                 Invite sent. They can accept or suggest another time. When
-                accepted, your Vibe Check will unlock here.
+                accepted, your approximately 10-minute Vibe Check will unlock
+                here.
               </p>
             </div>
             <div className="mt-5">
@@ -368,7 +372,8 @@ export default async function SchedulePage({
           </p>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
             They&apos;ll get your request and can accept or suggest a different
-            time. You&apos;ll get a confirmation once it&apos;s booked.
+            time. You stay in control, and nothing opens until the Vibe Check
+            is confirmed.
           </p>
         </section>
       </div>

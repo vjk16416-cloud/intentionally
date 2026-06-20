@@ -49,7 +49,7 @@ export default async function OnboardingDonePage() {
             2. Ten-minute Guided Vibe Check
           </p>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            You answer three guided questions. The listener stays softly blurred
+            You answer three guided questions. The listener stays gently softened
             so it feels calmer and less performative.
           </p>
         </div>
@@ -78,7 +78,7 @@ export default async function OnboardingDonePage() {
             "w-full rounded-2xl bg-accent text-accent-foreground hover:opacity-90",
           )}
         >
-          Start browsing
+          Start discovering
         </Link>
       </div>
     </StepShell>

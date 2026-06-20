@@ -104,12 +104,15 @@ export function PhoneForm() {
             {localNumber ? fullPhoneNumber : `${countryCode}...`}.
           </p>
           <p className="text-xs leading-5 text-muted-foreground">
-            This is for verification and safety only.
+            This is for verification and safety only. It is not shown on your
+            profile.
           </p>
         </div>
 
         {requestState.error ? (
-          <p className="text-sm text-destructive">{requestState.error}</p>
+          <p className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            {requestState.error}
+          </p>
         ) : null}
 
         <div className="flex flex-col gap-3 sm:flex-row">
@@ -160,7 +163,7 @@ export function PhoneForm() {
         />
         <p className="text-xs text-muted-foreground">
           Sent to {phone}. This confirms your number for verification and
-          safety.{" "}
+          safety, and it is not shown on your profile.{" "}
           <button
             type="button"
             className="underline"
@@ -172,7 +175,9 @@ export function PhoneForm() {
       </div>
 
       {verifyState.error ? (
-        <p className="text-sm text-destructive">{verifyState.error}</p>
+        <p className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {verifyState.error}
+        </p>
       ) : null}
 
       <Button

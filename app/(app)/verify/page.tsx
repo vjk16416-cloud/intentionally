@@ -73,6 +73,10 @@ export default async function VerifyPage({
             minutes. You&apos;ll be redirected to Stripe Identity to scan
             your driving licence or passport.
           </p>
+          <p className="text-xs leading-5 text-muted-foreground">
+            Your document is handled by Stripe Identity. Intentionally only
+            stores whether verification was completed.
+          </p>
         </header>
         <StartForm returnTo={returnTo} />
       </div>

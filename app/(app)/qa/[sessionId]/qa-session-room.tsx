@@ -11,10 +11,7 @@ import {
 } from "@/lib/qa/visibility";
 
 import { LocalMediaPreview } from "./local-media-preview";
-import {
-  VisibilitySelector,
-  type OpenVideoRequestState,
-} from "./visibility-selector";
+import { VisibilitySelector } from "./visibility-selector";
 
 const EXTRA_QUESTIONS = [
   "What would make dating feel healthier for you?",
@@ -60,9 +57,6 @@ export function QaSessionRoom({
   const [extraAccepted, setExtraAccepted] = useState(initialExtraAccepted);
   const [extraRequest, setExtraRequest] =
     useState<ExtraRequestState>(initialExtraRequest);
-  const [openVideoRequest, setOpenVideoRequest] =
-    useState<OpenVideoRequestState>("idle");
-  const [isOpenVideo, setIsOpenVideo] = useState(false);
   const questions = extraAccepted
     ? [...baseQuestions, ...EXTRA_QUESTIONS]
     : baseQuestions;
@@ -78,9 +72,7 @@ export function QaSessionRoom({
     safeQuestionIndex % 2 === 0 ? "you" : "them";
   const isYouAnswering = demoAnsweringParticipant === "you";
   const isThemAnswering = demoAnsweringParticipant === "them";
-  const effectiveVisibilityMode: QaVisibilityMode = isOpenVideo
-    ? "open"
-    : "dynamic";
+  const effectiveVisibilityMode: QaVisibilityMode = "dynamic";
   const shouldSoftenYourTile =
     effectiveVisibilityMode === "dynamic" && isThemAnswering;
   const shouldSoftenTheirTile =
@@ -188,28 +180,6 @@ export function QaSessionRoom({
     finishSession("declined");
   }
 
-  function requestOpenVideo() {
-    // TODO: Persist this request to Supabase and broadcast it over realtime so
-    // the match can accept or decline from their own session.
-    setOpenVideoRequest("pending");
-  }
-
-  function previewIncomingOpenVideoRequest() {
-    // TODO: Replace this demo-only preview with the match's realtime request.
-    setOpenVideoRequest("incoming");
-  }
-
-  function allowOpenVideo() {
-    // TODO: Activate only after both Supabase consent records are present.
-    setIsOpenVideo(true);
-    setOpenVideoRequest("idle");
-  }
-
-  function keepSoftReveal() {
-    setIsOpenVideo(false);
-    setOpenVideoRequest("idle");
-  }
-
   return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background via-[#fbf3e8] to-muted px-3 py-3 text-foreground md:px-6 md:py-5 lg:px-8">
       <div className="mx-auto w-full max-w-md md:max-w-4xl lg:max-w-6xl xl:max-w-7xl">
@@ -230,15 +200,9 @@ export function QaSessionRoom({
               </p>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
-              <button
-                type="button"
-                className="flex h-10 w-14 items-center justify-center rounded-full border border-border bg-background text-xs font-semibold text-foreground shadow-sm"
-                aria-label="Safety options"
-              >
-                Safe
-              </button>
-            </div>
+            <p className="max-w-24 shrink-0 text-right text-[11px] leading-4 text-muted-foreground">
+              Skip or exit anytime
+            </p>
           </header>
 
           <div className="space-y-3 pt-3 md:space-y-5 md:pt-5">
@@ -331,21 +295,18 @@ export function QaSessionRoom({
                   </p>
                 </div>
 
-                <div className="mx-auto mt-4 grid w-full max-w-md grid-cols-[1fr_auto_1fr] items-center gap-2 md:gap-3">
+                <p className="mx-auto mt-4 max-w-xs rounded-2xl bg-secondary/70 px-3 py-2 text-xs leading-5 text-muted-foreground">
+                  Answer out loud when ready. Use Next question when the answer
+                  feels complete.
+                </p>
+
+                <div className="mx-auto mt-4 grid w-full max-w-md grid-cols-2 items-center gap-2 md:gap-3">
                   <button
                     type="button"
                     onClick={advanceQuestion}
                     className="rounded-2xl border border-border bg-background px-3 py-3 text-center text-sm font-semibold text-foreground shadow-sm md:px-4 md:py-4"
                   >
                     Skip
-                  </button>
-
-                  <button
-                    type="button"
-                    className="flex h-14 w-14 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground shadow-sm md:h-16 md:w-16"
-                    aria-label="Tap to speak"
-                  >
-                    Speak
                   </button>
 
                   <button
@@ -479,13 +440,8 @@ export function QaSessionRoom({
 
             <div className="mx-auto w-full max-w-2xl">
               <VisibilitySelector
-                isOpenVideo={isOpenVideo}
-                requestState={openVideoRequest}
-                onRequestOpenVideo={requestOpenVideo}
-                onPreviewIncomingRequest={previewIncomingOpenVideoRequest}
-                onAllowOpenVideo={allowOpenVideo}
-                onKeepSoftReveal={keepSoftReveal}
-                onReturnToSoftReveal={keepSoftReveal}
+                modeLabel={visibility.shortLabel}
+                modeCopy={visibility.roomCopy}
               />
             </div>
 

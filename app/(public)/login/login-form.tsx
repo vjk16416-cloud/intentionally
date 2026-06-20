@@ -260,7 +260,7 @@ export function LoginForm() {
         />
         <p className="text-xs leading-5 text-muted-foreground">
           Sent to {identifier}. This confirms the phone you use to sign in and
-          helps reduce fake profiles.{" "}
+          helps keep Intentionally safer.{" "}
           <button
             type="button"
             className="font-semibold underline underline-offset-4"

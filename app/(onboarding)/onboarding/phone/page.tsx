@@ -29,7 +29,7 @@ export default async function PhoneStepPage() {
     <StepShell
       stepLabel="Safety check"
       title="Verify your phone number"
-      description="We use your phone number to help keep Intentionally safer and reduce fake profiles. Your number is not shown on your profile."
+      description="We use your phone number to help keep Intentionally safer. It is not shown on your profile."
       className="mx-auto w-full max-w-md"
     >
       <PhoneForm />
