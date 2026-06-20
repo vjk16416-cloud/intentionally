@@ -70,6 +70,43 @@ Do not apply this requirement to:
 
 Only apply it when the user-facing interface changes.
 
+## Intentionally product principles
+
+Intentionally is not a swipe-heavy dating app. It is an intentional dating product built around trust, calm interaction, guided conversation, safety, consent, and mutual effort.
+
+Prioritise:
+
+- calm, premium, emotionally safe UX
+- mobile-first design
+- clear next actions
+- low overwhelm
+- human, warm copy
+- guided Q&A / Vibe Check as the core differentiator
+- mutual continue/pass before chat unlocks
+- safety, consent, privacy, and reporting
+- analytics for key funnel actions
+
+Protect these rules:
+
+- Do not blur Discover profile cards.
+- Soft Reveal / softening belongs only inside Q&A or Vibe Check.
+- Do not add swipe-gamified, addictive, or noisy patterns.
+- Do not add features that bypass the intentional journey.
+- Do not unlock chat unless both users choose to continue.
+- Do not change matching, scheduling, auth, or Supabase logic unless explicitly asked.
+- Avoid scope creep.
+
+Core journey:
+
+onboarding → discover → invite to Vibe Check → scheduled/started Q&A → mutual continue/pass → chat unlock → date planning → safety/reporting/analytics.
+
+For every change, explain:
+
+- what user problem it solves
+- which part of the core journey it affects
+- whether it increases or reduces friction
+- any safety/privacy implications
+
 ## Product priorities
 
 Always work in this order:
