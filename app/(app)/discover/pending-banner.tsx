@@ -14,7 +14,11 @@ export function PendingMatchesBanner({
   pending: PendingMatch[];
 }) {
   const count = pending.length;
-  const peopleLabel = count === 1 ? "person is" : "people are";
+  const firstPending = pending[0];
+  const firstName = firstPending?.other.display_name
+    .replace(/^Internal Test\s+/i, "")
+    .split(" ")[0];
+  const avatarInitial = firstName?.slice(0, 1).toUpperCase() ?? "✨";
 
   const [isOpen, setIsOpen] = useState(false);
   const dialogRef = useRef<HTMLElement>(null);
@@ -97,7 +101,7 @@ export function PendingMatchesBanner({
       {isOpen ? (
         <div
           role="presentation"
-          className="fixed inset-0 z-[60] flex items-end justify-center bg-[#2f2a23]/42 px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-6 sm:items-center sm:pb-6"
+          className="fixed inset-0 z-[60] flex items-end justify-center bg-[#2f2a23]/18 px-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-6 sm:px-5 sm:pb-6"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
               setIsOpen(false);
@@ -111,19 +115,33 @@ export function PendingMatchesBanner({
             aria-labelledby="pending-vibe-checks-title"
             aria-describedby="pending-vibe-checks-description"
             tabIndex={-1}
-            className="w-full max-w-md rounded-t-[2rem] border border-[#e1d6c6] bg-[#fffaf3] p-5 shadow-[0_24px_80px_rgba(47,42,35,0.24)] outline-none sm:rounded-[2rem] sm:p-6"
+            className="w-full max-w-xl animate-in slide-in-from-bottom-6 rounded-[1.75rem] border border-[#e1d6c6] bg-[#fffaf3] p-4 shadow-[0_18px_48px_rgba(47,42,35,0.16)] duration-300 outline-none sm:max-w-2xl sm:p-5"
           >
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7c70]">
-                  Vibe Checks
+            <div className="mx-auto mb-3 h-1 w-9 rounded-full bg-[#d8cbbb]" aria-hidden="true" />
+
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#d8cbbb] bg-[#eef5e8] text-sm font-semibold text-[#536849]">
+                {avatarInitial}
+              </div>
+              <div className="min-w-0 flex-1 pr-2">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8a7c70]">
+                  Vibe Check
                 </p>
                 <h2
                   id="pending-vibe-checks-title"
-                  className="mt-2 text-2xl font-semibold leading-tight tracking-tight text-[#3d342d]"
+                  className="mt-1 text-xl font-semibold leading-tight tracking-tight text-[#3d342d] sm:text-2xl"
                 >
-                  {count} {peopleLabel} ready for a Vibe Check
+                  {firstName
+                    ? `${firstName} is ready for a Vibe Check`
+                    : `${count} ${count === 1 ? "person is" : "people are"} ready for a Vibe Check`}
                 </h2>
+                <p
+                  id="pending-vibe-checks-description"
+                  className="mt-2 text-sm leading-6 text-[#6f6258]"
+                >
+                  You matched. Invite them into a guided conversation before chat
+                  unlocks.
+                </p>
               </div>
 
               <Button
@@ -132,21 +150,13 @@ export function PendingMatchesBanner({
                 size="icon"
                 onClick={() => setIsOpen(false)}
                 aria-label="Close Vibe Checks prompt"
-                className="rounded-full text-[#6f6258] hover:bg-[#f3eee5] hover:text-[#3d342d]"
+                className="-mr-1 -mt-1 shrink-0 rounded-full text-[#6f6258] hover:bg-[#f3eee5] hover:text-[#3d342d]"
               >
                 <X className="h-4 w-4" aria-hidden="true" />
               </Button>
             </div>
 
-            <p
-              id="pending-vibe-checks-description"
-              className="mt-3 text-sm leading-6 text-[#6f6258]"
-            >
-              You matched. Invite them into a guided conversation before chat
-              unlocks.
-            </p>
-
-            <div className="mt-6 space-y-3">
+            <div className="mt-4 grid gap-2 sm:grid-cols-2 sm:gap-3">
               <TrackedLink
                 href="/vibe-checks"
                 eventKey="scheduleClicked"
@@ -156,10 +166,10 @@ export function PendingMatchesBanner({
                 }}
                 className={cn(
                   buttonVariants({ size: "lg" }),
-                  "h-12 w-full rounded-2xl bg-[#75886b] text-base font-semibold text-white shadow-[0_12px_30px_rgba(83,104,73,0.22)] hover:bg-[#697b60] focus-visible:ring-[#7d916f]/30",
+                  "h-11 w-full rounded-xl bg-[#75886b] text-sm font-semibold text-white shadow-[0_10px_24px_rgba(83,104,73,0.18)] hover:bg-[#697b60] focus-visible:ring-[#7d916f]/30",
                 )}
               >
-                Start inviting
+                Start Vibe Check
               </TrackedLink>
 
               <Button
@@ -167,7 +177,7 @@ export function PendingMatchesBanner({
                 variant="ghost"
                 size="lg"
                 onClick={() => setIsOpen(false)}
-                className="h-12 w-full rounded-2xl text-[#6f6258] hover:bg-[#f3eee5] hover:text-[#3d342d]"
+                className="h-11 w-full rounded-xl text-[#6f6258] hover:bg-[#f3eee5] hover:text-[#3d342d]"
               >
                 Maybe later
               </Button>
