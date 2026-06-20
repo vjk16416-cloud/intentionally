@@ -18,13 +18,40 @@ export function PendingMatchesBanner({
 
   const [isOpen, setIsOpen] = useState(false);
   const dialogRef = useRef<HTMLElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!isOpen) return;
 
+    const trigger = triggerRef.current;
+
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setIsOpen(false);
+        return;
+      }
+
+      if (event.key !== "Tab" || !dialogRef.current) {
+        return;
+      }
+
+      const focusableElements = dialogRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (!firstElement || !lastElement) {
+        event.preventDefault();
+        return;
+      }
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
       }
     }
 
@@ -33,6 +60,7 @@ export function PendingMatchesBanner({
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
+      trigger?.focus();
     };
   }, [isOpen]);
 
@@ -42,6 +70,7 @@ export function PendingMatchesBanner({
     <>
       <div className="mx-auto w-full max-w-md px-4 pt-3 md:max-w-3xl lg:max-w-5xl lg:pt-4">
         <button
+          ref={triggerRef}
           type="button"
           onClick={() => setIsOpen(true)}
           className="group flex w-full items-center justify-between gap-3 rounded-[1.35rem] border border-[#e1d6c6] bg-[#fffaf3] px-4 py-3 text-left shadow-[0_10px_28px_rgba(74,59,42,0.07)] outline-none transition hover:border-[#cfdcc6] hover:bg-[#fffdf8] focus-visible:ring-3 focus-visible:ring-[#7d916f]/30"
@@ -68,7 +97,7 @@ export function PendingMatchesBanner({
       {isOpen ? (
         <div
           role="presentation"
-          className="fixed inset-0 z-50 flex items-end justify-center bg-[#2f2a23]/42 px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-6 sm:items-center sm:pb-6"
+          className="fixed inset-0 z-[60] flex items-end justify-center bg-[#2f2a23]/42 px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-6 sm:items-center sm:pb-6"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
               setIsOpen(false);
@@ -113,8 +142,8 @@ export function PendingMatchesBanner({
               id="pending-vibe-checks-description"
               className="mt-3 text-sm leading-6 text-[#6f6258]"
             >
-              You matched. Invite them into an approximately 10-minute Vibe
-              Check with Soft Reveal before chat unlocks.
+              You matched. Invite them into a guided conversation before chat
+              unlocks.
             </p>
 
             <div className="mt-6 space-y-3">

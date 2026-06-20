@@ -48,6 +48,28 @@ Never commit unless explicitly asked.
 
 Never push unless explicitly asked.
 
+## Visual proof requirement
+
+Only for UI or UX changes:
+
+1. Start the local development server if needed.
+2. Navigate to every affected route.
+3. Capture screenshots at 390px (mobile), 768px (tablet), and 1280px (desktop).
+4. Save them in `audit-screenshots/[feature-name]/` as `mobile.png`, `tablet.png`, and `desktop.png`.
+5. Explain the visual changes and report the screenshot folder location.
+
+Do not apply this requirement to:
+
+- backend changes
+- analytics
+- tests
+- API changes
+- database changes
+- copy-only changes
+- configuration changes
+
+Only apply it when the user-facing interface changes.
+
 ## Product priorities
 
 Always work in this order:
