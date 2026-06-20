@@ -11,6 +11,7 @@ import {
 } from "@/lib/qa/visibility";
 
 import { LocalMediaPreview } from "./local-media-preview";
+import { QaSafetyControls } from "./qa-safety-controls";
 import { VisibilitySelector } from "./visibility-selector";
 
 const EXTRA_QUESTIONS = [
@@ -63,6 +64,9 @@ export function QaSessionRoom({
   const [questionIndex, setQuestionIndex] = useState(() =>
     clampQuestionIndex(initialQuestionIndex, questions.length),
   );
+  const [pauseEndsAt, setPauseEndsAt] = useState<number | null>(null);
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [softModeEnabled, setSoftModeEnabled] = useState(false);
   const hasTrackedEntry = useRef(false);
 
   const safeQuestionIndex = clampQuestionIndex(questionIndex, questions.length);
@@ -74,15 +78,19 @@ export function QaSessionRoom({
   const isThemAnswering = demoAnsweringParticipant === "them";
   const effectiveVisibilityMode: QaVisibilityMode = "dynamic";
   const shouldSoftenYourTile =
-    effectiveVisibilityMode === "dynamic" && isThemAnswering;
+    softModeEnabled || (effectiveVisibilityMode === "dynamic" && isThemAnswering);
   const shouldSoftenTheirTile =
-    effectiveVisibilityMode === "dynamic" && isYouAnswering;
-  const yourTileStatus = shouldSoftenYourTile
+    softModeEnabled || (effectiveVisibilityMode === "dynamic" && isYouAnswering);
+  const yourTileStatus = softModeEnabled
+    ? "Soft Mode"
+    : shouldSoftenYourTile
     ? "Listening softened"
     : isYouAnswering
       ? "Answering"
       : "Listening";
-  const theirTileStatus = shouldSoftenTheirTile
+  const theirTileStatus = softModeEnabled
+    ? "Soft Mode"
+    : shouldSoftenTheirTile
     ? "Listening softened"
     : isThemAnswering
       ? "Answering"
@@ -95,6 +103,26 @@ export function QaSessionRoom({
     !extraAccepted && safeQuestionIndex >= baseQuestions.length - 1;
   const showAcceptedNotice =
     extraAccepted && safeQuestionIndex === baseQuestions.length;
+  const isPaused = timeRemaining > 0;
+
+  useEffect(() => {
+    if (!pauseEndsAt) return;
+    const endsAt = pauseEndsAt;
+
+    function updateTimeRemaining() {
+      const nextTimeRemaining = Math.max(
+        0,
+        Math.ceil((endsAt - Date.now()) / 1000),
+      );
+      setTimeRemaining(nextTimeRemaining);
+
+      if (nextTimeRemaining === 0) setPauseEndsAt(null);
+    }
+
+    updateTimeRemaining();
+    const interval = window.setInterval(updateTimeRemaining, 1_000);
+    return () => window.clearInterval(interval);
+  }, [pauseEndsAt]);
 
   useEffect(() => {
     if (hasTrackedEntry.current) return;
@@ -180,18 +208,22 @@ export function QaSessionRoom({
     finishSession("declined");
   }
 
+  function pauseForThirtySeconds() {
+    setPauseEndsAt(Date.now() + 30_000);
+  }
+
   return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background via-[#fbf3e8] to-muted px-3 py-3 text-foreground md:px-6 md:py-5 lg:px-8">
       <div className="mx-auto w-full max-w-md md:max-w-4xl lg:max-w-6xl xl:max-w-7xl">
         <section className="overflow-hidden rounded-[1.75rem] border border-[#e6ded0] bg-[#fffaf3] p-3 shadow-[0_24px_80px_rgba(74,59,42,0.12)] md:rounded-[2.25rem] md:p-5 lg:p-6">
           <header className="flex items-center justify-between gap-3 border-b border-border pb-3 md:pb-4">
-            <a
-              href="/discover"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-background text-xl text-muted-foreground shadow-sm"
-              aria-label="Exit Vibe Check"
-            >
-              ×
-            </a>
+            <QaSafetyControls
+              isPaused={isPaused}
+              onPause={pauseForThirtySeconds}
+              onEnd={() => finishSession()}
+              onSoftMode={() => setSoftModeEnabled(true)}
+              softModeEnabled={softModeEnabled}
+            />
 
             <div className="min-w-0 text-center">
               <p className="text-sm font-semibold tracking-tight">Vibe Check</p>
@@ -201,7 +233,7 @@ export function QaSessionRoom({
             </div>
 
             <p className="max-w-24 shrink-0 text-right text-[11px] leading-4 text-muted-foreground">
-              Skip or exit anytime
+              You&apos;re in control
             </p>
           </header>
 
@@ -304,6 +336,7 @@ export function QaSessionRoom({
                   <button
                     type="button"
                     onClick={advanceQuestion}
+                    disabled={isPaused}
                     className="rounded-2xl border border-border bg-background px-3 py-3 text-center text-sm font-semibold text-foreground shadow-sm md:px-4 md:py-4"
                   >
                     Skip
@@ -312,6 +345,7 @@ export function QaSessionRoom({
                   <button
                     type="button"
                     onClick={answerQuestion}
+                    disabled={isPaused}
                     className="rounded-2xl bg-accent px-3 py-3 text-center text-sm font-semibold text-accent-foreground shadow-sm md:px-4 md:py-4"
                   >
                     {nextActionLabel}
@@ -349,6 +383,22 @@ export function QaSessionRoom({
                   </div>
                 )}
               </div>
+
+              {isPaused ? (
+                <div className="absolute inset-0 z-20 flex items-center justify-center rounded-[1.5rem] bg-[#fff8ef]/95 p-6 text-center backdrop-blur-sm md:rounded-[1.75rem]">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      Taking a pause
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold tracking-tight">
+                      Take your time.
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      The guide resumes in {timeRemaining} seconds. Your match is not given a reason.
+                    </p>
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             {showExtraQuestionOption ? (
