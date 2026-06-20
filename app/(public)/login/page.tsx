@@ -1,10 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { buttonVariants } from "@/components/ui/button";
 import { getOnboardingState } from "@/lib/onboarding/state";
 import { createClient } from "@/lib/supabase/server";
-import { cn } from "@/lib/utils";
 
 import { LoginForm } from "./login-form";
 
@@ -23,8 +21,8 @@ export default async function LoginPage() {
 
   return (
     <main className="flex flex-1 items-center justify-center bg-background px-5 py-10 sm:px-6 sm:py-16">
-      <div className="w-full max-w-md space-y-5 md:max-w-3xl">
-        <section className="rounded-[2rem] border border-border bg-card p-6 shadow-sm sm:p-8 md:grid md:grid-cols-[0.9fr_1.1fr] md:items-center md:gap-8">
+      <div className="w-full max-w-md md:max-w-lg">
+        <section className="rounded-[2rem] border border-border bg-card p-6 shadow-sm sm:p-8">
           <header className="space-y-4 text-center md:text-left">
             <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">
               Intentionally
@@ -35,45 +33,24 @@ export default async function LoginPage() {
                 Start with intention.
               </h1>
               <p className="mx-auto max-w-sm text-sm leading-6 text-muted-foreground md:mx-0">
-                A calmer way to meet with clarity, safety and intention.
+                A calmer way to meet, with a clear first step and private-by-default
+                sign in.
               </p>
-            </div>
-
-            <div className="rounded-[1.5rem] border border-[#d8ccbd] bg-[#fff8ef]/80 p-3 shadow-[0_8px_22px_rgba(74,59,42,0.04)]">
-              <Link
-                href="/demo"
-                className={cn(
-                  buttonVariants({ variant: "outline", size: "lg" }),
-                  "h-11 w-full rounded-2xl border-[#d8ccbd] bg-[#fffdf8] text-sm font-semibold text-[#3d342d] hover:bg-[#f7f1e8]",
-                )}
-              >
-                Try the demo
-              </Link>
-              <p className="mt-2 text-center text-xs leading-5 text-muted-foreground md:text-left">
-                Explore Intentionally without creating an account.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-2 pt-2 text-[11px] font-medium text-muted-foreground sm:grid-cols-3 md:grid-cols-1">
-              <span className="rounded-full border border-border bg-background px-2 py-2">
-                Controlled reveals
-              </span>
-              <span className="rounded-full border border-border bg-background px-2 py-2">
-                Guided Q&amp;A
-              </span>
-              <span className="rounded-full border border-border bg-background px-2 py-2">
-                Safer matching
-              </span>
             </div>
           </header>
 
-          <div className="mt-7 md:mt-0">
+          <div className="mt-7">
             <LoginForm />
           </div>
 
-          <p className="mt-5 text-center text-xs leading-5 text-muted-foreground md:col-span-2">
-            Photos and details open gradually, after mutual interest.
-          </p>
+          <div className="mt-5 text-center">
+            <Link
+              href="/demo"
+              className="inline-flex items-center justify-center text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              Try the demo
+            </Link>
+          </div>
         </section>
       </div>
     </main>

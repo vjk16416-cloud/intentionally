@@ -233,6 +233,10 @@ export function LoginForm() {
               ? "Send secure sign-in link"
             : "Text me a sign-in code"}
         </Button>
+
+        <p className="text-center text-xs leading-5 text-muted-foreground">
+          Private by default. Chat unlocks only after a mutual Vibe Check.
+        </p>
       </form>
     );
   }
