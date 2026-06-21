@@ -95,7 +95,7 @@ export default async function ChatPage({
     .returns<MessageRow[]>();
 
   return (
-    <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background via-[#fbf3e8] to-muted px-4 py-5">
+    <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background via-[#fbf3e8] to-muted px-4 pb-[calc(8.5rem+env(safe-area-inset-bottom))] pt-5 lg:py-5">
       <ChatSentTracker
         userId={user.id}
         matchId={match.id}
@@ -108,7 +108,7 @@ export default async function ChatPage({
               <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
                 Chat unlocked
               </p>
-              <h1 className="mt-2 text-3xl font-semibold leading-tight tracking-tight">
+              <h1 className="mt-2 text-2xl font-semibold leading-tight tracking-tight md:text-3xl">
                 You and {otherName}
               </h1>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -125,27 +125,16 @@ export default async function ChatPage({
             </Link>
           </div>
 
-          <div className="mt-5 grid gap-2 text-sm text-muted-foreground sm:grid-cols-3">
-            <div className="rounded-2xl border border-[#eadfce] bg-background/70 px-4 py-3">
-              <p className="font-semibold text-foreground">Mutual match</p>
-              <p className="mt-1 text-xs leading-5">You both liked each other.</p>
-            </div>
-            <div className="rounded-2xl border border-[#eadfce] bg-background/70 px-4 py-3">
-              <p className="font-semibold text-foreground">
-                Vibe Check complete
-              </p>
-              <p className="mt-1 text-xs leading-5">Continue was mutual.</p>
-            </div>
-            <div className="rounded-2xl border border-[#eadfce] bg-background/70 px-4 py-3">
-              <p className="font-semibold text-foreground">Keep it steady</p>
-              <p className="mt-1 text-xs leading-5">
-                Share at your own pace.
-              </p>
-            </div>
+          <div className="mt-5 flex flex-wrap items-center gap-2 rounded-2xl border border-[#eadfce] bg-background/70 px-4 py-3 text-xs leading-5 text-muted-foreground">
+            <span className="font-semibold text-foreground">Mutual match</span>
+            <span aria-hidden="true">·</span>
+            <span>Vibe Check complete</span>
+            <span aria-hidden="true">·</span>
+            <span>Share at your own pace.</span>
           </div>
         </header>
 
-        <section className="mt-4 flex-1 rounded-[2rem] border border-[#e6ded0] bg-[#fffaf3] p-4 shadow-[0_18px_60px_rgba(74,59,42,0.08)]">
+        <section className="mt-4 flex-1 rounded-[2rem] border border-[#e6ded0] bg-[#fffaf3] p-4 pb-5 shadow-[0_18px_60px_rgba(74,59,42,0.08)]">
           <div className="space-y-4">
             {(messages ?? []).length === 0 ? (
               <FallbackPanel
