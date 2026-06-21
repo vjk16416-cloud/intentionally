@@ -203,19 +203,19 @@ export function DiscoverDeck({
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-[#f8f4ec] pb-[calc(4.5rem+env(safe-area-inset-bottom))] text-foreground sm:pb-10 lg:pb-6">
-      <div className="mx-auto flex w-full max-w-md flex-col px-4 py-3 sm:px-5 md:max-w-3xl md:py-5 lg:max-w-6xl lg:px-6 lg:py-4 xl:max-w-6xl">
-        <header className="mb-2 shrink-0 lg:mb-2">
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl lg:text-[2rem]">
+      <div className="mx-auto flex w-full max-w-md flex-col px-4 pb-2 pt-2 sm:px-5 sm:pt-3 md:max-w-3xl md:pb-5 md:pt-5 lg:max-w-6xl lg:px-6 lg:py-4 xl:max-w-6xl">
+        <header className="mb-1 shrink-0 md:mb-2">
+          <h1 className="text-[1.55rem] font-semibold tracking-tight sm:text-3xl lg:text-[2rem]">
             Discover
           </h1>
         </header>
 
-        <p className="mb-3 max-w-2xl shrink-0 text-sm leading-5 text-muted-foreground sm:leading-6 lg:mb-4">
+        <p className="mb-2 hidden max-w-2xl shrink-0 text-sm leading-6 text-muted-foreground md:block lg:mb-4">
           Browse slowly. Mutual interest creates a match. A Vibe Check invite
           happens before chat can unlock.
         </p>
 
-        <section className="grid gap-4 lg:grid-cols-[minmax(0,1.12fr)_minmax(340px,0.88fr)] lg:items-start">
+        <section className="grid gap-3 lg:grid-cols-[minmax(0,1.12fr)_minmax(340px,0.88fr)] lg:items-start">
           <div className="relative min-h-[430px] overflow-hidden rounded-[2rem] border border-[#e6ded0] bg-[#e5e1db] shadow-[0_18px_60px_rgba(74,59,42,0.14)] sm:min-h-[520px] lg:sticky lg:top-4 lg:h-[min(640px,calc(100vh-170px))] lg:min-h-[560px]">
             {primaryPhoto ? (
               <>
@@ -235,7 +235,7 @@ export function DiscoverDeck({
             )}
           </div>
 
-          <div className="flex flex-col gap-4 lg:sticky lg:top-4">
+          <div className="flex flex-col gap-3 lg:sticky lg:top-4">
             <section className="rounded-[2rem] border border-[#e6ded0] bg-[#fcf8f0] p-4 shadow-[0_18px_60px_rgba(74,59,42,0.09)] sm:p-5">
               <div className="space-y-1.5">
                 <h2 className="text-[2rem] font-semibold tracking-tight text-foreground sm:text-[2.25rem]">
@@ -249,7 +249,7 @@ export function DiscoverDeck({
                 </p>
               </div>
 
-              <div className="mt-4 rounded-[1.35rem] border border-[#e1e8dc] bg-[#fffdf8] p-4 shadow-[0_10px_30px_rgba(74,59,42,0.05)]">
+              <div className="mt-3 rounded-[1.35rem] border border-[#e1e8dc] bg-[#fffdf8] p-4 shadow-[0_10px_30px_rgba(74,59,42,0.05)]">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                   Trust
                 </p>

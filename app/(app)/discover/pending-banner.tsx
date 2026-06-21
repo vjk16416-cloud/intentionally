@@ -72,26 +72,26 @@ export function PendingMatchesBanner({
 
   return (
     <>
-      <div className="mx-auto w-full max-w-md px-4 pt-3 md:max-w-3xl lg:max-w-5xl lg:pt-4">
+      <div className="mx-auto w-full max-w-md px-4 pt-2 md:max-w-3xl md:pt-3 lg:max-w-5xl lg:pt-4">
         <button
           ref={triggerRef}
           type="button"
           onClick={() => setIsOpen(true)}
-          className="group flex w-full items-center justify-between gap-3 rounded-[1.35rem] border border-[#e1d6c6] bg-[#fffaf3] px-4 py-3 text-left shadow-[0_10px_28px_rgba(74,59,42,0.07)] outline-none transition hover:border-[#cfdcc6] hover:bg-[#fffdf8] focus-visible:ring-3 focus-visible:ring-[#7d916f]/30"
+          className="group flex w-full items-center justify-between gap-3 rounded-full border border-[#e1d6c6] bg-[#fffaf3] px-3 py-2.5 text-left shadow-[0_8px_22px_rgba(74,59,42,0.06)] outline-none transition hover:border-[#cfdcc6] hover:bg-[#fffdf8] focus-visible:ring-3 focus-visible:ring-[#7d916f]/30 sm:rounded-[1.35rem] sm:px-4 sm:py-3"
           aria-haspopup="dialog"
           aria-expanded={isOpen}
         >
           <span className="min-w-0">
-            <span className="block truncate text-sm font-semibold leading-5 text-[#3d342d]">
+            <span className="block truncate text-[13px] font-semibold leading-5 text-[#3d342d] sm:text-sm">
               ✨ {count} Vibe {count === 1 ? "Check" : "Checks"} waiting
             </span>
-            <span className="mt-0.5 block text-xs font-semibold leading-4 text-[#667a5e] transition group-hover:text-[#536849]">
+            <span className="mt-0.5 block text-[11px] font-semibold leading-4 text-[#667a5e] transition group-hover:text-[#536849] sm:text-xs">
               Start inviting →
             </span>
           </span>
           <span
             aria-hidden="true"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#d8cbbb] bg-[#eef5e8] text-sm font-semibold text-[#536849]"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#d8cbbb] bg-[#eef5e8] text-[13px] font-semibold text-[#536849] sm:h-9 sm:w-9 sm:text-sm"
           >
             {count}
           </span>
