@@ -11,6 +11,8 @@ import { PROFILE_PHOTOS_BUCKET } from "@/lib/storage/photos";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
+import { signOut } from "../actions";
+
 type ProfileRow = {
   display_name: string | null;
   date_of_birth: string | null;
@@ -230,6 +232,14 @@ export default async function ProfilePage() {
         >
           Review full profile
         </Link>
+
+        <section className="rounded-[1.5rem] border border-[#e6ded0] bg-[#fffdf8] px-4 py-3">
+          <p className="text-sm font-semibold text-foreground">Account</p>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">You can sign out from here when you need to use a different account.</p>
+          <form action={signOut} className="mt-3">
+            <button type="submit" className="text-sm font-semibold text-muted-foreground underline underline-offset-4">Sign out</button>
+          </form>
+        </section>
       </div>
     </main>
   );
