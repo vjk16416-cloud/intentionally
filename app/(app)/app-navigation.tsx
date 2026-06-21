@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ComponentType } from "react";
-import { Compass, MessagesSquare, UserRound } from "lucide-react";
+import { CalendarDays, Compass, MessagesSquare, UserRound } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -31,6 +31,11 @@ const navItems: NavItem[] = [
   {
     href: "/vibe-checks",
     label: "Vibe Checks",
+    icon: CalendarDays,
+  },
+  {
+    href: "/messages",
+    label: "Messages",
     icon: MessagesSquare,
   },
   {
@@ -141,7 +146,7 @@ export function AppNavigation({
       className="z-40 shrink-0 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-2 lg:hidden"
       aria-label="Primary"
     >
-      <div className="mx-auto grid w-full max-w-md grid-cols-3 gap-1 rounded-[1.5rem] border border-[#e6ded0] bg-[#fffaf3]/96 p-2 shadow-[0_14px_38px_rgba(74,59,42,0.16)] backdrop-blur md:max-w-2xl">
+      <div className="mx-auto grid w-full max-w-md grid-cols-4 gap-1 rounded-[1.5rem] border border-[#e6ded0] bg-[#fffaf3]/96 p-2 shadow-[0_14px_38px_rgba(74,59,42,0.16)] backdrop-blur md:max-w-2xl">
         {navItems.map((item) => (
           <MobileNavItem key={item.label} item={item} pathname={pathname} />
         ))}
