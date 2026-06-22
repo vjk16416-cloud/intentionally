@@ -4,11 +4,12 @@ import { redirect } from "next/navigation";
 import { QA_VISIBILITY_OPTIONS } from "@/lib/qa/visibility";
 import { createClient } from "@/lib/supabase/server";
 
+import { startQaSession } from "../actions";
+
 export default async function QaVisibilityPage({
   params,
 }: {
   params: Promise<{ sessionId: string }>;
-  searchParams: Promise<{ visibility?: string }>;
 }) {
   const { sessionId } = await params;
   const softReveal = QA_VISIBILITY_OPTIONS.dynamic;
@@ -24,7 +25,7 @@ export default async function QaVisibilityPage({
 
   const { data: session } = await supabase
     .from("qa_sessions")
-    .select("id, match_id")
+    .select("id, match_id, status, confirmed_at")
     .eq("id", sessionId)
     .maybeSingle();
 
@@ -40,6 +41,13 @@ export default async function QaVisibilityPage({
 
   if (!match || (match.user_a !== user.id && match.user_b !== user.id)) {
     redirect("/discover");
+  }
+
+  if (!session.confirmed_at) {
+    redirect(`/schedule/${session.match_id}`);
+  }
+  if (session.status !== "scheduled" && session.status !== "in_progress") {
+    redirect(`/qa/${sessionId}`);
   }
 
   return (
@@ -66,12 +74,8 @@ export default async function QaVisibilityPage({
             answering is clear. The listener stays softened.
           </p>
 
-          <form
-            action={`/qa/${sessionId}`}
-            className="mt-6 grid gap-3"
-          >
-            <input type="hidden" name="started" value="true" />
-            <input type="hidden" name="visibility" value="dynamic" />
+          <form action={startQaSession} className="mt-6 grid gap-3">
+            <input type="hidden" name="sessionId" value={sessionId} />
 
             <div className="rounded-[1.5rem] border border-border bg-background p-4">
               <p className="text-base font-semibold">{softReveal.label}</p>

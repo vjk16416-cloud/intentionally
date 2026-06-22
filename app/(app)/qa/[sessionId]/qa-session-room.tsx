@@ -1,7 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
@@ -13,6 +12,7 @@ import {
 import { LocalMediaPreview } from "./local-media-preview";
 import { QaSafetyControls } from "./qa-safety-controls";
 import { VisibilitySelector } from "./visibility-selector";
+import { completeQaSession } from "./actions";
 
 const EXTRA_QUESTIONS = [
   "What would make dating feel healthier for you?",
@@ -54,7 +54,6 @@ export function QaSessionRoom({
   visibilityMode,
   dailyRoomUrl,
 }: QaSessionRoomProps) {
-  const router = useRouter();
   const [extraAccepted, setExtraAccepted] = useState(initialExtraAccepted);
   const [extraRequest, setExtraRequest] =
     useState<ExtraRequestState>(initialExtraRequest);
@@ -67,6 +66,7 @@ export function QaSessionRoom({
   const [pauseEndsAt, setPauseEndsAt] = useState<number | null>(null);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [softModeEnabled, setSoftModeEnabled] = useState(false);
+  const [, startCompletionTransition] = useTransition();
   const hasTrackedEntry = useRef(false);
 
   const safeQuestionIndex = clampQuestionIndex(questionIndex, questions.length);
@@ -147,19 +147,6 @@ export function QaSessionRoom({
   }, [effectiveVisibilityMode, matchId, sessionId, userId, visibilityMode]);
 
   function finishSession(extraState: ExtraRequestState = extraRequest) {
-    const params = new URLSearchParams({
-      started: "true",
-      finished: "true",
-      visibility: effectiveVisibilityMode,
-    });
-
-    if (extraAccepted) {
-      params.set("extra", "true");
-      params.set("extraRequest", "accepted");
-    } else if (extraState !== "idle") {
-      params.set("extraRequest", extraState);
-    }
-
     trackEvent(AnalyticsEvents.QA_FINISHED, {
       user_id: userId,
       match_id: matchId,
@@ -170,7 +157,11 @@ export function QaSessionRoom({
       extra_questions: extraAccepted,
       extra_request_state: extraState,
     });
-    router.push(`/qa/${sessionId}?${params.toString()}`);
+    const formData = new FormData();
+    formData.set("sessionId", sessionId);
+    startCompletionTransition(async () => {
+      await completeQaSession(formData);
+    });
   }
 
   function advanceQuestion() {

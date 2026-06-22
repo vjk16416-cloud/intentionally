@@ -1,10 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import {
-  parseQaVisibilityMode,
-  qaVisibilitySearchParam,
-} from "@/lib/qa/visibility";
 import { createClient } from "@/lib/supabase/server";
 
 import { saveQaOutcome } from "./actions";
@@ -17,43 +13,7 @@ const QUESTIONS = [
   "What would make a first conversation feel genuinely comfortable?",
 ];
 
-const EXTRA_QUESTIONS = [
-  "What would make dating feel healthier for you?",
-  "What helps you feel safe opening up to someone?",
-];
-
 type QaQuestionPayload = string | { text?: unknown };
-
-type ExtraRequestState = "idle" | "sent" | "incoming" | "accepted" | "declined";
-
-function safeQuestionIndex(value: string | string[] | undefined, total: number) {
-  const raw = Array.isArray(value) ? value[0] : value;
-  const parsed = Number(raw ?? "0");
-  const maxIndex = Math.max(total - 1, 0);
-
-  if (!Number.isFinite(parsed)) return 0;
-  if (parsed < 0) return 0;
-  if (parsed > maxIndex) return maxIndex;
-
-  return parsed;
-}
-
-function parseExtraRequestState(
-  value: string | string[] | undefined,
-): ExtraRequestState {
-  const raw = Array.isArray(value) ? value[0] : value;
-
-  if (
-    raw === "sent" ||
-    raw === "incoming" ||
-    raw === "accepted" ||
-    raw === "declined"
-  ) {
-    return raw;
-  }
-
-  return "idle";
-}
 
 function questionText(question: QaQuestionPayload) {
   if (typeof question === "string") return question;
@@ -63,21 +23,10 @@ function questionText(question: QaQuestionPayload) {
 
 export default async function QaSessionPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ sessionId: string }>;
-  searchParams: Promise<{
-    q?: string;
-    started?: string;
-    finished?: string;
-    decision?: string;
-    visibility?: string;
-    extra?: string;
-    extraRequest?: string;
-  }>;
 }) {
   const { sessionId } = await params;
-  const query = await searchParams;
 
   const supabase = await createClient();
   const {
@@ -90,7 +39,7 @@ export default async function QaSessionPage({
 
   const { data: session } = await supabase
     .from("qa_sessions")
-    .select("id, questions, match_id, daily_room_url")
+    .select("id, questions, match_id, daily_room_url, status, confirmed_at")
     .eq("id", sessionId)
     .maybeSingle();
 
@@ -115,21 +64,13 @@ export default async function QaSessionPage({
           return text ? [text] : [];
         })
       : QUESTIONS;
-  const extraQuestionsAccepted = query.extra === "true";
-  const questions = extraQuestionsAccepted
-    ? [...baseQuestions, ...EXTRA_QUESTIONS]
-    : baseQuestions;
-
-  const started = query.started === "true";
-  const questionIndex = safeQuestionIndex(query.q, questions.length);
-  const finished = query.finished === "true";
-  const decision = query.decision;
-  const extraRequest = parseExtraRequestState(query.extraRequest);
-  const visibilityMode = parseQaVisibilityMode(query.visibility);
-  const visibilityParam = qaVisibilitySearchParam(visibilityMode);
   const matchId = session.match_id;
 
-  if (!started && !finished) {
+  if (!session.confirmed_at) {
+    redirect(`/schedule/${matchId}`);
+  }
+
+  if (session.status === "scheduled") {
     return (
       <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background via-[#fbf3e8] to-muted px-4 py-5">
         <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center md:max-w-2xl">
@@ -168,7 +109,7 @@ export default async function QaSessionPage({
               share anything personal before you are ready.
             </p>
             <Link
-              href={`/qa/${sessionId}/visibility?${visibilityParam}`}
+              href={`/qa/${sessionId}/visibility`}
               className="mt-6 block rounded-2xl bg-accent px-4 py-4 text-center text-base font-semibold text-accent-foreground shadow-sm"
             >
               Prepare to join
@@ -179,7 +120,7 @@ export default async function QaSessionPage({
     );
   }
 
-  if (finished) {
+  if (session.status === "completed") {
     return (
       <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background via-[#fbf3e8] to-muted px-4 py-5">
         <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center md:max-w-2xl">
@@ -197,21 +138,7 @@ export default async function QaSessionPage({
               Continue if they choose Continue too.
             </p>
 
-            {decision ? (
-              <div className="mt-6 rounded-[1.5rem] border border-[#eadfce] bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
-                <p className="font-semibold text-foreground">
-                  {decision === "continue"
-                    ? "You both chose Continue"
-                    : "You passed privately"}
-                </p>
-                <p className="mt-1">
-                  {decision === "continue"
-                    ? "Chat is now open because the feeling was mutual."
-                    : "We'll quietly close this match. They won't be told you passed."}
-                </p>
-              </div>
-            ) : (
-              <div className="mt-6 space-y-4">
+            <div className="mt-6 space-y-4">
                 <div className="grid gap-3 rounded-[1.5rem] border border-[#eadfce] bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
                   <p>
                     <span className="font-semibold text-foreground">
@@ -237,7 +164,7 @@ export default async function QaSessionPage({
                       userId={user.id}
                       matchId={matchId}
                       sessionId={sessionId}
-                      visibilityMode={visibilityMode}
+                      visibilityMode="dynamic"
                       className="w-full rounded-2xl bg-accent px-4 py-4 text-base font-semibold text-accent-foreground shadow-sm"
                     >
                       Continue
@@ -253,15 +180,14 @@ export default async function QaSessionPage({
                       userId={user.id}
                       matchId={matchId}
                       sessionId={sessionId}
-                      visibilityMode={visibilityMode}
+                      visibilityMode="dynamic"
                       className="w-full rounded-2xl border border-[#d9a6a0]/40 bg-[#f6e4df] px-4 py-4 text-base font-semibold text-[#5a2d2a]"
                     >
                       Pass privately
                     </QaDecisionButton>
                   </form>
                 </div>
-              </div>
-            )}
+            </div>
 
             <div className="mt-6 rounded-[1.5rem] bg-secondary p-4 text-sm leading-6 text-muted-foreground">
               Your choice is handled with care. Chat opens only if you both
@@ -273,16 +199,20 @@ export default async function QaSessionPage({
     );
   }
 
+  if (session.status !== "in_progress") {
+    redirect(`/schedule/${matchId}`);
+  }
+
   return (
     <QaSessionRoom
       sessionId={sessionId}
       userId={user.id}
       matchId={matchId}
       baseQuestions={baseQuestions}
-      initialQuestionIndex={questionIndex}
-      initialExtraAccepted={extraQuestionsAccepted}
-      initialExtraRequest={extraRequest}
-      visibilityMode={visibilityMode}
+      initialQuestionIndex={0}
+      initialExtraAccepted={false}
+      initialExtraRequest="idle"
+      visibilityMode="dynamic"
       dailyRoomUrl={session.daily_room_url}
     />
   );
