@@ -28,8 +28,17 @@ for (const viewport of viewports) {
     }) => {
       await page.goto(baseUrl);
 
-      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-      await expect(page.getByRole("link", { name: /get started/i })).toBeVisible();
+      await expect(page.getByText("Intentionally").first()).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "A calmer way to meet." }),
+      ).toBeVisible();
+      await expect(page.getByRole("link", { name: "Start demo" })).toHaveAttribute(
+        "href",
+        "/demo",
+      );
+      await expect(
+        page.getByRole("link", { name: "Already have an account?" }),
+      ).toHaveAttribute("href", "/login");
       await expectNoHorizontalOverflow(page);
 
       await page.goto(`${baseUrl}/login`);
