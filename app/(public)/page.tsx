@@ -20,7 +20,7 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_14%,rgba(255,248,236,0.32),transparent_22%),radial-gradient(circle_at_50%_77%,rgba(224,122,95,0.18),transparent_34%),linear-gradient(90deg,rgba(5,13,11,0.30)_0%,transparent_21%,transparent_79%,rgba(5,13,11,0.30)_100%)]" />
 
         <div className="relative z-10 mx-auto flex min-h-svh w-full max-w-5xl flex-col items-center px-5 pb-7 pt-9 text-center sm:px-8 sm:pb-10 sm:pt-10 lg:pb-12 lg:pt-12">
-          <div className="flex w-full flex-1 flex-col items-center justify-between gap-6">
+          <div className="flex w-full flex-1 flex-col items-center justify-center gap-10 sm:gap-12">
             <header className="flex flex-col items-center">
               <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#E07A5F]/40 bg-[#FFF8EC]/18 text-lg text-[#E07A5F] shadow-[0_16px_40px_rgba(5,13,11,0.18)] backdrop-blur-md">
                 ♥
@@ -57,14 +57,6 @@ export default function HomePage() {
                 </span>
               </Link>
             </section>
-
-            <div className="flex items-center justify-center gap-2.5 pb-1" aria-hidden="true">
-              <span className="h-1.5 w-12 rounded-full bg-[#E07A5F] shadow-[0_0_16px_rgba(224,122,95,0.45)] sm:w-14" />
-              <span className="h-1.5 w-12 rounded-full bg-[#FFF8EC]/24 sm:w-14" />
-              <span className="h-1.5 w-12 rounded-full bg-[#FFF8EC]/24 sm:w-14" />
-              <span className="hidden h-1.5 w-14 rounded-full bg-[#FFF8EC]/24 sm:block" />
-              <span className="hidden h-1.5 w-14 rounded-full bg-[#FFF8EC]/24 sm:block" />
-            </div>
           </div>
         </div>
       </section>
