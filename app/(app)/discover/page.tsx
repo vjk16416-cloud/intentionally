@@ -8,7 +8,6 @@ import { createClient } from "@/lib/supabase/server";
 import { DiscoverDeck } from "./deck";
 import { InternalTestingShortcuts } from "./internal-testing-shortcuts";
 import { PendingMatchesBanner } from "./pending-banner";
-import { SplashScreen } from "./splash-screen";
 
 export default async function DiscoverPage() {
   const supabase = await createClient();
@@ -28,7 +27,7 @@ export default async function DiscoverPage() {
   const showInternalTestingShortcuts = canUseInternalTestingShortcuts(user.email);
 
   return (
-    <SplashScreen>
+    <>
       <div id="vibe-checks" className="scroll-mt-24">
         <PendingMatchesBanner pending={pending} />
       </div>
@@ -37,6 +36,6 @@ export default async function DiscoverPage() {
         cards={cards}
       />
       {showInternalTestingShortcuts ? <InternalTestingShortcuts /> : null}
-    </SplashScreen>
+    </>
   );
 }
