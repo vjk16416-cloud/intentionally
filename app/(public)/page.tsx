@@ -17,18 +17,17 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-svh overflow-hidden bg-[#071411] text-[#FFF8EC]">
-      <section className="relative isolate flex min-h-svh items-center justify-center overflow-hidden bg-[#071411] p-0">
-        <div aria-hidden="true" className="absolute inset-0 -z-30 bg-[#071411]" />
+      <section className="relative isolate min-h-svh overflow-hidden bg-[#071411]">
         <div
           aria-hidden="true"
-          className="absolute inset-0 -z-20 bg-[url('/images/intentionally-splash-exact.png')] bg-contain bg-center bg-no-repeat"
+          className="absolute inset-0 -z-20 bg-[url('/images/splash-mobile.png')] bg-cover bg-center bg-no-repeat md:bg-[url('/images/splash-tablet.png')] lg:bg-[url('/images/splash-desktop.png')]"
         />
-        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,transparent_0%,transparent_62%,rgba(7,20,17,0.72)_100%)]" />
+        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[#071411]/5" />
 
         <Link
           href="/login"
           aria-label="Discover more about Intentionally"
-          className="absolute left-1/2 top-[64%] h-[7%] w-[42%] max-w-[28rem] -translate-x-1/2 rounded-[1.25rem] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#F3A17F]/70 sm:top-[65%] sm:h-[7%] sm:w-[33%] lg:top-[65%] lg:w-[25%]"
+          className="absolute left-1/2 top-[66%] h-[7%] w-[50%] -translate-x-1/2 rounded-[1.25rem] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#F3A17F]/70 md:top-[65%] md:h-[6.5%] md:w-[34%] lg:top-[67%] lg:h-[7%] lg:w-[22%]"
         >
           <span className="sr-only">Discover more</span>
         </Link>
