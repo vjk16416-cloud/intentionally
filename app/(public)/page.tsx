@@ -28,7 +28,7 @@ export default async function HomePage() {
         <div className="absolute inset-0 -z-40 bg-[#071411]" />
         <div
           aria-hidden="true"
-          className="absolute inset-0 -z-30 bg-[url('/images/intentionally-hero-sunset.jpg')] bg-cover bg-[position:center_bottom] bg-no-repeat sm:bg-[position:center_58%] lg:bg-[position:center_center]"
+          className="absolute inset-0 -z-30 bg-[url('/images/intentionally-arms-hero.png')] bg-cover bg-[position:center_bottom] bg-no-repeat sm:bg-[position:center_58%] lg:bg-[position:center_center]"
         />
         <div className="absolute inset-0 -z-20 bg-[linear-gradient(180deg,rgba(5,13,11,0.72)_0%,rgba(5,13,11,0.34)_34%,rgba(5,13,11,0.22)_56%,rgba(5,13,11,0.72)_100%),radial-gradient(circle_at_50%_48%,rgba(243,161,127,0.22)_0%,transparent_34%),radial-gradient(circle_at_center,transparent_0%,transparent_58%,rgba(0,0,0,0.48)_100%)]" />
         <div aria-hidden="true" className="absolute inset-x-[8%] bottom-[20%] -z-10 h-px rotate-[-7deg] bg-gradient-to-r from-transparent via-[#F3A17F]/42 to-transparent sm:bottom-[25%] lg:bottom-[23%]" />
