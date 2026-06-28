@@ -30,12 +30,7 @@ export default function HomePage() {
               </p>
             </header>
 
-            <section className="w-full max-w-[39rem] rounded-[2rem] border border-[#FFF8EC]/12 bg-[#071411]/62 px-6 pb-6 pt-7 shadow-[0_26px_80px_rgba(5,13,11,0.34)] backdrop-blur-md sm:rounded-[2.4rem] sm:px-10 sm:pb-8 sm:pt-9">
-              <div className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-[#FFF8EC]/14 bg-[#FFF8EC]/9 px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[#FFF8EC]/78">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#E07A5F]" />
-                Private by default
-              </div>
-
+            <section className="w-full max-w-[39rem] rounded-[2rem] border border-[#FFF8EC]/12 bg-[#071411]/62 px-6 pb-6 pt-8 shadow-[0_26px_80px_rgba(5,13,11,0.34)] backdrop-blur-md sm:rounded-[2.4rem] sm:px-10 sm:pb-8 sm:pt-10">
               <h1 className="mx-auto max-w-xl font-serif text-[2.35rem] font-medium leading-[1.06] tracking-[-0.035em] text-[#FFF8EC] sm:text-[3.75rem] lg:text-[4.05rem]">
                 Meaningful connections start with intention.
               </h1>
