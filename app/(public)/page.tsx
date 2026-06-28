@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 const heroImageSrc = "/images/intentionally-hero-sunset.jpg";
@@ -7,19 +6,26 @@ export default function HomePage() {
   return (
     <main className="min-h-svh overflow-hidden bg-[#071411] text-[#FFF8EC]">
       <section className="relative min-h-svh overflow-hidden bg-[#071411] text-[#FFF8EC]">
-        <Image
-          src={heroImageSrc}
-          alt="Two people holding hands in a calm outdoor setting"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[center_50%]"
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 scale-110 bg-cover bg-center opacity-65 blur-2xl"
+          style={{ backgroundImage: `url(${heroImageSrc})` }}
         />
 
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(241,232,218,0.06)_0%,rgba(11,23,20,0.16)_34%,rgba(5,13,11,0.48)_72%,rgba(5,13,11,0.72)_100%)]" />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-no-repeat"
+          style={{
+            backgroundImage: `url(${heroImageSrc})`,
+            backgroundPosition: "center center",
+            backgroundSize: "auto 100svh",
+          }}
+        />
+
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(241,232,218,0.06)_0%,rgba(11,23,20,0.14)_34%,rgba(5,13,11,0.46)_72%,rgba(5,13,11,0.70)_100%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_14%,rgba(241,232,218,0.14),transparent_24%),radial-gradient(circle_at_50%_64%,rgba(224,122,95,0.13),transparent_32%)]" />
 
-        <div className="relative z-10 min-h-svh w-full px-5 text-center sm:px-8">
+        <div className="relative z-10 mx-auto min-h-svh w-full max-w-[calc(100svh*0.714)] px-5 text-center sm:px-8">
           <header className="absolute left-1/2 top-[6.5svh] flex -translate-x-1/2 flex-col items-center sm:top-[6.75svh]">
             <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#F0A085]/35 bg-[#FFF8EC]/12 text-2xl text-[#F0A085] shadow-[0_18px_42px_rgba(5,13,11,0.24)] backdrop-blur-md">
               ♥
