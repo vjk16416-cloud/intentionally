@@ -20,45 +20,59 @@ export default async function LoginPage() {
   }
 
   return (
-    <main className="relative isolate flex flex-1 items-center justify-center overflow-hidden bg-background px-5 py-10 sm:px-6 sm:py-16">
-      <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_12%_18%,rgba(243,161,127,0.18)_0%,transparent_28%),radial-gradient(circle_at_88%_4%,rgba(16,35,29,0.14)_0%,transparent_30%)]" />
-      <div className="absolute inset-x-0 top-0 -z-10 h-28 bg-gradient-to-b from-[#071411]/8 to-transparent" />
+    <main className="relative isolate flex min-h-svh overflow-hidden bg-[#F8F1E8] px-4 py-[max(1rem,env(safe-area-inset-top))] text-[#10231D] sm:px-6 lg:px-8">
+      <div className="absolute inset-0 -z-30 bg-[#F8F1E8]" />
+      <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_50%_0%,rgba(7,20,17,0.28)_0%,rgba(16,35,29,0.16)_24%,transparent_46%),radial-gradient(circle_at_18%_18%,rgba(243,161,127,0.22)_0%,transparent_30%),radial-gradient(circle_at_86%_12%,rgba(243,161,127,0.18)_0%,transparent_32%)]" />
+      <div className="absolute inset-x-0 top-0 -z-10 h-[42svh] bg-gradient-to-b from-[#071411]/18 via-[#10231D]/8 to-transparent" />
+      <div aria-hidden="true" className="absolute left-[9%] top-[21%] -z-10 h-px w-[82vw] max-w-[48rem] -rotate-[18deg] bg-gradient-to-r from-transparent via-[#F3A17F]/24 to-transparent" />
 
-      <div className="w-full max-w-md md:max-w-lg">
-        <section className="rounded-[2rem] border border-border bg-card/95 p-6 shadow-[0_24px_70px_rgba(74,59,42,0.10)] backdrop-blur-sm sm:p-8">
-          <header className="space-y-4 text-center md:text-left">
-            <div className="flex flex-col items-center gap-2 md:items-start">
-              <div className="text-3xl leading-none text-[#F3A17F]">♡</div>
-              <p className="text-xs uppercase tracking-[0.28em] text-[#9B6F5E]">
-                Intentionally
-              </p>
-            </div>
+      <section className="mx-auto flex min-h-[calc(100svh-2rem)] w-full max-w-[30rem] flex-col justify-center py-2 sm:max-w-[31rem]">
+        <nav className="mb-6 flex items-center justify-between text-sm text-[#10231D]/72 sm:mb-8">
+          <Link
+            href="/"
+            aria-label="Back to Intentionally splash page"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#10231D]/10 bg-white/46 text-lg shadow-sm backdrop-blur-sm transition hover:bg-white/70"
+          >
+            ←
+          </Link>
+          <Link
+            href="/demo"
+            className="rounded-full border border-[#10231D]/10 bg-white/46 px-4 py-2 font-medium shadow-sm backdrop-blur-sm transition hover:bg-white/70"
+          >
+            Help
+          </Link>
+        </nav>
 
-            <div className="space-y-2">
-              <h1 className="font-serif text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
-                Start with intention.
-              </h1>
-              <p className="mx-auto max-w-sm text-sm leading-6 text-muted-foreground md:mx-0">
-                A calmer way to meet, with a clear first step and private-by-default
-                sign in.
-              </p>
+        <div className="rounded-[2.25rem] border border-white/70 bg-white/48 px-5 py-7 shadow-[0_28px_90px_rgba(74,59,42,0.16)] backdrop-blur-2xl sm:px-7 sm:py-8">
+          <header className="text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-[#F3A17F]/30 bg-[#FFF8EC]/80 text-3xl leading-none text-[#F3A17F] shadow-[0_14px_36px_rgba(243,161,127,0.18)]">
+              ♡
             </div>
+            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.32em] text-[#9B6F5E]">
+              Intentionally
+            </p>
+            <h1 className="mx-auto mt-4 max-w-[17rem] font-serif text-[2.35rem] font-medium leading-[1.02] tracking-[-0.045em] text-[#10231D] sm:text-[2.75rem]">
+              Start with intention.
+            </h1>
+            <p className="mx-auto mt-4 max-w-[17rem] text-sm leading-6 text-[#10231D]/68">
+              Private by design. Built for real connections.
+            </p>
           </header>
 
           <div className="mt-7">
             <LoginForm />
           </div>
 
-          <div className="mt-5 text-center">
+          <div className="mt-6 text-center">
             <Link
               href="/demo"
-              className="inline-flex items-center justify-center text-sm font-medium text-muted-foreground underline underline-offset-4 transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="inline-flex h-11 items-center justify-center rounded-2xl border border-[#F3A17F]/45 px-5 text-sm font-semibold text-[#C06F55] transition hover:bg-[#F3A17F]/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#F3A17F]/20"
             >
-              Try the demo
+              Continue as guest
             </Link>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </main>
   );
 }
