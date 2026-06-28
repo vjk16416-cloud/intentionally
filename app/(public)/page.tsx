@@ -1,4 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+
+import { getOnboardingState } from "@/lib/onboarding/state";
+import { createClient } from "@/lib/supabase/server";
 
 const proofPoints = [
   { icon: "◌", label: "Private pace" },
@@ -7,7 +11,17 @@ const proofPoints = [
   { icon: "♡", label: "Real intention" },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    const onboarding = await getOnboardingState(supabase, user);
+    redirect(onboarding.status === "complete" ? "/discover" : onboarding.nextStep);
+  }
+
   return (
     <main className="min-h-svh overflow-hidden bg-[#071411] text-[#FFF8EC]">
       <section className="relative isolate flex min-h-svh overflow-hidden bg-[#071411] px-4 py-[max(1rem,env(safe-area-inset-top))] text-center sm:px-6 lg:px-8">
