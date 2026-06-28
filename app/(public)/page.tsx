@@ -13,14 +13,14 @@ export default function HomePage() {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[center_54%]"
+          className="object-cover object-[center_50%]"
         />
 
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(241,232,218,0.08)_0%,rgba(11,23,20,0.18)_36%,rgba(5,13,11,0.50)_72%,rgba(5,13,11,0.74)_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_14%,rgba(241,232,218,0.16),transparent_24%),radial-gradient(circle_at_50%_66%,rgba(224,122,95,0.14),transparent_32%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(241,232,218,0.06)_0%,rgba(11,23,20,0.16)_34%,rgba(5,13,11,0.48)_72%,rgba(5,13,11,0.72)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_14%,rgba(241,232,218,0.14),transparent_24%),radial-gradient(circle_at_50%_64%,rgba(224,122,95,0.13),transparent_32%)]" />
 
         <div className="relative z-10 min-h-svh w-full px-5 text-center sm:px-8">
-          <header className="absolute left-1/2 top-[7svh] flex -translate-x-1/2 flex-col items-center sm:top-[7.5svh]">
+          <header className="absolute left-1/2 top-[6.5svh] flex -translate-x-1/2 flex-col items-center sm:top-[6.75svh]">
             <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#F0A085]/35 bg-[#FFF8EC]/12 text-2xl text-[#F0A085] shadow-[0_18px_42px_rgba(5,13,11,0.24)] backdrop-blur-md">
               ♥
             </div>
@@ -32,7 +32,7 @@ export default function HomePage() {
             </p>
           </header>
 
-          <section className="absolute left-1/2 top-[31svh] w-[min(88vw,38rem)] -translate-x-1/2 rounded-[2.25rem] border border-[#FFF8EC]/16 bg-[#071411]/68 px-6 pb-7 pt-8 shadow-[0_28px_90px_rgba(5,13,11,0.40)] backdrop-blur-md sm:top-[32svh] sm:rounded-[2.7rem] sm:px-10 sm:pb-9 sm:pt-10">
+          <section className="absolute left-1/2 top-[29svh] w-[min(88vw,38rem)] -translate-x-1/2 rounded-[2.25rem] border border-[#FFF8EC]/16 bg-[#071411]/68 px-6 pb-7 pt-8 shadow-[0_28px_90px_rgba(5,13,11,0.40)] backdrop-blur-md sm:top-[30svh] sm:rounded-[2.7rem] sm:px-10 sm:pb-9 sm:pt-10 lg:top-[29svh]">
             <div className="mx-auto mb-7 flex h-14 w-20 items-center justify-center text-4xl text-[#F0A085]">
               ♥♥
             </div>
