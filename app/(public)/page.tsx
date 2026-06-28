@@ -8,8 +8,17 @@ export default function HomePage() {
       <section className="relative min-h-svh overflow-hidden bg-[#071411]">
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 scale-110 bg-cover bg-center opacity-75 blur-2xl"
           style={{ backgroundImage: `url(${splashImageSrc})` }}
+        />
+
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${splashImageSrc})`,
+            backgroundSize: "auto 100svh",
+          }}
         />
 
         <Link
