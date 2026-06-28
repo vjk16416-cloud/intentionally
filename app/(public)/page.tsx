@@ -13,18 +13,18 @@ export default function HomePage() {
           fill
           priority
           sizes="100vw"
-          className="-z-30 object-cover object-center"
+          className="-z-30 object-cover object-[center_58%] sm:object-[center_55%] lg:object-[center_52%]"
         />
 
-        <div className="absolute inset-0 -z-20 bg-[#071411]/48" />
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(5,13,11,0.14)_0%,rgba(5,13,11,0.22)_38%,rgba(5,13,11,0.58)_100%)]" />
+        <div className="absolute inset-0 -z-20 bg-[#071411]/46" />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(5,13,11,0.16)_0%,rgba(5,13,11,0.22)_36%,rgba(5,13,11,0.58)_100%)]" />
 
         <div className="relative z-10 min-h-svh w-full px-5 sm:px-8">
-          <header className="absolute left-1/2 top-[7svh] flex -translate-x-1/2 flex-col items-center sm:top-[7.5svh]">
-            <div className="text-5xl leading-none text-[#F3A17F] drop-shadow-[0_6px_18px_rgba(5,13,11,0.35)] sm:text-6xl">
+          <header className="absolute left-1/2 top-[6.2svh] flex -translate-x-1/2 flex-col items-center sm:top-[6.8svh] lg:top-[7.2svh]">
+            <div className="text-[3rem] leading-none text-[#F3A17F] drop-shadow-[0_6px_18px_rgba(5,13,11,0.35)] sm:text-[3.5rem] lg:text-[4rem]">
               ♡
             </div>
-            <p className="mt-4 font-serif text-[clamp(2.75rem,13vw,4.4rem)] font-medium leading-none tracking-[-0.045em] text-[#FFF8EC] drop-shadow-[0_5px_28px_rgba(5,13,11,0.66)]">
+            <p className="mt-3 font-serif text-[clamp(2.8rem,10vw,4.6rem)] font-medium leading-none tracking-[-0.045em] text-[#FFF8EC] drop-shadow-[0_5px_28px_rgba(5,13,11,0.66)]">
               Intentionally
             </p>
             <p className="mt-3 text-[0.7rem] font-semibold uppercase tracking-[0.34em] text-[#F3A17F] sm:text-sm">
@@ -32,12 +32,12 @@ export default function HomePage() {
             </p>
           </header>
 
-          <section className="absolute left-1/2 top-[31svh] w-[min(86vw,32.5rem)] -translate-x-1/2 rounded-[1.9rem] border border-white/22 bg-[#0F1412]/45 px-6 py-8 shadow-[0_30px_90px_rgba(5,13,11,0.48)] backdrop-blur-[14px] sm:top-[31svh] sm:rounded-[2rem] sm:px-10 sm:py-10">
-            <div className="mx-auto mb-5 flex h-12 w-20 items-center justify-center text-4xl leading-none text-[#F3A17F] sm:mb-7 sm:text-5xl">
+          <section className="absolute left-1/2 top-[30svh] w-[min(86vw,36rem)] -translate-x-1/2 rounded-[1.9rem] border border-white/22 bg-[#0F1412]/46 px-6 py-8 shadow-[0_30px_90px_rgba(5,13,11,0.48)] backdrop-blur-[14px] sm:top-[30.5svh] sm:rounded-[2rem] sm:px-9 sm:py-9 lg:top-[31svh] lg:w-[min(56vw,38rem)] lg:px-10 lg:py-10">
+            <div className="mx-auto mb-5 flex h-12 w-20 items-center justify-center text-[2.5rem] leading-none text-[#F3A17F] sm:mb-6 sm:text-5xl">
               ♡♡
             </div>
 
-            <h1 className="mx-auto max-w-[31rem] font-serif text-[clamp(1.9rem,8.5vw,2.45rem)] font-medium leading-[1.16] tracking-[-0.035em] text-[#FFF8EC] sm:text-[2.7rem]">
+            <h1 className="mx-auto max-w-[31rem] font-serif text-[clamp(1.9rem,7vw,2.45rem)] font-medium leading-[1.16] tracking-[-0.035em] text-[#FFF8EC] sm:text-[2.65rem] lg:text-[2.85rem]">
               Meaningful connections
               <br />
               start with <span className="text-[#F3A17F]">intention</span>.
