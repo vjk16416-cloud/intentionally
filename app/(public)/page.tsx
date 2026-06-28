@@ -17,12 +17,13 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-svh overflow-hidden bg-[#071411] text-[#FFF8EC]">
-      <section className="relative isolate min-h-svh overflow-hidden bg-[#071411]">
+      <section className="relative isolate flex min-h-svh items-center justify-center overflow-hidden bg-[#071411] p-0">
+        <div aria-hidden="true" className="absolute inset-0 -z-30 bg-[#071411]" />
         <div
           aria-hidden="true"
-          className="absolute inset-0 -z-20 bg-[url('/images/intentionally-splash-exact.png')] bg-cover bg-center bg-no-repeat sm:bg-contain"
+          className="absolute inset-0 -z-20 bg-[url('/images/intentionally-splash-exact.png')] bg-contain bg-center bg-no-repeat"
         />
-        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[#071411]/10" />
+        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,transparent_0%,transparent_62%,rgba(7,20,17,0.72)_100%)]" />
 
         <Link
           href="/login"
