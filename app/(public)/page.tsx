@@ -9,47 +9,54 @@ export default function HomePage() {
       <section className="relative min-h-svh overflow-hidden bg-[#0B1714] text-[#FFF8EC]">
         <Image
           src={heroImageSrc}
-          alt="A couple sitting together at sunset by the water"
+          alt="Two people holding hands in a calm outdoor setting"
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[center_58%] scale-[1.02]"
+          className="object-cover object-[center_62%] scale-[1.03]"
         />
 
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,248,236,0.20)_0%,rgba(255,248,236,0.06)_24%,rgba(11,23,20,0.36)_58%,rgba(5,13,11,0.92)_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_14%,rgba(255,248,236,0.32),transparent_22%),radial-gradient(circle_at_50%_77%,rgba(224,122,95,0.18),transparent_34%),linear-gradient(90deg,rgba(5,13,11,0.30)_0%,transparent_21%,transparent_79%,rgba(5,13,11,0.30)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(241,232,218,0.10)_0%,rgba(11,23,20,0.18)_34%,rgba(5,13,11,0.64)_72%,rgba(5,13,11,0.82)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(241,232,218,0.24),transparent_24%),radial-gradient(circle_at_50%_66%,rgba(224,122,95,0.18),transparent_34%),linear-gradient(90deg,rgba(5,13,11,0.34)_0%,transparent_24%,transparent_76%,rgba(5,13,11,0.34)_100%)]" />
 
-        <div className="relative z-10 mx-auto flex min-h-svh w-full max-w-5xl flex-col items-center px-5 pb-7 pt-9 text-center sm:px-8 sm:pb-10 sm:pt-10 lg:pb-12 lg:pt-12">
+        <div className="relative z-10 mx-auto flex min-h-svh w-full max-w-5xl flex-col items-center px-5 pb-8 pt-10 text-center sm:px-8 sm:pb-12 sm:pt-12 lg:pb-14 lg:pt-14">
           <div className="flex w-full flex-1 flex-col items-center justify-center gap-10 sm:gap-12">
             <header className="flex flex-col items-center">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#E07A5F]/40 bg-[#FFF8EC]/18 text-lg text-[#E07A5F] shadow-[0_16px_40px_rgba(5,13,11,0.18)] backdrop-blur-md">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#E07A5F]/45 bg-[#FFF8EC]/14 text-2xl text-[#F0A085] shadow-[0_18px_42px_rgba(5,13,11,0.24)] backdrop-blur-md">
                 ♥
               </div>
-              <p className="mt-4 font-serif text-4xl font-medium tracking-[-0.035em] text-[#1E3D34] drop-shadow-[0_2px_22px_rgba(255,248,236,0.78)] sm:text-5xl">
+              <p className="mt-5 font-serif text-5xl font-medium tracking-[-0.04em] text-[#FFF8EC] drop-shadow-[0_4px_24px_rgba(5,13,11,0.58)] sm:text-6xl">
                 Intentionally
+              </p>
+              <p className="mt-3 text-xs font-semibold uppercase tracking-[0.34em] text-[#F0A085] sm:text-sm">
+                Dating with purpose.
               </p>
             </header>
 
-            <section className="w-full max-w-[39rem] rounded-[2rem] border border-[#FFF8EC]/12 bg-[#071411]/62 px-6 pb-6 pt-8 shadow-[0_26px_80px_rgba(5,13,11,0.34)] backdrop-blur-md sm:rounded-[2.4rem] sm:px-10 sm:pb-8 sm:pt-10">
-              <h1 className="mx-auto max-w-xl font-serif text-[2.35rem] font-medium leading-[1.06] tracking-[-0.035em] text-[#FFF8EC] sm:text-[3.75rem] lg:text-[4.05rem]">
+            <section className="w-full max-w-[40rem] rounded-[2.25rem] border border-[#FFF8EC]/16 bg-[#071411]/66 px-6 pb-7 pt-8 shadow-[0_28px_90px_rgba(5,13,11,0.40)] backdrop-blur-md sm:rounded-[2.7rem] sm:px-10 sm:pb-9 sm:pt-10">
+              <div className="mx-auto mb-7 flex h-14 w-20 items-center justify-center text-4xl text-[#F0A085]">
+                ♥♥
+              </div>
+
+              <h1 className="mx-auto max-w-xl font-serif text-[2.25rem] font-medium leading-[1.08] tracking-[-0.035em] text-[#FFF8EC] sm:text-[3.55rem] lg:text-[3.9rem]">
                 Meaningful connections start with intention.
               </h1>
 
-              <div className="mx-auto mt-6 flex items-center justify-center gap-3 text-[#E07A5F]">
-                <span className="h-px w-12 bg-[#FFF8EC]/34" />
+              <div className="mx-auto mt-6 flex items-center justify-center gap-3 text-[#F0A085]">
+                <span className="h-px w-14 bg-[#FFF8EC]/24" />
                 <span aria-hidden="true" className="text-lg leading-none">
                   ♥
                 </span>
-                <span className="h-px w-12 bg-[#FFF8EC]/34" />
+                <span className="h-px w-14 bg-[#FFF8EC]/24" />
               </div>
 
-              <p className="mx-auto mt-5 max-w-[32rem] text-sm leading-7 text-[#FFF8EC]/84 sm:text-lg sm:leading-8">
+              <p className="mx-auto mt-5 max-w-[34rem] text-sm leading-7 text-[#FFF8EC]/86 sm:text-lg sm:leading-8">
                 Guided conversations. Private choices. Chat unlocks only when you both choose.
               </p>
 
               <Link
                 href="/login"
-                className="mt-7 inline-flex h-15 min-h-15 w-full max-w-[34rem] items-center justify-center gap-3 rounded-[1.35rem] bg-[#E07A5F] px-8 text-base font-semibold text-[#FFF8EC] shadow-[0_18px_42px_rgba(224,122,95,0.34)] transition hover:-translate-y-0.5 hover:bg-[#C96851] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FFF8EC]/35 sm:h-[4.2rem] sm:text-xl"
+                className="mt-8 inline-flex h-15 min-h-15 w-full max-w-[34rem] items-center justify-center gap-4 rounded-[1.35rem] bg-[#F2A17F] px-8 text-base font-semibold text-[#13251F] shadow-[0_20px_46px_rgba(224,122,95,0.34)] transition hover:-translate-y-0.5 hover:bg-[#F4B093] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FFF8EC]/35 sm:h-[4.2rem] sm:text-xl"
               >
                 Discover more
                 <span aria-hidden="true" className="text-xl leading-none sm:text-2xl">
