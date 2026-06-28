@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 const heroImageSrc = "/images/intentionally-hero-sunset.jpg";
 
@@ -101,62 +104,138 @@ function FeatureStrip() {
   );
 }
 
-export default function HomePage() {
+function SplashScreen({ onDiscover }: { onDiscover: () => void }) {
   return (
-    <main className="min-h-svh overflow-x-hidden bg-[#FFF8EC] text-[#2B2B2B]">
-      <section className="relative isolate min-h-svh bg-[radial-gradient(circle_at_72%_44%,rgba(244,182,96,0.18),transparent_34%),linear-gradient(135deg,#FFF8EC_0%,#F5E6D3_58%,#F6C1B3_100%)] px-5 py-6 sm:px-8 lg:px-10">
-        <div className="mx-auto flex min-h-[calc(100svh-3rem)] w-full max-w-6xl flex-col justify-center gap-8 lg:gap-7">
-          <div className="grid items-center gap-8 md:grid-cols-[0.82fr_1fr] md:gap-10 lg:gap-12">
-            <div className="mx-auto flex w-full max-w-md flex-col items-center text-center md:mx-0 md:items-start md:text-left">
-              <BrandMark centred />
+    <section className="relative min-h-svh overflow-hidden bg-[#0D1E1A] text-[#FFF8EC]">
+      <Image
+        src={heroImageSrc}
+        alt="A couple sitting together at sunset by the water"
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-center"
+      />
 
-              <div className="mt-7 h-px w-36 bg-[#E6D4BE] md:w-32" />
-              <div className="-mt-[5px] mb-6 text-sm leading-none text-[#E07A5F]">
-                ♥
-              </div>
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,248,236,0.08)_0%,rgba(255,248,236,0.02)_28%,rgba(13,30,26,0.48)_58%,rgba(5,13,11,0.94)_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_16%,rgba(255,248,236,0.22),transparent_19%),radial-gradient(circle_at_52%_76%,rgba(224,122,95,0.22),transparent_30%)]" />
 
-              <h1 className="max-w-[11ch] font-serif text-[3.15rem] font-medium leading-[0.96] tracking-[-0.02em] text-[#1E3D34] sm:text-[4.2rem] md:text-[4.4rem] lg:text-[5.15rem]">
-                A calmer way to meet.
-              </h1>
+      <div className="relative z-10 mx-auto flex min-h-svh w-full max-w-3xl flex-col items-center px-6 pb-14 pt-16 text-center sm:px-8 lg:pt-20">
+        <div className="flex flex-1 flex-col items-center justify-between gap-10">
+          <div className="flex flex-col items-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#E07A5F]/55 bg-[#FFF8EC]/10 text-2xl text-[#E07A5F] shadow-[0_16px_40px_rgba(5,13,11,0.22)] backdrop-blur">
+              ♥
+            </div>
+            <p className="mt-6 font-serif text-4xl font-medium tracking-[-0.03em] text-[#1E3D34] drop-shadow-[0_1px_18px_rgba(255,248,236,0.58)] sm:text-5xl">
+              Intentionally
+            </p>
+          </div>
 
-              <p className="mt-6 max-w-sm text-base leading-7 text-[#2B2B2B]/78 sm:text-lg md:text-base lg:text-lg">
-                Guided Q&A helps you understand what matters before chat unlocks.
-              </p>
+          <div className="w-full max-w-2xl rounded-[2rem] bg-[linear-gradient(180deg,rgba(5,13,11,0.08)_0%,rgba(5,13,11,0.76)_22%,rgba(5,13,11,0.88)_100%)] px-4 pb-8 pt-14 shadow-[0_-34px_90px_rgba(5,13,11,0.32)] sm:px-8 sm:pb-10">
+            <h1 className="mx-auto max-w-xl font-serif text-[2.85rem] font-medium leading-[1.08] tracking-[-0.03em] text-[#FFF8EC] sm:text-[4.2rem]">
+              Meaningful connections start with intention.
+            </h1>
 
-              <div className="mt-8 flex w-full flex-col items-center gap-4 sm:w-auto sm:flex-row md:items-start">
-                <Link
-                  href="/demo"
-                  className="inline-flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-[#E07A5F] px-9 text-base font-semibold text-[#FFF8EC] shadow-[0_18px_34px_rgba(224,122,95,0.22)] transition hover:bg-[#C96851] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#1E3D34]/30 sm:w-auto"
-                >
-                  Start demo
-                  <span aria-hidden="true">→</span>
-                </Link>
-
-                <Link
-                  href="/login"
-                  className="text-sm font-medium text-[#1E3D34] underline underline-offset-4 decoration-[#1E3D34]/25 transition hover:decoration-[#1E3D34]"
-                >
-                  Already have an account?
-                </Link>
-              </div>
-
-              <div className="mt-7 hidden md:block">
-                <TrustCard />
-              </div>
+            <div className="mx-auto mt-8 flex items-center justify-center gap-3 text-[#E07A5F]">
+              <span className="h-px w-12 bg-[#FFF8EC]/45" />
+              <span aria-hidden="true" className="text-xl leading-none">♥</span>
+              <span className="h-px w-12 bg-[#FFF8EC]/45" />
             </div>
 
-            <div className="mx-auto w-full max-w-[23rem] md:max-w-none">
-              <HeroPhoto />
+            <p className="mx-auto mt-7 max-w-xl text-base leading-8 text-[#FFF8EC]/88 sm:text-xl">
+              Guided conversations. Private choices. Chat unlocks only when you both choose.
+            </p>
+
+            <button
+              type="button"
+              onClick={onDiscover}
+              className="mt-10 inline-flex h-16 w-full max-w-[38rem] items-center justify-center gap-5 rounded-[1.7rem] bg-[#E07A5F] px-8 text-xl font-semibold tracking-wide text-[#FFF8EC] shadow-[0_18px_42px_rgba(224,122,95,0.34)] transition hover:bg-[#C96851] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FFF8EC]/35 sm:h-20 sm:text-2xl"
+            >
+              Discover more
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
+
+          <div className="flex items-center justify-center gap-3 pb-1" aria-hidden="true">
+            <span className="h-2 w-16 rounded-full bg-[#E07A5F]" />
+            <span className="h-2 w-16 rounded-full bg-[#FFF8EC]/28" />
+            <span className="h-2 w-16 rounded-full bg-[#FFF8EC]/28" />
+            <span className="hidden h-2 w-16 rounded-full bg-[#FFF8EC]/28 sm:block" />
+            <span className="hidden h-2 w-16 rounded-full bg-[#FFF8EC]/28 sm:block" />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function LandingScreen() {
+  return (
+    <section className="relative isolate min-h-svh bg-[radial-gradient(circle_at_72%_44%,rgba(244,182,96,0.18),transparent_34%),linear-gradient(135deg,#FFF8EC_0%,#F5E6D3_58%,#F6C1B3_100%)] px-5 py-6 sm:px-8 lg:px-10">
+      <div className="mx-auto flex min-h-[calc(100svh-3rem)] w-full max-w-6xl flex-col justify-center gap-8 lg:gap-7">
+        <div className="grid items-center gap-8 md:grid-cols-[0.82fr_1fr] md:gap-10 lg:gap-12">
+          <div className="mx-auto flex w-full max-w-md flex-col items-center text-center md:mx-0 md:items-start md:text-left">
+            <BrandMark centred />
+
+            <div className="mt-7 h-px w-36 bg-[#E6D4BE] md:w-32" />
+            <div className="-mt-[5px] mb-6 text-sm leading-none text-[#E07A5F]">
+              ♥
             </div>
 
-            <div className="md:hidden">
-              <TrustCard mobile />
+            <h1 className="max-w-[11ch] font-serif text-[3.15rem] font-medium leading-[0.96] tracking-[-0.02em] text-[#1E3D34] sm:text-[4.2rem] md:text-[4.4rem] lg:text-[5.15rem]">
+              A calmer way to meet.
+            </h1>
+
+            <p className="mt-6 max-w-sm text-base leading-7 text-[#2B2B2B]/78 sm:text-lg md:text-base lg:text-lg">
+              Guided Q&A helps you understand what matters before chat unlocks.
+            </p>
+
+            <div className="mt-8 flex w-full flex-col items-center gap-4 sm:w-auto sm:flex-row md:items-start">
+              <Link
+                href="/demo"
+                className="inline-flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-[#E07A5F] px-9 text-base font-semibold text-[#FFF8EC] shadow-[0_18px_34px_rgba(224,122,95,0.22)] transition hover:bg-[#C96851] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#1E3D34]/30 sm:w-auto"
+              >
+                Start demo
+                <span aria-hidden="true">→</span>
+              </Link>
+
+              <Link
+                href="/login"
+                className="text-sm font-medium text-[#1E3D34] underline underline-offset-4 decoration-[#1E3D34]/25 transition hover:decoration-[#1E3D34]"
+              >
+                Already have an account?
+              </Link>
+            </div>
+
+            <div className="mt-7 hidden md:block">
+              <TrustCard />
             </div>
           </div>
 
-          <FeatureStrip />
+          <div className="mx-auto w-full max-w-[23rem] md:max-w-none">
+            <HeroPhoto />
+          </div>
+
+          <div className="md:hidden">
+            <TrustCard mobile />
+          </div>
         </div>
-      </section>
+
+        <FeatureStrip />
+      </div>
+    </section>
+  );
+}
+
+export default function HomePage() {
+  const [showSplash, setShowSplash] = useState(true);
+
+  return (
+    <main className="min-h-svh overflow-x-hidden bg-[#FFF8EC] text-[#2B2B2B]">
+      {showSplash ? (
+        <SplashScreen onDiscover={() => setShowSplash(false)} />
+      ) : (
+        <LandingScreen />
+      )}
     </main>
   );
 }
