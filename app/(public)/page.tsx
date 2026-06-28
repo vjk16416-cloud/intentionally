@@ -6,7 +6,7 @@ const splashImageSrc = "/images/intentionally-hero-sunset.jpg";
 export default function HomePage() {
   return (
     <main className="min-h-svh overflow-hidden bg-[#071411] text-[#FFF8EC]">
-      <section className="relative isolate flex min-h-svh overflow-hidden bg-[#071411] px-5 py-[max(1.5rem,env(safe-area-inset-top))] text-center sm:px-8">
+      <section className="relative isolate min-h-svh overflow-hidden bg-[#071411] text-center">
         <Image
           src={splashImageSrc}
           alt="Two people holding hands outdoors in a calm natural landscape"
@@ -16,11 +16,11 @@ export default function HomePage() {
           className="-z-30 object-cover object-center"
         />
 
-        <div className="absolute inset-0 -z-20 bg-[#071411]/52" />
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(5,13,11,0.18)_0%,rgba(5,13,11,0.28)_34%,rgba(5,13,11,0.56)_100%)]" />
+        <div className="absolute inset-0 -z-20 bg-[#071411]/48" />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(5,13,11,0.14)_0%,rgba(5,13,11,0.22)_38%,rgba(5,13,11,0.58)_100%)]" />
 
-        <div className="mx-auto flex min-h-[calc(100svh-3rem)] w-full max-w-[34rem] flex-col items-center justify-center gap-6 py-4 sm:max-w-[38rem] sm:gap-8 md:max-w-[42rem]">
-          <header className="flex shrink-0 flex-col items-center">
+        <div className="relative z-10 min-h-svh w-full px-5 sm:px-8">
+          <header className="absolute left-1/2 top-[7svh] flex -translate-x-1/2 flex-col items-center sm:top-[7.5svh]">
             <div className="text-5xl leading-none text-[#F3A17F] drop-shadow-[0_6px_18px_rgba(5,13,11,0.35)] sm:text-6xl">
               ♡
             </div>
@@ -32,7 +32,7 @@ export default function HomePage() {
             </p>
           </header>
 
-          <section className="w-full rounded-[1.9rem] border border-white/22 bg-[#0F1412]/45 px-6 py-8 shadow-[0_30px_90px_rgba(5,13,11,0.48)] backdrop-blur-[14px] sm:rounded-[2rem] sm:px-10 sm:py-10">
+          <section className="absolute left-1/2 top-[31svh] w-[min(86vw,32.5rem)] -translate-x-1/2 rounded-[1.9rem] border border-white/22 bg-[#0F1412]/45 px-6 py-8 shadow-[0_30px_90px_rgba(5,13,11,0.48)] backdrop-blur-[14px] sm:top-[31svh] sm:rounded-[2rem] sm:px-10 sm:py-10">
             <div className="mx-auto mb-5 flex h-12 w-20 items-center justify-center text-4xl leading-none text-[#F3A17F] sm:mb-7 sm:text-5xl">
               ♡♡
             </div>
