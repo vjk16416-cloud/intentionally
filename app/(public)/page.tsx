@@ -1,10 +1,30 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { SplashScreen } from "@/components/splash-screen";
 import { getOnboardingState } from "@/lib/onboarding/state";
 import { createClient } from "@/lib/supabase/server";
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  if (typeof params.code === "string" && params.code) {
+    const callbackParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (typeof value === "string") {
+        callbackParams.set(key, value);
+      } else if (Array.isArray(value)) {
+        for (const item of value) {
+          callbackParams.append(key, item);
+        }
+      }
+    }
+
+    redirect(`/auth/callback?${callbackParams.toString()}`);
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -15,23 +35,5 @@ export default async function HomePage() {
     redirect(onboarding.status === "complete" ? "/discover" : onboarding.nextStep);
   }
 
-  return (
-    <main className="min-h-svh overflow-hidden bg-[#071411] text-[#FFF8EC]">
-      <section className="relative min-h-svh overflow-hidden bg-[#071411]">
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 z-0 bg-[url('/images/splash-mobile.png')] bg-cover bg-center bg-no-repeat md:bg-[url('/images/splash-tablet.png')] lg:bg-[url('/images/splash-desktop.png')]"
-        />
-        <div aria-hidden="true" className="absolute inset-0 z-10 bg-[#071411]/5" />
-
-        <Link
-          href="/login"
-          aria-label="Discover more about Intentionally"
-          className="absolute left-1/2 top-[66%] z-20 h-[7%] w-[50%] -translate-x-1/2 rounded-[1.25rem] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#F3A17F]/70 md:top-[65%] md:h-[6.5%] md:w-[34%] lg:top-[67%] lg:h-[7%] lg:w-[22%]"
-        >
-          <span className="sr-only">Discover more</span>
-        </Link>
-      </section>
-    </main>
-  );
+  return <SplashScreen nextHref="/login" />;
 }

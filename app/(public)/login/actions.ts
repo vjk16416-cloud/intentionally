@@ -32,6 +32,7 @@ function withoutTrailingSlash(value: string) {
 function configuredAppOrigin() {
   const configuredUrl =
     process.env.NEXT_PUBLIC_APP_URL ??
+    process.env.APP_URL ??
     process.env.SITE_URL ??
     process.env.NEXT_PUBLIC_SITE_URL;
 

@@ -29,5 +29,6 @@ test.describe("auth callback redirect routing", () => {
     const url = new URL("http://localhost:3000/auth/callback?next=//evil.example");
 
     expect(getSafeNextPath(url)).toBe(DEFAULT_POST_AUTH_PATH);
+    expect(DEFAULT_POST_AUTH_PATH).toBe("/discover");
   });
 });
