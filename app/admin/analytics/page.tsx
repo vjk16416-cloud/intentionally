@@ -898,8 +898,11 @@ function ProductSuccessDashboard({
 
 function FounderAiAgents() {
   return (
-    <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm sm:p-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <section
+      id="founder-ai-agents"
+      className="scroll-mt-6 rounded-[1.75rem] border border-border bg-card p-5 shadow-sm sm:p-6"
+    >
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
             Founder AI Agents
@@ -908,11 +911,12 @@ function FounderAiAgents() {
             Advisory command centre
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Static advisory demo mode. These agents do not call AI services,
-            query private data, or change product behaviour.
+            Static advisory demo mode for deciding what deserves founder
+            attention next. No AI calls, no private data access, and no product
+            behaviour changes.
           </p>
         </div>
-        <span className="rounded-full bg-[#f1dfbd] px-4 py-2 text-sm font-semibold text-[#6a4b16]">
+        <span className="w-fit rounded-full bg-[#f1dfbd] px-4 py-2 text-sm font-semibold text-[#6a4b16]">
           Advisory demo mode
         </span>
       </div>
@@ -921,7 +925,7 @@ function FounderAiAgents() {
         {founderAgents.map((agent) => (
           <article
             key={agent.name}
-            className="rounded-[1.25rem] border border-border bg-background p-4"
+            className="flex min-h-full flex-col rounded-[1.25rem] border border-border bg-background p-4 shadow-sm"
           >
             <div className="flex items-start justify-between gap-3">
               <h3 className="text-base font-semibold tracking-tight">
@@ -933,21 +937,27 @@ function FounderAiAgents() {
                   statusClassName(agent.status),
                 )}
               >
-                {agent.status}
+                Status: {agent.status}
               </span>
             </div>
-            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Watches
-            </p>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              {agent.watches}
-            </p>
-            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Suggests
-            </p>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              {agent.suggests}
-            </p>
+            <div className="mt-4 space-y-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Watches
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {agent.watches}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-border bg-card/70 p-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Founder prompt
+                </p>
+                <p className="mt-2 text-sm font-medium leading-6">
+                  {agent.suggests}
+                </p>
+              </div>
+            </div>
           </article>
         ))}
       </div>
@@ -1450,22 +1460,29 @@ export default async function AdminAnalyticsPage() {
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
               <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                Founder analytics
+                Founder command centre
               </p>
               <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
                 Product Analytics
               </h1>
               <p className="mt-4 text-sm leading-6 text-muted-foreground sm:text-base">
                 A focused MVP view of durable product counts from Supabase and
-                action events currently tracked in PostHog. Values shown here
-                are aggregate counts only.
+                action events currently tracked in PostHog, paired with
+                read-only founder prompts. Values shown here are aggregate
+                counts only.
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 rounded-[1.5rem] border border-border bg-background p-2 text-sm font-semibold shadow-sm sm:flex">
+            <div className="grid gap-2 rounded-[1.5rem] border border-border bg-background p-2 text-sm font-semibold shadow-sm sm:grid-cols-3">
+              <a
+                href="#founder-ai-agents"
+                className="rounded-2xl bg-accent px-4 py-3 text-center text-accent-foreground"
+              >
+                AI Agents
+              </a>
               <a
                 href="#last-7-days"
-                className="rounded-2xl bg-accent px-4 py-3 text-center text-accent-foreground"
+                className="rounded-2xl px-4 py-3 text-center text-muted-foreground hover:bg-muted"
               >
                 Last 7 days
               </a>
@@ -1525,13 +1542,13 @@ export default async function AdminAnalyticsPage() {
         <ProductSuccessDashboard metrics={productSuccessMetrics} />
 
         {summaryRange ? (
-          <>
+          <div id="last-7-days" className="scroll-mt-6 space-y-8">
             <FounderSummary range={summaryRange} />
             <RangeSection range={summaryRange} />
             <ProductHealthCards range={summaryRange} />
             <RecommendedExperiments range={summaryRange} />
             <ClarityReviewPrompt range={summaryRange} />
-          </>
+          </div>
         ) : unavailableResult ? (
           <AnalyticsUnavailableState result={unavailableResult} />
         ) : null}
