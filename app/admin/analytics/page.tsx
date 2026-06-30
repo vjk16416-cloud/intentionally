@@ -82,6 +82,13 @@ type ProductSuccessMetric = {
   icon: ComponentType<{ className?: string }>;
 };
 
+type FounderAgent = {
+  name: string;
+  watches: string;
+  suggests: string;
+  status: RagStatus;
+};
+
 type OnboardingCandidate = {
   id: string;
   photos: unknown;
@@ -208,6 +215,33 @@ const funnelConfig = [
   ["chatSent", "Chat messages sent"],
   ["datePlanShared", "Date plans shared"],
 ] as const satisfies readonly [DashboardEventKey, string][];
+
+const founderAgents: FounderAgent[] = [
+  {
+    name: "Product Insight Agent",
+    watches: "Funnel health, Q&A completion, and match progression.",
+    suggests: "What to improve next without adding product noise.",
+    status: "Watch",
+  },
+  {
+    name: "User Testing Agent",
+    watches: "Tester feedback, confusion points, and abandoned steps.",
+    suggests: "What to test with users this week.",
+    status: "Good",
+  },
+  {
+    name: "Safety Review Agent",
+    watches: "No-shows, reports, private pass behaviour, and safety-related drop-offs.",
+    suggests: "Which safety risk needs founder attention.",
+    status: "Needs attention",
+  },
+  {
+    name: "Growth & Activation Agent",
+    watches: "Sign-ups, onboarding completion, discovery usage, and chat unlocks.",
+    suggests: "How to improve activation while preserving intention.",
+    status: "Watch",
+  },
+];
 
 const unavailableProductMetrics: ProductSuccessMetric[] = [
   {
@@ -862,6 +896,65 @@ function ProductSuccessDashboard({
   );
 }
 
+function FounderAiAgents() {
+  return (
+    <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm sm:p-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+            Founder AI Agents
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+            Advisory command centre
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+            Static advisory demo mode. These agents do not call AI services,
+            query private data, or change product behaviour.
+          </p>
+        </div>
+        <span className="rounded-full bg-[#f1dfbd] px-4 py-2 text-sm font-semibold text-[#6a4b16]">
+          Advisory demo mode
+        </span>
+      </div>
+
+      <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {founderAgents.map((agent) => (
+          <article
+            key={agent.name}
+            className="rounded-[1.25rem] border border-border bg-background p-4"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="text-base font-semibold tracking-tight">
+                {agent.name}
+              </h3>
+              <span
+                className={cn(
+                  "shrink-0 rounded-full px-3 py-1 text-xs font-semibold",
+                  statusClassName(agent.status),
+                )}
+              >
+                {agent.status}
+              </span>
+            </div>
+            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Watches
+            </p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              {agent.watches}
+            </p>
+            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Suggests
+            </p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              {agent.suggests}
+            </p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function FounderSummary({ range }: { range: AnalyticsRange }) {
   const biggestDropOff = getBiggestDropOff(range.funnel);
   const engagementSignal = getStrongestEngagementSignal(range);
@@ -1426,6 +1519,8 @@ export default async function AdminAnalyticsPage() {
             </article>
           ))}
         </section>
+
+        <FounderAiAgents />
 
         <ProductSuccessDashboard metrics={productSuccessMetrics} />
 
