@@ -34,9 +34,7 @@ function normalisePhone(countryCode: string, localNumber: string) {
 
 export function LoginForm() {
   const [method, setMethod] = useState<"email" | "phone">("email");
-  const [stage, setStage] = useState<"request" | "emailSent" | "verifyPhone">(
-    "request",
-  );
+  const [stage, setStage] = useState<"request" | "verifyCode">("request");
 
   const [email, setEmail] = useState("");
   const [countryCode, setCountryCode] = useState("+44");
@@ -60,12 +58,7 @@ export function LoginForm() {
       if (next.identifier && next.kind && !next.error) {
         setIdentifier(next.identifier);
         setKind(next.kind);
-
-        if (next.kind === "email") {
-          setStage("emailSent");
-        } else {
-          setStage("verifyPhone");
-        }
+        setStage("verifyCode");
       }
 
       return next;
@@ -77,29 +70,6 @@ export function LoginForm() {
     verifyOtp,
     INITIAL_STATE,
   );
-
-  if (stage === "emailSent") {
-    return (
-      <div className="space-y-4">
-        <div className="rounded-2xl border border-border bg-muted/40 px-4 py-4">
-          <h2 className="text-base font-semibold">Check your email</h2>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            We sent a secure sign-in link to {identifier}. Open the email and
-            click the link to continue.
-          </p>
-        </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full rounded-2xl"
-          onClick={() => setStage("request")}
-        >
-          Use a different email
-        </Button>
-      </div>
-    );
-  }
 
   if (stage === "request") {
     return (
@@ -159,7 +129,7 @@ export function LoginForm() {
               className="h-12 rounded-2xl"
             />
             <p className="text-xs leading-5 text-muted-foreground">
-              We&apos;ll send you a secure sign-in link.
+              We&apos;ll email you a 6-digit code and a secure sign-in link.
             </p>
           </div>
         ) : (
@@ -230,8 +200,8 @@ export function LoginForm() {
           {requestPending
             ? "Sending…"
             : method === "email"
-              ? "Send secure sign-in link"
-            : "Text me a sign-in code"}
+              ? "Send sign-in code and link"
+              : "Text me a sign-in code"}
         </Button>
 
         <p className="text-center text-xs leading-5 text-muted-foreground">
@@ -241,14 +211,27 @@ export function LoginForm() {
     );
   }
 
+  const isEmail = kind === "email";
+
   return (
     <form action={verifyAction} className="space-y-4">
       <input type="hidden" name="identifier" value={identifier} />
       <input type="hidden" name="kind" value={kind ?? ""} />
 
+      <div className="rounded-2xl border border-border bg-muted/40 px-4 py-4">
+        <h2 className="text-base font-semibold">
+          {isEmail ? "Check your email" : "Check your phone"}
+        </h2>
+        <p className="mt-1 text-sm leading-6 text-muted-foreground">
+          {isEmail
+            ? `We sent a 6-digit code and a secure sign-in link to ${identifier}. Enter the code below or use the link in the email.`
+            : `We texted a 6-digit sign-in code to ${identifier}.`}
+        </p>
+      </div>
+
       <div className="space-y-1.5">
         <label htmlFor="token" className="text-sm font-semibold">
-          Enter the 6-digit SMS code
+          Enter the 6-digit {isEmail ? "email" : "SMS"} code
         </label>
         <Input
           id="token"
@@ -263,14 +246,13 @@ export function LoginForm() {
           className="h-12 rounded-2xl text-center text-lg tracking-[0.3em]"
         />
         <p className="text-xs leading-5 text-muted-foreground">
-          Sent to {identifier}. This confirms the phone you use to sign in and
-          helps keep Intentionally safer.{" "}
+          Sent to {identifier}.{" "}
           <button
             type="button"
             className="font-semibold underline underline-offset-4"
             onClick={() => setStage("request")}
           >
-            Change number
+            {isEmail ? "Use a different email" : "Change number"}
           </button>
         </p>
       </div>
@@ -287,7 +269,11 @@ export function LoginForm() {
         disabled={verifyPending}
         className="w-full rounded-2xl"
       >
-        {verifyPending ? "Verifying…" : "Verify phone"}
+        {verifyPending
+          ? "Verifying…"
+          : isEmail
+            ? "Verify email"
+            : "Verify phone"}
       </Button>
     </form>
   );
