@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
 
 import {
+  continueAsLocalFounder,
   requestOtp,
   verifyOtp,
   type LoginActionState,
@@ -25,6 +26,10 @@ const COUNTRY_CODES = [
   { label: "Australia", code: "+61", example: "0412 345 678" },
 ];
 
+type LoginFormProps = {
+  enableLocalFounderLogin?: boolean;
+};
+
 function normalisePhone(countryCode: string, localNumber: string) {
   const digitsOnly = localNumber.replace(/\D/g, "");
   const withoutLeadingZero = digitsOnly.replace(/^0+/, "");
@@ -32,9 +37,11 @@ function normalisePhone(countryCode: string, localNumber: string) {
   return `${countryCode}${withoutLeadingZero}`;
 }
 
-export function LoginForm() {
+export function LoginForm({ enableLocalFounderLogin = false }: LoginFormProps) {
   const [method, setMethod] = useState<"email" | "phone">("email");
-  const [stage, setStage] = useState<"request" | "verifyCode">("request");
+  const [stage, setStage] = useState<"request" | "emailSent" | "verifyPhone">(
+    "request",
+  );
 
   const [email, setEmail] = useState("");
   const [countryCode, setCountryCode] = useState("+44");
@@ -58,7 +65,12 @@ export function LoginForm() {
       if (next.identifier && next.kind && !next.error) {
         setIdentifier(next.identifier);
         setKind(next.kind);
-        setStage("verifyCode");
+
+        if (next.kind === "email") {
+          setStage("emailSent");
+        } else {
+          setStage("verifyPhone");
+        }
       }
 
       return next;
@@ -70,6 +82,67 @@ export function LoginForm() {
     verifyOtp,
     INITIAL_STATE,
   );
+
+  if (stage === "emailSent") {
+    return (
+      <div className="space-y-4">
+        <div className="rounded-2xl border border-border bg-muted/40 px-4 py-4">
+          <h2 className="text-base font-semibold">Check your email</h2>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            We sent a secure sign-in link to {identifier}. Open the email and
+            click the link, or enter the code from the email below.
+          </p>
+        </div>
+
+        <form action={verifyAction} className="space-y-4">
+          <input type="hidden" name="identifier" value={identifier} />
+          <input type="hidden" name="kind" value="email" />
+
+          <div className="space-y-1.5">
+            <label htmlFor="emailToken" className="text-sm font-semibold">
+              Enter the 6-digit email code
+            </label>
+            <Input
+              id="emailToken"
+              name="token"
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              pattern="[0-9]{6}"
+              required
+              autoFocus
+              className="h-12 rounded-2xl text-center text-lg tracking-[0.3em]"
+            />
+          </div>
+
+          {verifyState.error ? (
+            <p className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {verifyState.error}
+            </p>
+          ) : null}
+
+          <Button
+            type="submit"
+            size="lg"
+            disabled={verifyPending}
+            className="w-full rounded-2xl"
+          >
+            {verifyPending ? "Verifying…" : "Verify email"}
+          </Button>
+        </form>
+
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full rounded-2xl"
+          onClick={() => setStage("request")}
+        >
+          Use a different email
+        </Button>
+      </div>
+    );
+  }
 
   if (stage === "request") {
     return (
@@ -129,7 +202,7 @@ export function LoginForm() {
               className="h-12 rounded-2xl"
             />
             <p className="text-xs leading-5 text-muted-foreground">
-              We&apos;ll email you a 6-digit code and a secure sign-in link.
+              We&apos;ll send you a secure sign-in link.
             </p>
           </div>
         ) : (
@@ -200,38 +273,42 @@ export function LoginForm() {
           {requestPending
             ? "Sending…"
             : method === "email"
-              ? "Send sign-in code and link"
+              ? "Send secure sign-in link"
               : "Text me a sign-in code"}
         </Button>
 
         <p className="text-center text-xs leading-5 text-muted-foreground">
           Private by default. Chat unlocks only after a mutual Vibe Check.
         </p>
+
+        {enableLocalFounderLogin ? (
+          <div className="space-y-2">
+            <Button
+              type="submit"
+              formAction={continueAsLocalFounder}
+              formNoValidate
+              variant="outline"
+              className="w-full rounded-2xl border-dashed border-[#C06F55]/50 bg-[#FFF8EC]/70 text-[#9B4F3D] hover:bg-[#FFF1DF]"
+            >
+              Continue as local founder (dev only)
+            </Button>
+            <p className="text-center text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#9B4F3D]/75">
+              Development only
+            </p>
+          </div>
+        ) : null}
       </form>
     );
   }
-
-  const isEmail = kind === "email";
 
   return (
     <form action={verifyAction} className="space-y-4">
       <input type="hidden" name="identifier" value={identifier} />
       <input type="hidden" name="kind" value={kind ?? ""} />
 
-      <div className="rounded-2xl border border-border bg-muted/40 px-4 py-4">
-        <h2 className="text-base font-semibold">
-          {isEmail ? "Check your email" : "Check your phone"}
-        </h2>
-        <p className="mt-1 text-sm leading-6 text-muted-foreground">
-          {isEmail
-            ? `We sent a 6-digit code and a secure sign-in link to ${identifier}. Enter the code below or use the link in the email.`
-            : `We texted a 6-digit sign-in code to ${identifier}.`}
-        </p>
-      </div>
-
       <div className="space-y-1.5">
         <label htmlFor="token" className="text-sm font-semibold">
-          Enter the 6-digit {isEmail ? "email" : "SMS"} code
+          Enter the 6-digit SMS code
         </label>
         <Input
           id="token"
@@ -246,13 +323,14 @@ export function LoginForm() {
           className="h-12 rounded-2xl text-center text-lg tracking-[0.3em]"
         />
         <p className="text-xs leading-5 text-muted-foreground">
-          Sent to {identifier}.{" "}
+          Sent to {identifier}. This confirms the phone you use to sign in and
+          helps keep Intentionally safer.{" "}
           <button
             type="button"
             className="font-semibold underline underline-offset-4"
             onClick={() => setStage("request")}
           >
-            {isEmail ? "Use a different email" : "Change number"}
+            Change number
           </button>
         </p>
       </div>
@@ -269,11 +347,7 @@ export function LoginForm() {
         disabled={verifyPending}
         className="w-full rounded-2xl"
       >
-        {verifyPending
-          ? "Verifying…"
-          : isEmail
-            ? "Verify email"
-            : "Verify phone"}
+        {verifyPending ? "Verifying…" : "Verify phone"}
       </Button>
     </form>
   );

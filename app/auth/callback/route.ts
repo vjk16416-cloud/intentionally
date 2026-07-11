@@ -5,7 +5,17 @@ import {
   resolvePostAuthRedirectPath,
 } from "@/lib/auth/callback";
 import { getOnboardingState } from "@/lib/onboarding/state";
-import { createClient } from "@/lib/supabase/server";
+import {
+  createClient,
+  createRouteHandlerClient,
+} from "@/lib/supabase/server";
+
+const SUPPORTED_EMAIL_OTP_TYPES = new Set([
+  "email",
+  "magiclink",
+  "signup",
+  "invite",
+]);
 
 function logAuthCallbackFailure(
   reason: string,
@@ -25,28 +35,61 @@ function logAuthCallbackFailure(
   console.warn("Auth callback failed", { reason, ...details });
 }
 
-async function resolveRedirectPath(url: URL) {
+function getSupportedEmailOtpType(url: URL) {
+  const type = url.searchParams.get("type");
+
+  if (!type || !SUPPORTED_EMAIL_OTP_TYPES.has(type)) {
+    return null;
+  }
+
+  return type as "email" | "magiclink" | "signup" | "invite";
+}
+
+async function resolveRedirectPath(
+  url: URL,
+  supabase: Awaited<ReturnType<typeof createClient>>,
+) {
   const code = url.searchParams.get("code");
-  if (!code) {
+  const tokenHash = url.searchParams.get("token_hash");
+  if (!code && !tokenHash) {
     logAuthCallbackFailure("missing_code", {
       safeNext: getSafeNextPath(url),
     });
     return "/login?error=auth_callback";
   }
 
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-  if (error) {
-    logAuthCallbackFailure("code_exchange_failed", {
-      hasCode: true,
+  const emailOtpType = getSupportedEmailOtpType(url);
+  if (tokenHash && !emailOtpType) {
+    logAuthCallbackFailure("unsupported_token_hash_type", {
+      hasTokenHash: true,
       safeNext: getSafeNextPath(url),
-      error,
     });
+    return "/login?error=auth_callback";
+  }
+
+  const { data, error } = tokenHash
+    ? await supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: emailOtpType ?? "email",
+      })
+    : await supabase.auth.exchangeCodeForSession(code ?? "");
+  if (error) {
+    logAuthCallbackFailure(
+      tokenHash ? "token_hash_verification_failed" : "code_exchange_failed",
+      {
+        hasTokenHash: Boolean(tokenHash),
+        hasCode: Boolean(code),
+        safeNext: getSafeNextPath(url),
+        error,
+      },
+    );
     return "/login?error=auth_callback";
   }
 
   if (!data.user) {
     logAuthCallbackFailure("missing_user_after_exchange", {
+      hasTokenHash: Boolean(tokenHash),
+      hasCode: Boolean(code),
       safeNext: getSafeNextPath(url),
     });
     return "/login?error=auth_callback";
@@ -64,7 +107,8 @@ async function resolveRedirectPath(url: URL) {
 // is here so we have one path for any code-based auth we add later.
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
-  const redirectPath = await resolveRedirectPath(url);
+  const { supabase, applyCookies } = await createRouteHandlerClient();
+  const redirectPath = await resolveRedirectPath(url, supabase);
 
-  return NextResponse.redirect(new URL(redirectPath, url.origin));
+  return applyCookies(NextResponse.redirect(new URL(redirectPath, url.origin)));
 }

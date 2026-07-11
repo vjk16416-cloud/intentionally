@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { LoginForm } from "./login-form";
 
 export default async function LoginPage() {
+  const enableLocalFounderLogin = process.env.NODE_ENV !== "production";
   const supabase = await createClient();
   const {
     data: { user },
@@ -60,7 +61,7 @@ export default async function LoginPage() {
           </header>
 
           <div className="mt-7">
-            <LoginForm />
+            <LoginForm enableLocalFounderLogin={enableLocalFounderLogin} />
           </div>
 
           <div className="mt-6 text-center">

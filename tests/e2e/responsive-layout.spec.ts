@@ -30,25 +30,21 @@ for (const viewport of viewports) {
 
       await expect(page.getByText("Intentionally").first()).toBeVisible();
       await expect(
-        page.getByRole("heading", { name: "A calmer way to meet." }),
+        page.getByRole("heading", { name: "Meet slowly. Choose clearly." }),
       ).toBeVisible();
-      await expect(page.getByRole("link", { name: "Start demo" })).toHaveAttribute(
-        "href",
-        "/demo",
-      );
       await expect(
-        page.getByRole("link", { name: "Already have an account?" }),
-      ).toHaveAttribute("href", "/login");
+        page.getByRole("button", { name: "Begin with intention" }),
+      ).toBeVisible();
       await expectNoHorizontalOverflow(page);
 
       await page.goto(`${baseUrl}/login`);
 
       await expect(page.getByRole("heading", { name: /start with intention/i })).toBeVisible();
-      await expect(page.getByRole("link", { name: /try the demo/i })).toBeVisible();
+      await expect(page.getByRole("link", { name: /continue as guest/i })).toBeVisible();
       await expect(page.getByRole("button", { name: /send secure sign-in link/i })).toBeVisible();
       await expectNoHorizontalOverflow(page);
 
-      await page.getByRole("link", { name: /try the demo/i }).click();
+      await page.getByRole("link", { name: /continue as guest/i }).click();
 
       await expect(page).toHaveURL(/\/demo/);
       await expect(page.getByRole("heading", { name: /explore the vibe check journey/i })).toBeVisible();

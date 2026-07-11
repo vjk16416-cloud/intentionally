@@ -1,5 +1,8 @@
 "use server";
 
+import { createHash } from "node:crypto";
+
+import { cookies } from "next/headers";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -18,6 +21,8 @@ export type LoginActionState = {
 const E164_PATTERN = /^\+[1-9]\d{6,14}$/;
 const LOCAL_APP_ORIGIN = "http://localhost:3000";
 const EMAIL_SIGN_IN_NEXT_PATH = "/discover";
+const LOCAL_FOUNDER_DEV_COOKIE = "intentionally_local_founder_dev";
+const LOCAL_FOUNDER_DEV_COOKIE_MAX_AGE = 60 * 60 * 8;
 
 function detectKind(value: string): LoginIdentifierKind | null {
   if (value.includes("@")) return "email";
@@ -49,7 +54,37 @@ function configuredAppOrigin() {
   }
 }
 
+function isLocalOrigin(origin: string) {
+  try {
+    const url = new URL(origin);
+    return (
+      url.hostname === "localhost" ||
+      url.hostname === "127.0.0.1" ||
+      url.hostname === "::1"
+    );
+  } catch {
+    return false;
+  }
+}
+
+function isLocalHost(host: string | null) {
+  if (!host) return false;
+
+  try {
+    const url = new URL(`http://${host}`);
+    const hostname = url.hostname.replace(/^\[|\]$/g, "");
+    return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+  } catch {
+    return false;
+  }
+}
+
 function getAppOrigin(headersOrigin: string | null) {
+  const requestOrigin = headersOrigin ? withoutTrailingSlash(headersOrigin) : null;
+  if (requestOrigin && isLocalOrigin(requestOrigin)) {
+    return requestOrigin;
+  }
+
   const configuredOrigin = configuredAppOrigin();
   if (configuredOrigin) {
     return configuredOrigin;
@@ -59,13 +94,53 @@ function getAppOrigin(headersOrigin: string | null) {
     return `https://${withoutTrailingSlash(process.env.VERCEL_URL)}`;
   }
 
-  return headersOrigin ? withoutTrailingSlash(headersOrigin) : LOCAL_APP_ORIGIN;
+  return requestOrigin ?? LOCAL_APP_ORIGIN;
 }
 
 function getEmailRedirectTo(origin: string) {
   const redirectUrl = new URL("/auth/callback", origin);
   redirectUrl.searchParams.set("next", EMAIL_SIGN_IN_NEXT_PATH);
   return redirectUrl.toString();
+}
+
+function founderEmails() {
+  return (process.env.FOUNDER_ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function localFounderDevCookieValue(email: string) {
+  return createHash("sha256")
+    .update(`intentionally-local-founder-dev:${email}`)
+    .digest("hex");
+}
+
+export async function continueAsLocalFounder() {
+  const headersList = await headers();
+
+  if (
+    process.env.NODE_ENV === "production" ||
+    !isLocalHost(headersList.get("host"))
+  ) {
+    redirect("/login?error=local_founder_dev_disabled");
+  }
+
+  const [founderEmail] = founderEmails();
+  if (!founderEmail) {
+    redirect("/login?error=local_founder_email_missing");
+  }
+
+  const cookieStore = await cookies();
+  cookieStore.set(LOCAL_FOUNDER_DEV_COOKIE, localFounderDevCookieValue(founderEmail), {
+    httpOnly: true,
+    maxAge: LOCAL_FOUNDER_DEV_COOKIE_MAX_AGE,
+    path: "/founder",
+    sameSite: "lax",
+    secure: false,
+  });
+
+  redirect("/founder");
 }
 
 export async function requestOtp(
@@ -113,7 +188,7 @@ export async function verifyOtp(
   const token = String(formData.get("token") ?? "").trim();
 
   if (kindRaw !== "email" && kindRaw !== "phone") {
-    return { identifier, error: "Choose email or phone sign-in and try again." };
+    return { identifier, error: "Choose email or phone to sign in." };
   }
 
   if (!identifier || !token) {

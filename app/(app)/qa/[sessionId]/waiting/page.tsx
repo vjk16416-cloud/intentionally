@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { getServiceRoleKey, SUPABASE_URL } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 
+import { WaitingAutoRefresh } from "./waiting-auto-refresh";
+
 function admin() {
   return createServiceRoleClient(SUPABASE_URL, getServiceRoleKey(), {
     auth: { persistSession: false },
@@ -92,6 +94,7 @@ export default async function QaWaitingPage({
 
   return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background via-[#fbf3e8] to-muted px-4 py-5">
+      {!bothDecided ? <WaitingAutoRefresh /> : null}
       <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center md:max-w-2xl">
         <section className="w-full rounded-[2rem] border border-[#e6ded0] bg-[#fffaf3] p-6 text-center shadow-[0_18px_60px_rgba(74,59,42,0.10)] md:p-8">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-accent text-base font-semibold text-accent-foreground">
@@ -102,7 +105,7 @@ export default async function QaWaitingPage({
             {bothDecided
               ? bothContinue
                 ? "You both chose Continue"
-                : "You passed privately"
+                : "This match closed quietly."
               : "Decision saved"}
           </h1>
 
@@ -110,7 +113,7 @@ export default async function QaWaitingPage({
             {bothDecided
               ? bothContinue
                 ? "Chat is now open because the feeling was mutual."
-                : "We'll quietly close this match. They won't be told you passed."
+                : "Messages only unlock when both people choose Continue. Your choice remains private."
               : "Your choice is private. They'll only know if you both choose Continue."}
           </p>
 
