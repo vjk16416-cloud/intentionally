@@ -112,28 +112,38 @@ export async function verifyOtp(
   const kindRaw = String(formData.get("kind") ?? "");
   const token = String(formData.get("token") ?? "").trim();
 
-  if (kindRaw !== "phone") {
-    return { identifier, error: "Email sign-in now uses a secure email link." };
+  if (kindRaw !== "email" && kindRaw !== "phone") {
+    return { identifier, error: "Choose email or phone sign-in and try again." };
   }
 
   if (!identifier || !token) {
     return {
       identifier,
-      kind: "phone",
-      error: "Phone number and code are both required.",
+      kind: kindRaw,
+      error:
+        kindRaw === "email"
+          ? "Email address and code are both required."
+          : "Phone number and code are both required.",
     };
   }
 
   const supabase = await createClient();
 
-  const { error } = await supabase.auth.verifyOtp({
-    phone: identifier,
-    token,
-    type: "sms",
-  });
+  const { error } =
+    kindRaw === "email"
+      ? await supabase.auth.verifyOtp({
+          email: identifier,
+          token,
+          type: "email",
+        })
+      : await supabase.auth.verifyOtp({
+          phone: identifier,
+          token,
+          type: "sms",
+        });
 
   if (error) {
-    return { identifier, kind: "phone", error: error.message };
+    return { identifier, kind: kindRaw, error: error.message };
   }
 
   const {
