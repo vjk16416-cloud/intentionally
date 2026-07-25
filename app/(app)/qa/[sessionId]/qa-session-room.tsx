@@ -387,7 +387,7 @@ export function QaSessionRoom({
                     <iframe
                       src={dailyRoomUrl}
                       title="Guided Vibe Check video room"
-                      allow="camera; microphone; fullscreen; speaker; display-capture"
+                      allow="camera; microphone; fullscreen; speaker"
                       className={`h-40 w-full border-0 transition duration-500 sm:h-52 md:h-[320px] lg:h-[420px] ${
                         shouldSoftenTheirTile
                           ? "scale-105 blur-sm opacity-75"
