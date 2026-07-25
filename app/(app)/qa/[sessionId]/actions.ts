@@ -56,13 +56,15 @@ export async function startQaSession(formData: FormData) {
   if (!session.confirmed_at) redirect(`/schedule/${session.match_id}`);
 
   if (session.status === "scheduled") {
-    const { error } = await admin()
+    const { data: startedSession, error } = await admin()
       .from("qa_sessions")
       .update({ status: "in_progress", started_at: new Date().toISOString() })
       .eq("id", session.id)
-      .eq("status", "scheduled");
+      .eq("status", "scheduled")
+      .select("id")
+      .maybeSingle();
 
-    if (error) {
+    if (error || !startedSession) {
       console.error("[qa] session start failed", error);
       redirect(`/qa/${sessionId}/visibility`);
     }
@@ -82,13 +84,15 @@ export async function completeQaSession(formData: FormData) {
   const session = await getParticipantSession(sessionId);
   if (session.status !== "in_progress") redirect(`/qa/${sessionId}`);
 
-  const { error } = await admin()
+  const { data: completedSession, error } = await admin()
     .from("qa_sessions")
     .update({ status: "completed", ended_at: new Date().toISOString() })
     .eq("id", session.id)
-    .eq("status", "in_progress");
+    .eq("status", "in_progress")
+    .select("id")
+    .maybeSingle();
 
-  if (error) {
+  if (error || !completedSession) {
     console.error("[qa] session completion failed", error);
     redirect(`/qa/${sessionId}`);
   }
