@@ -19,6 +19,9 @@ export function PendingMatchesBanner({
     .replace(/^Internal Test\s+/i, "")
     .split(" ")[0];
   const avatarInitial = firstName?.slice(0, 1).toUpperCase() ?? "✨";
+  const primaryScheduleHref = firstPending
+    ? `/schedule/${firstPending.matchId}`
+    : "/vibe-checks";
 
   const [isOpen, setIsOpen] = useState(false);
   const dialogRef = useRef<HTMLElement>(null);
@@ -158,13 +161,13 @@ export function PendingMatchesBanner({
 
             <div className="mt-4 grid gap-2 sm:grid-cols-2 sm:gap-3">
               <Link
-                href="/vibe-checks"
+                href={primaryScheduleHref}
                 className={cn(
                   buttonVariants({ size: "lg" }),
                   "h-11 w-full rounded-xl bg-[#75886b] text-sm font-semibold text-white shadow-[0_10px_24px_rgba(83,104,73,0.18)] hover:bg-[#697b60] focus-visible:ring-[#7d916f]/30",
                 )}
               >
-                Start Vibe Check
+                Choose a time
               </Link>
 
               <Button

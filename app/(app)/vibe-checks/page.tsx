@@ -35,21 +35,23 @@ export default async function VibeChecksPage() {
 
       <PendingMatchesBanner pending={pending} />
 
-      <section className="rounded-[2rem] border border-dashed border-[#d8cbbb] bg-white/80 p-5 text-sm text-[#6f6258]">
-        <p className="font-semibold text-[#3d342d]">
-          No Vibe Checks waiting right now
-        </p>
-        <p className="mt-2">
-          You&apos;re all caught up. Discover is the best place to find someone
-          you may want to invite when the fit feels right.
-        </p>
-        <Link
-          href="/discover"
-          className="mt-4 inline-flex rounded-full bg-[#6f8f72] px-4 py-2 text-sm font-semibold text-white"
-        >
-          Back to Discover
-        </Link>
-      </section>
+      {pending.length === 0 ? (
+        <section className="rounded-[2rem] border border-dashed border-[#d8cbbb] bg-white/80 p-5 text-sm text-[#6f6258]">
+          <p className="font-semibold text-[#3d342d]">
+            No Vibe Checks waiting right now
+          </p>
+          <p className="mt-2">
+            You&apos;re all caught up. Discover is the best place to find someone
+            you may want to invite when the fit feels right.
+          </p>
+          <Link
+            href="/discover"
+            className="mt-4 inline-flex rounded-full bg-[#6f8f72] px-4 py-2 text-sm font-semibold text-white"
+          >
+            Back to Discover
+          </Link>
+        </section>
+      ) : null}
     </main>
   );
 }
