@@ -6,8 +6,19 @@ import { cookies } from "next/headers";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import {
+  EMAIL_OTP_LENGTH,
+  isNumericOtp,
+  normaliseOtpToken,
+  PHONE_OTP_LENGTH,
+} from "@/lib/auth/otp";
 import { getOnboardingState } from "@/lib/onboarding/state";
 import { createClient } from "@/lib/supabase/server";
+
+import {
+  resolveLocalTestLogin,
+  type LocalTestLoginRejectionReason,
+} from "./local-test-login";
 
 export type LoginIdentifierKind = "email" | "phone";
 
@@ -16,6 +27,10 @@ export type LoginActionState = {
   kind?: LoginIdentifierKind;
   error?: string;
   sent?: boolean;
+};
+
+export type LocalTestLoginActionState = {
+  error?: string;
 };
 
 const E164_PATTERN = /^\+[1-9]\d{6,14}$/;
@@ -143,6 +158,59 @@ export async function continueAsLocalFounder() {
   redirect("/founder");
 }
 
+function localTestLoginError(reason: LocalTestLoginRejectionReason) {
+  if (reason === "unknown_identity") {
+    return "Choose a valid development test account.";
+  }
+
+  if (reason === "missing_credentials") {
+    return "That development test account is not configured.";
+  }
+
+  return "Development test accounts are not available for this request.";
+}
+
+export async function continueAsLocalAppTestUser(
+  _prev: LocalTestLoginActionState,
+  formData: FormData,
+): Promise<LocalTestLoginActionState> {
+  const headersList = await headers();
+  const resolution = resolveLocalTestLogin(
+    formData.get("identity"),
+    headersList.get("host"),
+    process.env,
+  );
+
+  if (!resolution.ok) {
+    return { error: localTestLoginError(resolution.reason) };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword(
+    resolution.credentials,
+  );
+  if (error) {
+    return {
+      error:
+        "We couldn’t sign in to that development test account. Check its local credentials and try again.",
+    };
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return {
+      error:
+        "We couldn’t confirm that development session. Please try signing in again.",
+    };
+  }
+
+  const onboarding = await getOnboardingState(supabase, user);
+  redirect(onboarding.status === "complete" ? "/discover" : "/onboarding");
+}
+
 export async function requestOtp(
   _prev: LoginActionState,
   formData: FormData,
@@ -185,7 +253,7 @@ export async function verifyOtp(
 ): Promise<LoginActionState> {
   const identifier = String(formData.get("identifier") ?? "").trim();
   const kindRaw = String(formData.get("kind") ?? "");
-  const token = String(formData.get("token") ?? "").trim();
+  const token = normaliseOtpToken(String(formData.get("token") ?? "").trim());
 
   if (kindRaw !== "email" && kindRaw !== "phone") {
     return { identifier, error: "Choose email or phone to sign in." };
@@ -199,6 +267,28 @@ export async function verifyOtp(
         kindRaw === "email"
           ? "Email address and code are both required."
           : "Phone number and code are both required.",
+    };
+  }
+
+  if (
+    kindRaw === "email" &&
+    !isNumericOtp(token, EMAIL_OTP_LENGTH)
+  ) {
+    return {
+      identifier,
+      kind: kindRaw,
+      error: `Enter the ${EMAIL_OTP_LENGTH}-digit code from your email.`,
+    };
+  }
+
+  if (
+    kindRaw === "phone" &&
+    !isNumericOtp(token, PHONE_OTP_LENGTH)
+  ) {
+    return {
+      identifier,
+      kind: kindRaw,
+      error: `Enter the ${PHONE_OTP_LENGTH}-digit SMS code.`,
     };
   }
 

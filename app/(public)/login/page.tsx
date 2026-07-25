@@ -1,13 +1,30 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { getOnboardingState } from "@/lib/onboarding/state";
 import { createClient } from "@/lib/supabase/server";
 
 import { LoginForm } from "./login-form";
+import { availableLocalTestIdentities } from "./local-test-login";
 
-export default async function LoginPage() {
+const AUTH_CALLBACK_ERROR_MESSAGE =
+  "We couldn’t complete your sign-in. Your link or code may have expired. Please request a new one.";
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const headersList = await headers();
+  const authError =
+    params.error === "auth_callback" ? AUTH_CALLBACK_ERROR_MESSAGE : null;
   const enableLocalFounderLogin = process.env.NODE_ENV !== "production";
+  const localTestIdentities = availableLocalTestIdentities(
+    headersList.get("host"),
+    process.env,
+  );
   const supabase = await createClient();
   const {
     data: { user },
@@ -61,7 +78,15 @@ export default async function LoginPage() {
           </header>
 
           <div className="mt-7">
-            <LoginForm enableLocalFounderLogin={enableLocalFounderLogin} />
+            {authError ? (
+              <p className="mb-4 rounded-2xl border border-[#F3A17F]/40 bg-[#FFF8EC]/75 px-4 py-3 text-sm leading-6 text-[#7A4A39]">
+                {authError}
+              </p>
+            ) : null}
+            <LoginForm
+              enableLocalFounderLogin={enableLocalFounderLogin}
+              localTestIdentities={localTestIdentities}
+            />
           </div>
 
           <div className="mt-6 text-center">

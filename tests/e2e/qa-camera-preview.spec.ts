@@ -21,6 +21,18 @@ test.describe("Q&A camera preview route", () => {
 });
 
 test.describe("auth callback safety", () => {
+  test("does not show callback guidance on the normal login route", async ({
+    page,
+  }) => {
+    await page.goto("http://localhost:3000/login");
+
+    await expect(
+      page.getByText(
+        "We couldn’t complete your sign-in. Your link or code may have expired. Please request a new one.",
+      ),
+    ).toHaveCount(0);
+  });
+
   test("rejects unsafe next paths without leaving the app origin", async ({
     page,
   }) => {
@@ -29,5 +41,10 @@ test.describe("auth callback safety", () => {
     await expect(page).toHaveURL(
       "http://localhost:3000/login?error=auth_callback",
     );
+    await expect(
+      page.getByText(
+        "We couldn’t complete your sign-in. Your link or code may have expired. Please request a new one.",
+      ),
+    ).toBeVisible();
   });
 });
