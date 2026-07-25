@@ -6,6 +6,7 @@ import {
   createIdentityVerificationSession,
   getLatestIdentityVerificationSession,
 } from "@/lib/stripe/identity";
+import { trackServerAnalyticsEvent } from "@/lib/analytics/server";
 import { createClient } from "@/lib/supabase/server";
 
 function ensure(name: string, value: string | undefined): string {
@@ -48,20 +49,25 @@ export async function startVerification(
     redirect("/login");
   }
 
-  // TODO(posthog): capture `id_verification_started` here once
-  // PostHog is wired in (deferred to its own commit before Step 4).
-
   let session;
   try {
     const returnUrl = `${APP_URL}/verify/return?return=${encodeURIComponent(returnPath)}`;
     session = await createIdentityVerificationSession(user.id, returnUrl);
   } catch (err) {
     console.error("[verify] failed to create session", err);
+    await trackServerAnalyticsEvent("verificationFailed", {
+      distinctId: user.id,
+      properties: { failure_area: "verification" },
+    });
     return {
       error:
         "We couldn't start verification. Try again in a moment, and if it keeps failing, contact support.",
     };
   }
+
+  await trackServerAnalyticsEvent("verificationStarted", {
+    distinctId: user.id,
+  });
 
   redirect(session.url);
 }

@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
 import { stripe } from "@/lib/stripe/client";
+import { trackServerAnalyticsEvent } from "@/lib/analytics/server";
 import { getServiceRoleKey, SUPABASE_URL } from "@/lib/supabase/env";
 
 // Stripe SDK uses Node's crypto for signature verification, so this
@@ -101,9 +102,9 @@ export async function POST(request: Request) {
       return new NextResponse("Database update failed", { status: 500 });
     }
 
-    // TODO(posthog): capture `id_verification_completed` once PostHog
-    // is wired in. Properties: { latency_seconds } — derivable from
-    // event.created vs now.
+    await trackServerAnalyticsEvent("verificationCompleted", {
+      distinctId: userId,
+    });
 
     return new NextResponse("ok", { status: 200 });
   }
@@ -113,6 +114,13 @@ export async function POST(request: Request) {
     event.type === "identity.verification_session.canceled"
   ) {
     const session = event.data.object as Stripe.Identity.VerificationSession;
+    const userId = session.metadata?.user_id;
+    if (userId) {
+      await trackServerAnalyticsEvent("verificationFailed", {
+        distinctId: userId,
+        properties: { failure_area: "verification" },
+      });
+    }
     console.info(
       "[stripe-identity]",
       event.type,

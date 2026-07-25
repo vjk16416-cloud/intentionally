@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { getServiceRoleKey, SUPABASE_URL } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
+import { trackServerAnalyticsEvent } from "@/lib/analytics/server";
 
 import { WaitingAutoRefresh } from "./waiting-auto-refresh";
 
@@ -88,6 +89,20 @@ export default async function QaWaitingPage({
       .single();
 
     if (!error && newChat) {
+      await Promise.all([
+        trackServerAnalyticsEvent("mutualContinue", {
+          distinctId: user.id,
+          properties: { match_id: session.match_id, qa_session_id: sessionId },
+        }),
+        trackServerAnalyticsEvent("chatUnlocked", {
+          distinctId: user.id,
+          properties: {
+            match_id: session.match_id,
+            qa_session_id: sessionId,
+            chat_id: newChat.id,
+          },
+        }),
+      ]);
       redirect(`/chat/${newChat.id}`);
     }
   }

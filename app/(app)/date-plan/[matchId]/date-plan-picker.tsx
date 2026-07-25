@@ -1,11 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState } from "react";
 
 import { FallbackActionLink, FallbackPanel } from "@/components/fallback-state";
-import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
-import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import {
   DATE_PLAN_OPTIONS,
   getDatePlanOption,
@@ -17,13 +15,11 @@ import { shareDatePlan, type ShareDatePlanState } from "./actions";
 const INITIAL_STATE: ShareDatePlanState = {};
 
 export function DatePlanPicker({
-  userId,
   matchId,
   chatId,
   otherName,
   currentPlanKey,
 }: {
-  userId: string;
   matchId: string;
   chatId: string;
   otherName: string;
@@ -33,35 +29,8 @@ export function DatePlanPicker({
     shareDatePlan,
     INITIAL_STATE,
   );
-  const hasTrackedView = useRef(false);
-  const trackedShareEventIds = useRef(new Set<string>());
   const sharedPlan =
     getDatePlanOption(state.sharedPlanKey) ?? getDatePlanOption(currentPlanKey);
-
-  useEffect(() => {
-    if (hasTrackedView.current) return;
-
-    hasTrackedView.current = true;
-    trackAnalyticsEvent("datePlanViewed", {
-      properties: {
-        match_id: matchId,
-        chat_id: chatId,
-      },
-    });
-  }, [chatId, matchId]);
-
-  useEffect(() => {
-    if (!state.sharedPlanKey || !state.sharedPlanEventId) return;
-    if (trackedShareEventIds.current.has(state.sharedPlanEventId)) return;
-
-    trackedShareEventIds.current.add(state.sharedPlanEventId);
-    trackEvent(AnalyticsEvents.DATE_PLAN_SHARED, {
-      user_id: userId,
-      match_id: matchId,
-      source: "date_plan",
-      plan_key: state.sharedPlanKey,
-    });
-  }, [matchId, state.sharedPlanEventId, state.sharedPlanKey, userId]);
 
   return (
     <main className="relative isolate min-h-[calc(100vh-57px)] overflow-hidden bg-[#071411] px-4 py-5 text-[#FFF8EC]">

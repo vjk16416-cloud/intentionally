@@ -4,12 +4,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { isDatePlanKey, type DatePlanKey } from "@/lib/date-plans/options";
+import { trackServerAnalyticsEvent } from "@/lib/analytics/server";
 import { createClient } from "@/lib/supabase/server";
 
 export type ShareDatePlanState = {
   error?: string;
   sharedPlanKey?: DatePlanKey;
-  sharedPlanEventId?: string;
 };
 
 type MatchRow = {
@@ -58,6 +58,13 @@ export async function shareDatePlan(
     redirect("/discover");
   }
 
+  const { data: existingPreference } = await supabase
+    .from("date_plan_preferences")
+    .select("id")
+    .eq("match_id", matchId)
+    .eq("user_id", user.id)
+    .maybeSingle<{ id: string }>();
+
   const { error } = await supabase.from("date_plan_preferences").upsert(
     {
       match_id: matchId,
@@ -72,6 +79,13 @@ export async function shareDatePlan(
     return { error: "We could not share that plan. Try again." };
   }
 
+  if (!existingPreference) {
+    await trackServerAnalyticsEvent("datePlanCreated", {
+      distinctId: user.id,
+      properties: { match_id: matchId, chat_id: chat.id },
+    });
+  }
+
   revalidatePath(`/date-plan/${matchId}`);
-  return { sharedPlanKey: planKey, sharedPlanEventId: crypto.randomUUID() };
+  return { sharedPlanKey: planKey };
 }

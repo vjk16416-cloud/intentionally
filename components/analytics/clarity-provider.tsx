@@ -2,8 +2,12 @@ import Script from "next/script";
 
 export function ClarityProvider() {
   const projectId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID;
+  const enabled = process.env.NEXT_PUBLIC_CLARITY_ENABLED === "true";
 
-  if (!projectId) return null;
+  // Session recording is disabled unless it has been deliberately enabled.
+  // Founder approval must cover consent, masking and retention before setting
+  // NEXT_PUBLIC_CLARITY_ENABLED=true for a private-beta environment.
+  if (!projectId || !enabled) return null;
 
   return (
     <Script id="microsoft-clarity" strategy="afterInteractive">

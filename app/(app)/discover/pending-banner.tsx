@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
+import Link from "next/link";
 
-import { TrackedLink } from "@/components/analytics/tracked-link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import type { PendingMatch } from "@/lib/discover/pending";
 import { cn } from "@/lib/utils";
@@ -157,20 +157,15 @@ export function PendingMatchesBanner({
             </div>
 
             <div className="mt-4 grid gap-2 sm:grid-cols-2 sm:gap-3">
-              <TrackedLink
+              <Link
                 href="/vibe-checks"
-                eventKey="scheduleClicked"
-                eventProperties={{
-                  pending_count: count,
-                  source: "pending_vibe_checks_prompt",
-                }}
                 className={cn(
                   buttonVariants({ size: "lg" }),
                   "h-11 w-full rounded-xl bg-[#75886b] text-sm font-semibold text-white shadow-[0_10px_24px_rgba(83,104,73,0.18)] hover:bg-[#697b60] focus-visible:ring-[#7d916f]/30",
                 )}
               >
                 Start Vibe Check
-              </TrackedLink>
+              </Link>
 
               <Button
                 type="button"

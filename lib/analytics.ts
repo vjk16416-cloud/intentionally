@@ -1,3 +1,15 @@
+"use client";
+
+import {
+  LEGACY_ANALYTICS_EVENT_KEYS,
+  type AnalyticsEventKey,
+} from "@/lib/analytics/events";
+import { trackAnalyticsEvent } from "@/lib/analytics/client";
+
+/**
+ * Compatibility boundary for existing client call sites. New code must import
+ * trackAnalyticsEvent and a canonical key directly.
+ */
 export const AnalyticsEvents = {
   LOGIN: "login",
   ONBOARDING_STARTED: "onboarding_started",
@@ -10,36 +22,18 @@ export const AnalyticsEvents = {
   QA_FINISHED: "qa_finished",
   CONTINUE_AFTER_QA: "continue_after_qa",
   PASS_AFTER_QA: "pass_after_qa",
-  CHAT_SENT: "chat_sent",
   DATE_PLAN_SHARED: "date_plan_shared",
 } as const;
 
-export type AnalyticsEventName =
-  (typeof AnalyticsEvents)[keyof typeof AnalyticsEvents];
-
-type AnalyticsProperties = Record<string, unknown>;
-
-type PostHogLike = {
-  capture?: (eventName: string, properties?: AnalyticsProperties) => void;
-};
-
-declare global {
-  interface Window {
-    posthog?: PostHogLike;
-  }
-}
-
 export function trackEvent(
-  eventName: AnalyticsEventName | string,
-  properties?: AnalyticsProperties,
+  eventName: string,
+  properties?: Record<string, unknown>,
 ) {
-  if (typeof window === "undefined") {
-    return;
-  }
+  if (!(eventName in LEGACY_ANALYTICS_EVENT_KEYS)) return;
 
-  try {
-    window.posthog?.capture?.(eventName, properties);
-  } catch {
-    // Analytics must never break the product experience.
-  }
+  const eventKey = LEGACY_ANALYTICS_EVENT_KEYS[
+    eventName as keyof typeof LEGACY_ANALYTICS_EVENT_KEYS
+  ] as AnalyticsEventKey;
+
+  trackAnalyticsEvent(eventKey, { properties });
 }

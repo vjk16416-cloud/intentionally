@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 
-import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import {
   QA_VISIBILITY_OPTIONS,
@@ -30,7 +29,6 @@ type ExtraRequestState = "idle" | "sent" | "incoming" | "accepted" | "declined";
 
 type QaSessionRoomProps = {
   sessionId: string;
-  userId: string;
   matchId: string | null;
   baseQuestions: string[];
   initialQuestionIndex: number;
@@ -55,7 +53,6 @@ function clampQuestionIndex(value: number, total: number) {
 
 export function QaSessionRoom({
   sessionId,
-  userId,
   matchId,
   baseQuestions,
   initialQuestionIndex,
@@ -143,34 +140,21 @@ export function QaSessionRoom({
     hasTrackedEntry.current = true;
     trackAnalyticsEvent("visibilitySelected", {
       properties: {
-        session_id: sessionId,
-        visibility_mode: visibilityMode,
-        effective_visibility_mode: effectiveVisibilityMode,
-        surface: "room_entry",
+        qa_session_id: sessionId,
+        match_id: matchId,
+        video_provider: videoProvider ?? undefined,
       },
     });
-    trackEvent(AnalyticsEvents.QA_STARTED, {
-      user_id: userId,
-      match_id: matchId,
-      qa_session_id: sessionId,
-      source: "qa",
-      visibility_mode: visibilityMode,
-      effective_visibility_mode: effectiveVisibilityMode,
-    });
-  }, [effectiveVisibilityMode, matchId, sessionId, userId, visibilityMode]);
+  }, [
+    effectiveVisibilityMode,
+    matchId,
+    sessionId,
+    videoProvider,
+    visibilityMode,
+  ]);
 
-  function finishSession(extraState: ExtraRequestState = extraRequest) {
+  function finishSession() {
     liveKitRoomRef.current?.disconnect();
-    trackEvent(AnalyticsEvents.QA_FINISHED, {
-      user_id: userId,
-      match_id: matchId,
-      qa_session_id: sessionId,
-      source: "qa",
-      visibility_mode: effectiveVisibilityMode,
-      question_count: questions.length,
-      extra_questions: extraAccepted,
-      extra_request_state: extraState,
-    });
     const formData = new FormData();
     formData.set("sessionId", sessionId);
     startCompletionTransition(async () => {
@@ -192,11 +176,11 @@ export function QaSessionRoom({
   function answerQuestion() {
     trackAnalyticsEvent("qaQuestionAnswered", {
       properties: {
-        session_id: sessionId,
-        visibility_mode: effectiveVisibilityMode,
+        qa_session_id: sessionId,
         question_index: safeQuestionIndex,
         question_total: questions.length,
         is_last_question: isLastQuestion,
+        video_provider: videoProvider ?? undefined,
       },
     });
     advanceQuestion();
@@ -210,7 +194,7 @@ export function QaSessionRoom({
 
   function declineExtraQuestions() {
     setExtraRequest("declined");
-    finishSession("declined");
+    finishSession();
   }
 
   function pauseForThirtySeconds() {

@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 import { type Intention } from "@/lib/qa/questions";
 import { selectThreeQuestions } from "@/lib/qa/select";
+import { trackServerAnalyticsEvent } from "@/lib/analytics/server";
 import { sendQaScheduledEmail } from "@/lib/resend/emails";
 import { computeMutualSlots } from "@/lib/scheduling/slots";
 import { getServiceRoleKey, SUPABASE_URL } from "@/lib/supabase/env";
@@ -161,6 +162,17 @@ export async function proposeSlot(
     if (error) return { error: error.message };
   }
 
+  await Promise.all([
+    trackServerAnalyticsEvent("qaInviteSent", {
+      distinctId: user.id,
+      properties: { match_id: matchId, source: "schedule" },
+    }),
+    trackServerAnalyticsEvent("scheduleStarted", {
+      distinctId: user.id,
+      properties: { match_id: matchId, source: "schedule" },
+    }),
+  ]);
+
   revalidatePath(`/schedule/${matchId}`);
   redirect(`/schedule/${matchId}`);
 }
@@ -234,6 +246,10 @@ export async function confirmSlot(
       "[schedule] video room reservation failed",
       err instanceof Error ? err.message : "Unknown error",
     );
+    await trackServerAnalyticsEvent("scheduleFailed", {
+      distinctId: user.id,
+      properties: { match_id: matchId, failure_area: "video_room" },
+    });
     return { error: videoReservationErrorMessage(provider) };
   }
 
@@ -258,8 +274,23 @@ export async function confirmSlot(
     .maybeSingle();
   if (updateErr || !updated) {
     console.error("[schedule] qa_sessions confirm update failed", updateErr);
+    await trackServerAnalyticsEvent("scheduleFailed", {
+      distinctId: user.id,
+      properties: { match_id: matchId, failure_area: "video_room" },
+    });
     return { error: "Couldn't confirm the session." };
   }
+
+  await Promise.all([
+    trackServerAnalyticsEvent("qaInviteAccepted", {
+      distinctId: user.id,
+      properties: { match_id: matchId, qa_session_id: updated.id },
+    }),
+    trackServerAnalyticsEvent("scheduleConfirmed", {
+      distinctId: user.id,
+      properties: { match_id: matchId, qa_session_id: updated.id },
+    }),
+  ]);
 
   const { error: matchErr } = await a
     .from("matches")

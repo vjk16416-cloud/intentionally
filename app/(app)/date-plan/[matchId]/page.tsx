@@ -73,7 +73,6 @@ export default async function DatePlanPage({
 
   return (
     <DatePlanPicker
-      userId={user.id}
       matchId={matchId}
       chatId={chat.id}
       otherName={otherProfile?.display_name ?? "your match"}

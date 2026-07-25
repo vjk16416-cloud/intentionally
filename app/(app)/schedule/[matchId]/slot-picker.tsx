@@ -3,7 +3,6 @@
 import { useActionState, useState, type ReactNode } from "react";
 
 import { FallbackActionLink, FallbackPanel } from "@/components/fallback-state";
-import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import type { SlotProposal } from "@/lib/scheduling/slots";
 import { cn } from "@/lib/utils";
 
@@ -111,16 +110,6 @@ function SelectionForm({
         <button
           type="submit"
           disabled={pending || !selectedSlot}
-          onClick={() => {
-            if (!selectedSlot) return;
-            trackAnalyticsEvent("scheduleClicked", {
-              properties: {
-                match_id: matchId,
-                scheduled_at: selectedSlot.scheduledAtIso,
-                source: "slot_picker",
-              },
-            });
-          }}
           className="w-full rounded-2xl bg-[#75886b] px-4 py-3.5 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(83,104,73,0.24)] transition hover:bg-[#697b60] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {pending

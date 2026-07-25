@@ -5,7 +5,6 @@ import { FallbackPanel } from "@/components/fallback-state";
 import { createClient } from "@/lib/supabase/server";
 
 import { ChatMessageForm } from "./chat-message-form";
-import { ChatSentTracker } from "./chat-sent-tracker";
 import { sendMessage } from "./actions";
 
 type ChatRow = {
@@ -40,13 +39,10 @@ function messageTime(value: string) {
 
 export default async function ChatPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ chatId: string }>;
-  searchParams: Promise<{ sent?: string }>;
 }) {
   const { chatId } = await params;
-  const query = await searchParams;
   const supabase = await createClient();
 
   const {
@@ -99,11 +95,6 @@ export default async function ChatPage({
       <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_18%_0%,rgba(243,161,127,0.18)_0%,transparent_28%),radial-gradient(circle_at_86%_16%,rgba(243,161,127,0.13)_0%,transparent_30%),linear-gradient(180deg,#071411_0%,#0D1714_52%,#050D0B_100%)]" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,transparent_0%,transparent_58%,rgba(0,0,0,0.5)_100%)]" />
 
-      <ChatSentTracker
-        userId={user.id}
-        matchId={match.id}
-        sentMessageId={query.sent ?? null}
-      />
       <div className="mx-auto flex min-h-[calc(100vh-97px)] w-full max-w-md flex-col md:max-w-3xl lg:max-w-5xl">
         <header className="rounded-[2rem] border border-[#FFF8EC]/12 bg-[#0D1714]/82 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.32)] backdrop-blur-xl">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">

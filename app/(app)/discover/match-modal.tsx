@@ -1,6 +1,6 @@
 "use client";
 
-import { TrackedLink } from "@/components/analytics/tracked-link";
+import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { computeAge } from "@/lib/age";
 import { cn } from "@/lib/utils";
@@ -78,17 +78,15 @@ export function MatchModal({
           </p>
 
           <div className="space-y-3">
-            <TrackedLink
+            <Link
               href={`/schedule/${matchId}`}
-              eventKey="scheduleClicked"
-              eventProperties={{ match_id: matchId, source: "match_modal" }}
               className={cn(
                 buttonVariants({ size: "lg" }),
                 "h-12 w-full rounded-2xl bg-[#75886b] text-base font-semibold text-white shadow-[0_12px_30px_rgba(83,104,73,0.24)] hover:bg-[#697b60]",
               )}
             >
               Send Vibe Check invite
-            </TrackedLink>
+            </Link>
 
             <p className="text-xs leading-5 text-muted-foreground">
               Chat unlocks only if you both privately choose Continue after

@@ -1,1568 +1,250 @@
 import {
+  AlertTriangle,
   CalendarDays,
   CheckCircle2,
-  Eye,
-  Heart,
-  LogIn,
+  CircleAlert,
+  HeartHandshake,
   MessageSquareText,
-  MousePointerClick,
-  Send,
-  Sparkles,
-  Timer,
-  UserRoundCheck,
-  UsersRound,
-  XCircle,
+  ShieldCheck,
+  Video,
 } from "lucide-react";
-import type { ComponentType } from "react";
-import { createClient as createSupabaseServiceClient } from "@supabase/supabase-js";
 
+import {
+  buildFunnel,
+  isEmptyAnalyticsRange,
+  percentage,
+  type AnalyticsRangeKey,
+} from "@/lib/analytics/dashboard";
 import {
   getPostHogDashboardCounts,
   type DashboardEventKey,
   type PostHogDashboardCounts,
-  type PostHogDashboardResult,
 } from "@/lib/posthog/server";
-import { MIN_SLOTS } from "@/lib/onboarding/availability";
-import { getServiceRoleKey, SUPABASE_URL } from "@/lib/supabase/env";
-import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-type AnalyticsMetric = {
-  key: DashboardEventKey;
-  label: string;
-  value: number;
-  helper: string;
-  icon: ComponentType<{ className?: string }>;
-};
+const numberFormatter = new Intl.NumberFormat("en-GB");
 
-type FunnelStep = {
-  label: string;
-  value: number;
-};
-
-type AnalyticsRange = {
-  label: string;
-  caption: string;
-  metrics: AnalyticsMetric[];
-  funnel: FunnelStep[];
-};
-
-type RagStatus = "Good" | "Watch" | "Needs attention";
-
-type RecommendedAction = {
-  label: string;
+type MetricCardProps = {
   title: string;
-  why: string;
-  suggestedAction: string;
-  status: RagStatus;
-};
-
-type FunnelTransition = {
-  from: string;
-  to: string;
-  previousValue: number;
-  currentValue: number;
-  conversion: number;
-  dropOff: number;
-};
-
-type HealthMetric = {
-  label: string;
-  value: number;
-  detail: string;
-  status: RagStatus;
-};
-
-type ProductSuccessMetric = {
-  label: string;
   value: number | null;
-  helper: string;
-  source: string;
-  icon: ComponentType<{ className?: string }>;
+  detail: string;
+  icon: typeof Video;
 };
 
-type FounderAgent = {
-  name: string;
-  watches: string;
-  suggests: string;
-  status: RagStatus;
-};
-
-type OnboardingCandidate = {
-  id: string;
-  photos: unknown;
-  availability: unknown;
-};
-
-const metricConfig = [
-  {
-    key: "loginClicked",
-    label: "Login clicks",
-    helper: "login_clicked",
-    icon: LogIn,
-  },
-  {
-    key: "onboardingStarted",
-    label: "Onboarding started",
-    helper: "onboarding_started",
-    icon: UserRoundCheck,
-  },
-  {
-    key: "onboardingCompleted",
-    label: "Onboarding completed",
-    helper: "onboarding_completed",
-    icon: CheckCircle2,
-  },
-  {
-    key: "discoverViewed",
-    label: "Discover views",
-    helper: "discover_viewed",
-    icon: Eye,
-  },
-  {
-    key: "profileLiked",
-    label: "Likes",
-    helper: "profile_liked",
-    icon: Heart,
-  },
-  {
-    key: "profilePassed",
-    label: "Passes",
-    helper: "profile_passed",
-    icon: XCircle,
-  },
-  {
-    key: "matchCreated",
-    label: "Matches",
-    helper: "match_created",
-    icon: UsersRound,
-  },
-  {
-    key: "scheduleClicked",
-    label: "Schedule clicks",
-    helper: "schedule_clicked",
-    icon: CalendarDays,
-  },
-  {
-    key: "datePlanViewed",
-    label: "Date plan views",
-    helper: "date_plan_viewed",
-    icon: CalendarDays,
-  },
-  {
-    key: "qaStarted",
-    label: "Q&A started",
-    helper: "qa_started",
-    icon: Timer,
-  },
-  {
-    key: "visibilitySelected",
-    label: "Visibility selected",
-    helper: "visibility_selected",
-    icon: Eye,
-  },
-  {
-    key: "qaQuestionAnswered",
-    label: "Questions answered",
-    helper: "qa_question_answered",
-    icon: MessageSquareText,
-  },
-  {
-    key: "qaFinished",
-    label: "Q&A finished",
-    helper: "qa_finished",
-    icon: Sparkles,
-  },
-  {
-    key: "continueSelected",
-    label: "Continue after Q&A",
-    helper: "continue_after_qa",
-    icon: CheckCircle2,
-  },
-  {
-    key: "passPrivatelySelected",
-    label: "Pass after Q&A",
-    helper: "pass_after_qa",
-    icon: XCircle,
-  },
-  {
-    key: "chatSent",
-    label: "Chat messages sent",
-    helper: "chat_sent",
-    icon: MessageSquareText,
-  },
-  {
-    key: "datePlanShared",
-    label: "Date plans shared",
-    helper: "date_plan_shared",
-    icon: Send,
-  },
-] as const satisfies readonly Omit<AnalyticsMetric, "value">[];
-
-const funnelConfig = [
-  ["loginClicked", "Login clicks"],
-  ["onboardingCompleted", "Onboarding completed"],
-  ["discoverViewed", "Discover views"],
-  ["profileLiked", "Likes"],
-  ["matchCreated", "Matches"],
-  ["scheduleClicked", "Schedule clicks"],
-  ["datePlanViewed", "Date plan views"],
-  ["qaStarted", "Q&A started"],
-  ["visibilitySelected", "Visibility selected"],
-  ["qaQuestionAnswered", "Questions answered"],
-  ["qaFinished", "Q&A finished"],
-  ["chatSent", "Chat messages sent"],
-  ["datePlanShared", "Date plans shared"],
-] as const satisfies readonly [DashboardEventKey, string][];
-
-const founderAgents: FounderAgent[] = [
-  {
-    name: "Product Insight Agent",
-    watches: "Funnel health, Q&A completion, and match progression.",
-    suggests: "What to improve next without adding product noise.",
-    status: "Watch",
-  },
-  {
-    name: "User Testing Agent",
-    watches: "Tester feedback, confusion points, and abandoned steps.",
-    suggests: "What to test with users this week.",
-    status: "Good",
-  },
-  {
-    name: "Safety Review Agent",
-    watches: "No-shows, reports, private pass behaviour, and safety-related drop-offs.",
-    suggests: "Which safety risk needs founder attention.",
-    status: "Needs attention",
-  },
-  {
-    name: "Growth & Activation Agent",
-    watches: "Sign-ups, onboarding completion, discovery usage, and chat unlocks.",
-    suggests: "How to improve activation while preserving intention.",
-    status: "Watch",
-  },
-];
-
-const unavailableProductMetrics: ProductSuccessMetric[] = [
-  {
-    label: "Total users",
-    value: null,
-    helper: "Profiles table count unavailable.",
-    source: "Supabase",
-    icon: UsersRound,
-  },
-  {
-    label: "Onboarding completed",
-    value: null,
-    helper: "Completion is inferred from required profile fields and trusted contact.",
-    source: "Supabase",
-    icon: CheckCircle2,
-  },
-  {
-    label: "Profiles liked",
-    value: null,
-    helper: "Swipe count unavailable.",
-    source: "Supabase",
-    icon: Heart,
-  },
-  {
-    label: "Profiles passed",
-    value: null,
-    helper: "Swipe count unavailable.",
-    source: "Supabase",
-    icon: XCircle,
-  },
-  {
-    label: "Matches created",
-    value: null,
-    helper: "Match count unavailable.",
-    source: "Supabase",
-    icon: UsersRound,
-  },
-  {
-    label: "Q&A sessions started",
-    value: null,
-    helper: "Q&A session count unavailable.",
-    source: "Supabase",
-    icon: Timer,
-  },
-  {
-    label: "Q&A sessions completed",
-    value: null,
-    helper: "Tracking added, waiting for events. No Supabase completion column yet.",
-    source: "TODO",
-    icon: Sparkles,
-  },
-  {
-    label: "Continue after Q&A",
-    value: null,
-    helper: "Q&A outcome count unavailable.",
-    source: "Supabase",
-    icon: CheckCircle2,
-  },
-  {
-    label: "Pass after Q&A",
-    value: null,
-    helper: "Q&A outcome count unavailable.",
-    source: "Supabase",
-    icon: XCircle,
-  },
-  {
-    label: "Chat messages sent",
-    value: null,
-    helper: "Message count unavailable.",
-    source: "Supabase",
-    icon: MessageSquareText,
-  },
-  {
-    label: "Date plans shared",
-    value: null,
-    helper: "Date plan preference count unavailable.",
-    source: "Supabase",
-    icon: Send,
-  },
-];
-
-function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === "string");
+function formatCount(value: number) {
+  return numberFormatter.format(value);
 }
 
-function isNumberArray(value: unknown): value is number[] {
-  return Array.isArray(value) && value.every((item) => typeof item === "number");
+function formatPercentage(value: number | null) {
+  return value === null ? "—" : `${value}%`;
 }
 
-function countValue(count: number | null) {
-  return count ?? 0;
-}
-
-async function getProductSuccessMetrics(): Promise<ProductSuccessMetric[]> {
-  try {
-    const supabase = createSupabaseServiceClient(
-      SUPABASE_URL,
-      getServiceRoleKey(),
-      {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-        },
-      },
-    );
-
-    const countRows = async (table: string) => {
-      const { count } = await supabase
-        .from(table)
-        .select("*", { count: "exact", head: true });
-
-      return countValue(count);
-    };
-
-    const countSwipes = async (direction: "like" | "pass") => {
-      const { count } = await supabase
-        .from("swipes")
-        .select("*", { count: "exact", head: true })
-        .eq("direction", direction);
-
-      return countValue(count);
-    };
-
-    const countQaOutcomes = async (decision: "continue" | "pass") => {
-      const { count } = await supabase
-        .from("qa_outcomes")
-        .select("*", { count: "exact", head: true })
-        .eq("decision", decision);
-
-      return countValue(count);
-    };
-
-    const getOnboardingCompletedCount = async () => {
-      const { data: candidates } = await supabase
-        .from("profiles")
-        .select("id, photos, availability")
-        .not("display_name", "is", null)
-        .not("date_of_birth", "is", null)
-        .not("gender", "is", null)
-        .not("seeking", "is", null)
-        .not("intention", "is", null)
-        .not("bio_prompt_key", "is", null)
-        .not("bio_answer", "is", null)
-        .neq("display_name", "")
-        .neq("bio_answer", "")
-        .not("city", "is", null)
-        .not("neighbourhood", "is", null)
-        .not("photos", "is", null)
-        .not("availability", "is", null)
-        .returns<OnboardingCandidate[]>();
-
-      const completeProfileIds = (candidates ?? [])
-        .filter(
-          (candidate) =>
-            isStringArray(candidate.photos) &&
-            candidate.photos.length > 0 &&
-            isNumberArray(candidate.availability) &&
-            candidate.availability.length >= MIN_SLOTS,
-        )
-        .map((candidate) => candidate.id);
-
-      if (completeProfileIds.length === 0) {
-        return 0;
-      }
-
-      const { data: contacts } = await supabase
-        .from("trusted_contacts")
-        .select("user_id")
-        .in("user_id", completeProfileIds)
-        .returns<{ user_id: string }[]>();
-
-      return new Set((contacts ?? []).map((contact) => contact.user_id)).size;
-    };
-
-    const [
-      totalUsers,
-      onboardingCompleted,
-      profilesLiked,
-      profilesPassed,
-      matchesCreated,
-      qaSessionsStarted,
-      continueAfterQa,
-      passAfterQa,
-      chatMessagesSent,
-      datePlansShared,
-    ] = await Promise.all([
-      countRows("profiles"),
-      getOnboardingCompletedCount(),
-      countSwipes("like"),
-      countSwipes("pass"),
-      countRows("matches"),
-      countRows("qa_sessions"),
-      countQaOutcomes("continue"),
-      countQaOutcomes("pass"),
-      countRows("messages"),
-      countRows("date_plan_preferences"),
-    ]);
-
-    return [
-      {
-        label: "Total users",
-        value: totalUsers,
-        helper: "Profiles created in Supabase.",
-        source: "Supabase",
-        icon: UsersRound,
-      },
-      {
-        label: "Onboarding completed",
-        value: onboardingCompleted,
-        helper: "Profiles with required setup fields, photos, availability, and trusted contact.",
-        source: "Supabase",
-        icon: CheckCircle2,
-      },
-      {
-        label: "Profiles liked",
-        value: profilesLiked,
-        helper: "Rows in swipes where direction is like.",
-        source: "Supabase",
-        icon: Heart,
-      },
-      {
-        label: "Profiles passed",
-        value: profilesPassed,
-        helper: "Rows in swipes where direction is pass.",
-        source: "Supabase",
-        icon: XCircle,
-      },
-      {
-        label: "Matches created",
-        value: matchesCreated,
-        helper: "Rows in matches.",
-        source: "Supabase",
-        icon: UsersRound,
-      },
-      {
-        label: "Q&A sessions started",
-        value: qaSessionsStarted,
-        helper: "Rows in qa_sessions.",
-        source: "Supabase",
-        icon: Timer,
-      },
-      {
-        label: "Q&A sessions completed",
-        value: null,
-        helper: "Tracking added, waiting for events. Supabase does not store a completed timestamp yet.",
-        source: "TODO",
-        icon: Sparkles,
-      },
-      {
-        label: "Continue after Q&A",
-        value: continueAfterQa,
-        helper: "Rows in qa_outcomes where decision is continue.",
-        source: "Supabase",
-        icon: CheckCircle2,
-      },
-      {
-        label: "Pass after Q&A",
-        value: passAfterQa,
-        helper: "Rows in qa_outcomes where decision is pass.",
-        source: "Supabase",
-        icon: XCircle,
-      },
-      {
-        label: "Chat messages sent",
-        value: chatMessagesSent,
-        helper: "Rows in messages; message text is not selected.",
-        source: "Supabase",
-        icon: MessageSquareText,
-      },
-      {
-        label: "Date plans shared",
-        value: datePlansShared,
-        helper: "Rows in date_plan_preferences.",
-        source: "Supabase",
-        icon: Send,
-      },
-    ];
-  } catch {
-    return unavailableProductMetrics;
-  }
-}
-
-function buildAnalyticsRange({
-  label,
-  caption,
-  counts,
-  countKey,
-}: {
-  label: string;
-  caption: string;
-  counts: PostHogDashboardCounts;
-  countKey: "last7Days" | "last30Days";
-}): AnalyticsRange {
-  const metrics = metricConfig.map((metric) => ({
-    ...metric,
-    value: counts[metric.key][countKey],
-  }));
-
-  return {
-    label,
-    caption,
-    metrics,
-    funnel: funnelConfig.map(([key, stepLabel]) => ({
-      label: stepLabel,
-      value: counts[key][countKey],
-    })),
-  };
-}
-
-function isEmptyRange(range: AnalyticsRange) {
-  return range.metrics.every((metric) => metric.value === 0);
-}
-
-function formatNumber(value: number) {
-  return new Intl.NumberFormat("en-GB").format(value);
-}
-
-function conversionRate(current: number, previous: number) {
-  if (previous === 0) return 0;
-
-  return Math.round((current / previous) * 100);
-}
-
-function dropOffRate(current: number, previous: number) {
-  if (previous === 0) return 0;
-
-  return Math.max(0, 100 - conversionRate(current, previous));
-}
-
-function statusClassName(status: RagStatus) {
-  if (status === "Good") {
-    return "bg-[#e2e8dc] text-[#2f3a2b]";
-  }
-
-  if (status === "Watch") {
-    return "bg-[#f1dfbd] text-[#6a4b16]";
-  }
-
-  return "bg-[#efd0ca] text-[#7a2118]";
-}
-
-function getMetricValue(range: AnalyticsRange, key: DashboardEventKey) {
-  return range.metrics.find((metric) => metric.key === key)?.value ?? 0;
-}
-
-function rateStatus(value: number, good: number, watch: number): RagStatus {
-  if (value >= good) return "Good";
-  if (value >= watch) return "Watch";
-
-  return "Needs attention";
-}
-
-function productHealthStatus(metrics: HealthMetric[]): RagStatus {
-  if (metrics.some((metric) => metric.status === "Needs attention")) {
-    return "Needs attention";
-  }
-
-  if (metrics.some((metric) => metric.status === "Watch")) {
-    return "Watch";
-  }
-
-  return "Good";
-}
-
-function getFunnelTransitions(steps: FunnelStep[]): FunnelTransition[] {
-  return steps.slice(1).map((step, index) => {
-    const previous = steps[index];
-    const conversion = conversionRate(step.value, previous.value);
-
-    return {
-      from: previous.label,
-      to: step.label,
-      previousValue: previous.value,
-      currentValue: step.value,
-      conversion,
-      dropOff: Math.max(0, 100 - conversion),
-    };
-  });
-}
-
-function getBiggestDropOff(steps: FunnelStep[]) {
-  return getFunnelTransitions(steps).reduce(
-    (biggest, transition) =>
-      transition.dropOff > biggest.dropOff ? transition : biggest,
-    {
-      from: steps[0]?.label ?? "Start",
-      to: steps[1]?.label ?? "Next",
-      previousValue: steps[0]?.value ?? 0,
-      currentValue: steps[1]?.value ?? 0,
-      conversion: 0,
-      dropOff: 0,
-    },
-  );
-}
-
-function getStrongestEngagementSignal(range: AnalyticsRange) {
-  const qaFinished =
-    range.metrics.find((metric) => metric.key === "qaFinished")?.value ?? 0;
-  const chatMessages =
-    range.metrics.find((metric) => metric.key === "chatSent")?.value ?? 0;
-  const datePlans =
-    range.metrics.find((metric) => metric.key === "datePlanShared")?.value ?? 0;
-
-  if (qaFinished > 0 && chatMessages / qaFinished >= 3) {
-    return {
-      label: "Chat depth after Q&A",
-      detail: `${formatNumber(chatMessages)} chat messages from ${formatNumber(
-        qaFinished,
-      )} completed Q&As.`,
-      status: "Good" as const,
-    };
-  }
-
-  if (datePlans > 0) {
-    return {
-      label: "Date planning intent",
-      detail: `${formatNumber(datePlans)} shared date plans after chat unlock.`,
-      status: "Watch" as const,
-    };
-  }
-
-  return {
-    label: "No strong post-Q&A signal yet",
-    detail: "Completed Q&As have not turned into enough chat or date intent.",
-    status: "Needs attention" as const,
-  };
-}
-
-function getHealthMetrics(range: AnalyticsRange): HealthMetric[] {
-  const loginClicks = getMetricValue(range, "loginClicked");
-  const onboardingCompleted = getMetricValue(range, "onboardingCompleted");
-  const discoverViews = getMetricValue(range, "discoverViewed");
-  const likes = getMetricValue(range, "profileLiked");
-  const matches = getMetricValue(range, "matchCreated");
-  const scheduleClicks = getMetricValue(range, "scheduleClicked");
-  const datePlanViews = getMetricValue(range, "datePlanViewed");
-  const qaStarted = getMetricValue(range, "qaStarted");
-  const visibilitySelected = getMetricValue(range, "visibilitySelected");
-  const qaQuestionAnswered = getMetricValue(range, "qaQuestionAnswered");
-  const qaFinished = getMetricValue(range, "qaFinished");
-  const continueSelected = getMetricValue(range, "continueSelected");
-  const passPrivatelySelected = getMetricValue(range, "passPrivatelySelected");
-  const chatMessages = getMetricValue(range, "chatSent");
-  const datePlans = getMetricValue(range, "datePlanShared");
-
-  const onboarding = conversionRate(onboardingCompleted, loginClicks);
-  const discoverToLike = conversionRate(likes, discoverViews);
-  const likeToMatch = conversionRate(matches, likes);
-  const matchToSchedule = conversionRate(scheduleClicks, matches);
-  const scheduleToDatePlanView = conversionRate(datePlanViews, scheduleClicks);
-  const qaVisibility = conversionRate(visibilitySelected, qaStarted);
-  const qaAnswerRate = conversionRate(qaQuestionAnswered, qaStarted);
-  const qaCompletion = conversionRate(qaFinished, qaStarted);
-  const decisionTotal = continueSelected + passPrivatelySelected;
-  const continueRate =
-    decisionTotal === 0 ? 0 : conversionRate(continueSelected, decisionTotal);
-  const chatActivation = conversionRate(chatMessages, qaFinished);
-  const datePlanShare = conversionRate(datePlans, chatMessages);
-
-  return [
-    {
-      label: "Onboarding completion",
-      value: onboarding,
-      detail: `${formatNumber(onboardingCompleted)} completed from ${formatNumber(
-        loginClicks,
-      )} login clicks.`,
-      status: rateStatus(onboarding, 75, 55),
-    },
-    {
-      label: "Discover engagement",
-      value: discoverToLike,
-      detail: `${formatNumber(likes)} likes from ${formatNumber(
-        discoverViews,
-      )} Discover views.`,
-      status: rateStatus(discoverToLike, 25, 10),
-    },
-    {
-      label: "Like to match rate",
-      value: likeToMatch,
-      detail: `${formatNumber(matches)} matches from ${formatNumber(likes)} likes.`,
-      status: rateStatus(likeToMatch, 25, 12),
-    },
-    {
-      label: "Match to schedule rate",
-      value: matchToSchedule,
-      detail: `${formatNumber(scheduleClicks)} schedule clicks from ${formatNumber(
-        matches,
-      )} matches.`,
-      status: rateStatus(matchToSchedule, 65, 40),
-    },
-    {
-      label: "Date plan interest",
-      value: scheduleToDatePlanView,
-      detail: `${formatNumber(datePlanViews)} date plan views from ${formatNumber(
-        scheduleClicks,
-      )} schedule clicks.`,
-      status: rateStatus(scheduleToDatePlanView, 70, 35),
-    },
-    {
-      label: "Visibility selection rate",
-      value: qaVisibility,
-      detail: `${formatNumber(visibilitySelected)} visibility selections from ${formatNumber(
-        qaStarted,
-      )} Q&As started.`,
-      status: rateStatus(qaVisibility, 90, 60),
-    },
-    {
-      label: "Q&A answer rate",
-      value: qaAnswerRate,
-      detail: `${formatNumber(qaQuestionAnswered)} questions answered from ${formatNumber(
-        qaStarted,
-      )} Q&As started.`,
-      status: rateStatus(qaAnswerRate, 75, 50),
-    },
-    {
-      label: "Q&A completion rate",
-      value: qaCompletion,
-      detail: `${formatNumber(qaFinished)} finished from ${formatNumber(
-        qaStarted,
-      )} Q&As started.`,
-      status: rateStatus(qaCompletion, 75, 55),
-    },
-    {
-      label: "Continue rate",
-      value: continueRate,
-      detail: `${formatNumber(continueSelected)} Continue selections and ${formatNumber(
-        passPrivatelySelected,
-      )} Pass privately selections.`,
-      status: rateStatus(continueRate, 65, 40),
-    },
-    {
-      label: "Chat activation rate",
-      value: chatActivation,
-      detail: `${formatNumber(chatMessages)} chat messages after ${formatNumber(
-        qaFinished,
-      )} finished Q&As.`,
-      status: rateStatus(chatActivation, 100, 40),
-    },
-    {
-      label: "Date plan share rate",
-      value: datePlanShare,
-      detail: `${formatNumber(datePlans)} date plans from ${formatNumber(
-        chatMessages,
-      )} chat messages.`,
-      status: rateStatus(datePlanShare, 20, 8),
-    },
-  ];
-}
-
-function HealthCard({ metric }: { metric: HealthMetric }) {
+function MetricCard({ title, value, detail, icon: Icon }: MetricCardProps) {
   return (
     <article className="rounded-[1.5rem] border border-border bg-card p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-medium text-muted-foreground">
-            {metric.label}
-          </p>
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
           <p className="mt-2 text-3xl font-semibold tracking-tight">
-            {metric.value}%
+            {formatPercentage(value)}
           </p>
         </div>
-        <span
-          className={cn(
-            "rounded-full px-3 py-1 text-xs font-semibold",
-            statusClassName(metric.status),
-          )}
-        >
-          {metric.status}
-        </span>
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+          <Icon className="h-5 w-5" aria-hidden="true" />
+        </div>
       </div>
-      <p className="mt-4 text-sm leading-6 text-muted-foreground">
-        {metric.detail}
-      </p>
+      <p className="mt-4 text-sm leading-6 text-muted-foreground">{detail}</p>
     </article>
   );
 }
 
-function ProductSuccessCard({ metric }: { metric: ProductSuccessMetric }) {
-  const Icon = metric.icon;
-  const isWaiting = metric.value === null;
-
-  return (
-    <article className="rounded-[1.25rem] border border-border bg-card p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-muted-foreground">
-            {metric.label}
-          </p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight">
-            {metric.value === null ? "Waiting" : formatNumber(metric.value)}
-          </p>
-        </div>
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-          <Icon className="h-5 w-5" />
-        </div>
-      </div>
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <span
-          className={cn(
-            "rounded-full px-3 py-1 text-xs font-semibold",
-            isWaiting
-              ? "bg-[#f1dfbd] text-[#6a4b16]"
-              : "bg-[#e2e8dc] text-[#2f3a2b]",
-          )}
-        >
-          {metric.source}
-        </span>
-        {isWaiting ? (
-          <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
-            No stored count
-          </span>
-        ) : null}
-      </div>
-      <p className="mt-3 text-sm leading-6 text-muted-foreground">
-        {metric.helper}
-      </p>
-    </article>
-  );
-}
-
-function ProductSuccessDashboard({
-  metrics,
-}: {
-  metrics: ProductSuccessMetric[];
-}) {
-  return (
-    <section className="space-y-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            MVP product success
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-            What users are doing
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Durable product counts from Supabase where the action creates a row.
-            Event-only steps stay clearly marked until they have stored data.
-          </p>
-        </div>
-        <span className="rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold shadow-sm">
-          No private content shown
-        </span>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {metrics.map((metric) => (
-          <ProductSuccessCard key={metric.label} metric={metric} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function FounderAiAgents() {
-  return (
-    <section
-      id="founder-ai-agents"
-      className="scroll-mt-6 rounded-[1.75rem] border border-border bg-card p-5 shadow-sm sm:p-6"
-    >
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            Founder AI Agents
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-            Advisory command centre
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Static advisory demo mode for deciding what deserves founder
-            attention next. No AI calls, no private data access, and no product
-            behaviour changes.
-          </p>
-        </div>
-        <span className="w-fit rounded-full bg-[#f1dfbd] px-4 py-2 text-sm font-semibold text-[#6a4b16]">
-          Advisory demo mode
-        </span>
-      </div>
-
-      <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {founderAgents.map((agent) => (
-          <article
-            key={agent.name}
-            className="flex min-h-full flex-col rounded-[1.25rem] border border-border bg-background p-4 shadow-sm"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <h3 className="text-base font-semibold tracking-tight">
-                {agent.name}
-              </h3>
-              <span
-                className={cn(
-                  "shrink-0 rounded-full px-3 py-1 text-xs font-semibold",
-                  statusClassName(agent.status),
-                )}
-              >
-                Status: {agent.status}
-              </span>
-            </div>
-            <div className="mt-4 space-y-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Watches
-                </p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  {agent.watches}
-                </p>
-              </div>
-              <div className="rounded-2xl border border-border bg-card/70 p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Founder prompt
-                </p>
-                <p className="mt-2 text-sm font-medium leading-6">
-                  {agent.suggests}
-                </p>
-              </div>
-            </div>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function FounderSummary({ range }: { range: AnalyticsRange }) {
-  const biggestDropOff = getBiggestDropOff(range.funnel);
-  const engagementSignal = getStrongestEngagementSignal(range);
-  const healthMetrics = getHealthMetrics(range);
-  const healthStatus = productHealthStatus(healthMetrics);
-  const loginClicks =
-    range.metrics.find((metric) => metric.key === "loginClicked")?.value ?? 0;
-  const onboardingCompleted =
-    range.metrics.find((metric) => metric.key === "onboardingCompleted")
-      ?.value ?? 0;
-  const discoverViews =
-    range.metrics.find((metric) => metric.key === "discoverViewed")?.value ?? 0;
-  const visibilitySelected =
-    range.metrics.find((metric) => metric.key === "visibilitySelected")
-      ?.value ?? 0;
-  const qaQuestionAnswered =
-    range.metrics.find((metric) => metric.key === "qaQuestionAnswered")
-      ?.value ?? 0;
-  const matches =
-    range.metrics.find((metric) => metric.key === "matchCreated")?.value ?? 0;
-  const scheduleClicks =
-    range.metrics.find((metric) => metric.key === "scheduleClicked")?.value ??
-    0;
-  const qaFinished =
-    range.metrics.find((metric) => metric.key === "qaFinished")?.value ?? 0;
-  const continueSelected =
-    range.metrics.find((metric) => metric.key === "continueSelected")
-      ?.value ?? 0;
-  const passPrivatelySelected =
-    range.metrics.find((metric) => metric.key === "passPrivatelySelected")
-      ?.value ?? 0;
-  const chatSent =
-    range.metrics.find((metric) => metric.key === "chatSent")?.value ?? 0;
-  const datePlanViewed =
-    range.metrics.find((metric) => metric.key === "datePlanViewed")?.value ?? 0;
-  const decisionTotal = continueSelected + passPrivatelySelected;
-  const continueRate =
-    decisionTotal === 0 ? 0 : conversionRate(continueSelected, decisionTotal);
-
-  const insights = [
-    `${conversionRate(
-      onboardingCompleted,
-      loginClicks,
-    )}% of login clicks are becoming completed onboarding profiles.`,
-    `${conversionRate(
-      matches,
-      discoverViews,
-    )}% of Discover views are turning into matches.`,
-    `${formatNumber(matches)} matches led to ${formatNumber(
-      scheduleClicks,
-    )} schedule clicks, so match intent is converting into Q&A planning.`,
-    `${formatNumber(visibilitySelected)} visibility selections and ${formatNumber(
-      qaQuestionAnswered,
-    )} answered questions show that people are getting through the room.`,
-    `${formatNumber(qaFinished)} Q&As were finished; ${formatNumber(
-      chatSent,
-    )} chat messages and ${formatNumber(datePlanViewed)} date plan views followed.`,
-    `Biggest leak: ${biggestDropOff.from} → ${biggestDropOff.to} has ${biggestDropOff.dropOff}% drop-off.`,
-  ];
-  const recommendedAction = getRecommendedExperiments(range)[0];
-
-  return (
-    <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm sm:p-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            Executive summary
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-            What is happening right now
-          </h2>
-        </div>
-        <span
-          className={cn(
-            "rounded-full px-4 py-2 text-sm font-semibold",
-            statusClassName(healthStatus),
-          )}
-        >
-          Product health: {healthStatus}
-        </span>
-      </div>
-
-      <div className="mt-5 grid gap-3 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
-        <div className="rounded-[1.25rem] bg-background p-4">
-          <p className="text-sm font-semibold">Plain-English readout</p>
-          <ul className="mt-3 space-y-2">
-            {insights.map((insight) => (
-              <li
-                key={insight}
-                className="flex gap-2 text-sm leading-6 text-muted-foreground"
-              >
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
-                <span>{insight}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <SummarySignalCard
-          title="Biggest drop-off"
-          label={`${biggestDropOff.from} → ${biggestDropOff.to}`}
-          detail={`${biggestDropOff.dropOff}% drop-off between these steps.`}
-          status={biggestDropOff.dropOff >= 55 ? "Needs attention" : "Watch"}
-        />
-
-        <SummarySignalCard
-          title="Strongest engagement signal"
-          label={engagementSignal.label}
-          detail={engagementSignal.detail}
-          status={engagementSignal.status}
-        />
-      </div>
-
-      <div className="mt-3 grid gap-3 md:grid-cols-2">
-        <SummarySignalCard
-          title="Discover activity"
-          label={`${formatNumber(discoverViews)} views · ${formatNumber(matches)} matches`}
-          detail={`${conversionRate(matches, discoverViews)}% of Discover views are becoming matches.`}
-          status={rateStatus(conversionRate(matches, discoverViews), 20, 8)}
-        />
-        <SummarySignalCard
-          title="Decision split"
-          label={`${formatNumber(continueSelected)} Continue / ${formatNumber(
-            passPrivatelySelected,
-          )} Pass`}
-          detail={`${continueRate}% of Q&A decisions are Continue. ${formatNumber(
-            visibilitySelected,
-          )} visibility selections and ${formatNumber(
-            qaQuestionAnswered,
-          )} answered questions show room engagement.`}
-          status={rateStatus(continueRate, 65, 40)}
-        />
-      </div>
-
-      <SummarySignalCard
-        title="Recommended next action"
-        label={recommendedAction.title}
-        detail={recommendedAction.suggestedAction}
-        status={recommendedAction.status}
-        className="mt-3"
-      />
-    </section>
-  );
-}
-
-function getRecommendedExperiments(range: AnalyticsRange): RecommendedAction[] {
-  const biggestDropOff = getBiggestDropOff(range.funnel);
-  const healthMetrics = getHealthMetrics(range);
-  const weakestHealth =
-    healthMetrics.find((metric) => metric.status === "Needs attention") ??
-    healthMetrics.find((metric) => metric.status === "Watch") ??
-    healthMetrics[0];
-
-  return [
-    {
-      label: "Experiment 1",
-      title: `Repair ${biggestDropOff.from} → ${biggestDropOff.to}`,
-      why: `This is the weakest funnel stage at ${biggestDropOff.dropOff}% drop-off.`,
-      suggestedAction:
-        "Test tighter page copy, a clearer CTA, and one less decision at this exact step.",
-      status: biggestDropOff.dropOff >= 55 ? "Needs attention" : "Watch",
-    },
-    {
-      label: "Experiment 2",
-      title: `Lift ${weakestHealth.label.toLowerCase()}`,
-      why: `${weakestHealth.detail} This metric is currently marked ${weakestHealth.status.toLowerCase()}.`,
-      suggestedAction:
-        "Run a one-week variant focused only on this metric and compare the next 30-day view.",
-      status: weakestHealth.status,
-    },
-    {
-      label: "Experiment 3",
-      title: "Increase post-Q&A momentum",
-      why: "The MVP thesis depends on finished Q&As turning into chat depth and date intent.",
-      suggestedAction:
-        "After Q&A completion, test a single lightweight prompt that nudges users toward one concrete next message or date plan.",
-      status: "Watch",
-    },
-  ];
-}
-
-function RecommendedActionCard({ action }: { action: RecommendedAction }) {
-  return (
-    <article className="rounded-[1.25rem] bg-background p-4">
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          {action.label}
-        </p>
-        <span
-          className={cn(
-            "rounded-full px-3 py-1 text-xs font-semibold",
-            statusClassName(action.status),
-          )}
-        >
-          {action.status}
-        </span>
-      </div>
-      <h4 className="mt-4 text-lg font-semibold tracking-tight">
-        {action.title}
-      </h4>
-      <p className="mt-3 text-sm font-semibold">Why it matters</p>
-      <p className="mt-1 text-sm leading-6 text-muted-foreground">
-        {action.why}
-      </p>
-      <p className="mt-3 text-sm font-semibold">Suggested action</p>
-      <p className="mt-1 text-sm leading-6 text-muted-foreground">
-        {action.suggestedAction}
-      </p>
-    </article>
-  );
-}
-
-function SummarySignalCard({
+function CountCard({
   title,
-  label,
+  value,
   detail,
-  status,
-  className,
+  unavailable = false,
 }: {
   title: string;
-  label: string;
+  value?: number;
   detail: string;
-  status: RagStatus;
-  className?: string;
+  unavailable?: boolean;
 }) {
   return (
-    <article className={cn("rounded-[1.25rem] bg-background p-4", className)}>
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-sm font-semibold">{title}</p>
-        <span
-          className={cn(
-            "rounded-full px-3 py-1 text-xs font-semibold",
-            statusClassName(status),
-          )}
-        >
-          {status}
-        </span>
-      </div>
-      <p className="mt-4 text-xl font-semibold tracking-tight">{label}</p>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">{detail}</p>
+    <article className="rounded-[1.5rem] border border-border bg-card p-4 shadow-sm">
+      <p className="text-sm font-medium text-muted-foreground">{title}</p>
+      <p className="mt-2 text-3xl font-semibold tracking-tight">
+        {unavailable ? "Unavailable" : formatCount(value ?? 0)}
+      </p>
+      <p className="mt-4 text-sm leading-6 text-muted-foreground">{detail}</p>
     </article>
   );
 }
 
-function EmptyAnalyticsState({ label }: { label: string }) {
-  return (
-    <section className="rounded-[1.75rem] border border-dashed border-border bg-card/70 p-8 text-center shadow-sm">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-        <MousePointerClick className="h-5 w-5" />
-      </div>
-      <h2 className="mt-4 text-xl font-semibold tracking-tight">
-        No analytics yet
-      </h2>
-      <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
-        There are no recorded product actions for {label}. Once events arrive,
-        this section will show the funnel, cards, and drop-off rates.
-      </p>
-    </section>
-  );
-}
-
-function AnalyticsUnavailableState({
-  result,
+function SectionHeading({
+  eyebrow,
+  title,
+  children,
 }: {
-  result: Extract<PostHogDashboardResult, { status: "unavailable" }>;
+  eyebrow: string;
+  title: string;
+  children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-[1.75rem] border border-dashed border-border bg-card/70 p-8 text-center shadow-sm">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-        <MousePointerClick className="h-5 w-5" />
-      </div>
-      <h2 className="mt-4 text-xl font-semibold tracking-tight">
-        Live analytics unavailable
-      </h2>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-        {result.message}
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+        {eyebrow}
       </p>
-      <p className="mt-4 rounded-full bg-muted px-4 py-2 text-xs font-semibold text-muted-foreground sm:inline-flex">
-        Status: {result.reason.replace(/_/g, " ")}
+      <h2 className="mt-2 text-2xl font-semibold tracking-tight">{title}</h2>
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+        {children}
       </p>
-    </section>
+    </div>
   );
 }
 
-function FunnelPanel({ steps }: { steps: FunnelStep[] }) {
-  const baseline = Math.max(...steps.map((step) => step.value), 1);
-  const weakest = getBiggestDropOff(steps);
+function eventCount(
+  counts: PostHogDashboardCounts,
+  key: DashboardEventKey,
+  range: AnalyticsRangeKey,
+) {
+  return counts[key][range];
+}
+
+function Dashboard({ counts, range }: { counts: PostHogDashboardCounts; range: AnalyticsRangeKey }) {
+  const funnel = buildFunnel(counts, range);
+  const scheduled = eventCount(counts, "scheduleConfirmed", range);
+  const started = eventCount(counts, "qaStarted", range);
+  const completed = eventCount(counts, "qaCompleted", range);
+  const mutualContinue = eventCount(counts, "mutualContinue", range);
+  const chatUnlocked = eventCount(counts, "chatUnlocked", range);
+  const datePlans = eventCount(counts, "datePlanCreated", range);
+  const showUpRate = percentage(started, scheduled);
+  const completionRate = percentage(completed, started);
+  const mutualContinueRate = percentage(mutualContinue, completed);
+  const chatUnlockRate = percentage(chatUnlocked, mutualContinue);
+  const datePlanCreationRate = percentage(datePlans, chatUnlocked);
 
   return (
-    <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            Conversion funnel
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-            Login → Onboarding → Like → Match → Schedule → Q&A → Chat → Date
-          </h2>
+    <>
+      <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm sm:p-6">
+        <SectionHeading eyebrow="Private beta health" title="Meaningful journey progress">
+          Event counts for the selected 30-day window. These are journey actions,
+          not time-spent or engagement targets.
+        </SectionHeading>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          <MetricCard title="Vibe Check show-up" value={showUpRate} detail={`${formatCount(started)} started from ${formatCount(scheduled)} confirmed.`} icon={Video} />
+          <MetricCard title="Vibe Check completion" value={completionRate} detail={`${formatCount(completed)} completed from ${formatCount(started)} started.`} icon={CheckCircle2} />
+          <MetricCard title="Mutual Continue" value={mutualContinueRate} detail={`${formatCount(mutualContinue)} mutual outcomes from ${formatCount(completed)} completed.`} icon={HeartHandshake} />
+          <MetricCard title="Chat unlock" value={chatUnlockRate} detail={`${formatCount(chatUnlocked)} chats unlocked after mutual Continue.`} icon={MessageSquareText} />
+          <MetricCard title="Date-plan creation" value={datePlanCreationRate} detail={`${formatCount(datePlans)} first preferences created after chat unlock.`} icon={CalendarDays} />
         </div>
-        <p className="text-sm text-muted-foreground">
-          Drop-off shown from previous step
-        </p>
-      </div>
+      </section>
 
-      <div className="mt-6 space-y-3">
-        {steps.map((step, index) => {
-          const previous = steps[index - 1];
-          const width = Math.max(6, Math.round((step.value / baseline) * 100));
-          const dropOff = previous ? dropOffRate(step.value, previous.value) : 0;
-          const isWeakest =
-            previous?.label === weakest.from && step.label === weakest.to;
-
-          return (
-            <div
-              key={step.label}
-              className={cn(
-                "space-y-2 rounded-2xl p-3",
-                isWeakest ? "bg-[#efd0ca]/55" : "bg-background/60",
-              )}
-            >
-              <div className="flex items-baseline justify-between gap-3">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-sm font-semibold">{step.label}</p>
-                    {isWeakest ? (
-                      <span className="rounded-full bg-[#efd0ca] px-2 py-1 text-[11px] font-semibold text-[#7a2118]">
-                        Weakest stage
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {previous
-                      ? `${conversionRate(
-                          step.value,
-                          previous.value,
-                        )}% conversion · ${dropOff}% drop-off from ${previous.label}`
-                      : "Funnel entry"}
-                  </p>
-                </div>
-                <p className="text-sm font-semibold">
-                  {formatNumber(step.value)}
-                </p>
-              </div>
-              <div className="h-3 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-accent"
-                  style={{ width: `${width}%` }}
-                />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-function RangeSection({ range }: { range: AnalyticsRange }) {
-  if (isEmptyRange(range)) {
-    return <EmptyAnalyticsState label={range.label.toLowerCase()} />;
-  }
-
-  return (
-    <section className="space-y-5">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold tracking-tight">
-            {range.label}
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">{range.caption}</p>
-        </div>
-        <div className="rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold shadow-sm">
-          {formatNumber(
-            range.metrics.reduce((total, metric) => total + metric.value, 0),
-          )}{" "}
-          actions
-        </div>
-      </div>
-
-      <FunnelPanel steps={range.funnel} />
-    </section>
-  );
-}
-
-function ProductHealthCards({ range }: { range: AnalyticsRange }) {
-  return (
-    <section className="space-y-4">
-      <div>
-        <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-          Product health cards
-        </p>
-        <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-          Rates that matter
-        </h2>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {getHealthMetrics(range).map((metric) => (
-          <HealthCard key={metric.label} metric={metric} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function RecommendedExperiments({ range }: { range: AnalyticsRange }) {
-  return (
-    <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            Recommended experiments
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-            Small tests with clear learning value
-          </h2>
-        </div>
-        <p className="max-w-sm text-sm leading-6 text-muted-foreground">
-          Generated from aggregate funnel weaknesses only.
-        </p>
-      </div>
-
-      <div className="mt-5 grid gap-3 lg:grid-cols-3">
-        {getRecommendedExperiments(range).map((action) => (
-          <RecommendedActionCard key={action.label} action={action} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function ClarityReviewPrompt({ range }: { range: AnalyticsRange }) {
-  const biggestDropOff = getBiggestDropOff(range.funnel);
-
-  return (
-    <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
-            <Eye className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-              Clarity review prompt
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-              Watch the {biggestDropOff.from} to {biggestDropOff.to} journey
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              This is the biggest aggregate drop-off in PostHog. Review Clarity
-              recordings for friction, hesitation, confusing copy, or broken
-              layout around this stage.
-            </p>
-          </div>
-        </div>
-        <span className="rounded-full bg-[#f1dfbd] px-4 py-2 text-sm font-semibold text-[#6a4b16]">
-          {biggestDropOff.dropOff}% drop-off
-        </span>
-      </div>
-    </section>
-  );
-}
-
-export default async function AdminAnalyticsPage() {
-  const [productSuccessMetrics, posthogResult] = await Promise.all([
-    getProductSuccessMetrics(),
-    getPostHogDashboardCounts(),
-  ]);
-  const analyticsRanges =
-    posthogResult.status === "ok"
-      ? [
-          buildAnalyticsRange({
-            label: "Last 7 days",
-            caption: "Live aggregate event counts from PostHog.",
-            counts: posthogResult.counts,
-            countKey: "last7Days",
-          }),
-          buildAnalyticsRange({
-            label: "Last 30 days",
-            caption: "Live aggregate event counts from PostHog.",
-            counts: posthogResult.counts,
-            countKey: "last30Days",
-          }),
-        ]
-      : [];
-  const summaryRange = analyticsRanges[0];
-  const unavailableResult =
-    posthogResult.status === "unavailable" ? posthogResult : null;
-
-  return (
-    <main className="min-h-screen bg-background px-4 py-6 text-foreground sm:px-6 lg:px-8">
-      <div className="mx-auto w-full max-w-7xl space-y-8">
-        <header className="rounded-[2rem] border border-border bg-card p-5 shadow-sm sm:p-7">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-2xl">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                Founder command centre
+      <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm sm:p-6">
+        <SectionHeading eyebrow="Funnel" title="The locked MVP journey">
+          Each stage uses its confirmed outcome. A dash means there was no prior-stage activity from which to calculate a rate.
+        </SectionHeading>
+        <ol className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {funnel.map((step, index) => (
+            <li key={step.key} className="rounded-[1.25rem] border border-border bg-background p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{index + 1}. {step.label}</p>
+              <p className="mt-2 text-3xl font-semibold tracking-tight">{formatCount(step.value)}</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {index === 0 ? "First measured step" : `${formatPercentage(step.conversion)} from previous step`}
               </p>
-              <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
-                Product Analytics
-              </h1>
-              <p className="mt-4 text-sm leading-6 text-muted-foreground sm:text-base">
-                A focused MVP view of durable product counts from Supabase and
-                action events currently tracked in PostHog, paired with
-                read-only founder prompts. Values shown here are aggregate
-                counts only.
-              </p>
-            </div>
-
-            <div className="grid gap-2 rounded-[1.5rem] border border-border bg-background p-2 text-sm font-semibold shadow-sm sm:grid-cols-3">
-              <a
-                href="#founder-ai-agents"
-                className="rounded-2xl bg-accent px-4 py-3 text-center text-accent-foreground"
-              >
-                AI Agents
-              </a>
-              <a
-                href="#last-7-days"
-                className="rounded-2xl px-4 py-3 text-center text-muted-foreground hover:bg-muted"
-              >
-                Last 7 days
-              </a>
-              <a
-                href="#last-30-days"
-                className="rounded-2xl px-4 py-3 text-center text-muted-foreground hover:bg-muted"
-              >
-                Last 30 days
-              </a>
-            </div>
-          </div>
-        </header>
-
-        <section className="grid gap-3 md:grid-cols-3">
-          {[
-            {
-              label: "Data source",
-              value:
-                posthogResult.status === "ok"
-                  ? "Supabase + PostHog"
-                  : "Supabase + waiting",
-              helper:
-                posthogResult.status === "ok"
-                  ? "Product rows plus server-side PostHog event counts."
-                  : "Product rows are shown; live event counts wait for PostHog.",
-            },
-            {
-              label: "Privacy",
-              value: "Event counts only",
-              helper: "No names, messages, answers, emails, or phone numbers.",
-            },
-            {
-              label: "Scope",
-              value: "Button actions",
-              helper: "Matches the explicit MVP analytics event list.",
-            },
-          ].map((item) => (
-            <article
-              key={item.label}
-              className="rounded-[1.5rem] border border-border bg-card p-4 shadow-sm"
-            >
-              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                {item.label}
-              </p>
-              <p className="mt-2 text-xl font-semibold tracking-tight">
-                {item.value}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                {item.helper}
-              </p>
-            </article>
+            </li>
           ))}
+        </ol>
+      </section>
+
+      <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm sm:p-6">
+        <SectionHeading eyebrow="Vibe Check health" title="Show-up, completion and recovery">
+          The dashboard records confirmed starts and completions. Cancellation and no-show data remain unavailable until the application records those state changes.
+        </SectionHeading>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <CountCard title="Sessions confirmed" value={scheduled} detail="Confirmed schedule outcomes." />
+          <CountCard title="Sessions started" value={started} detail="Recorded once when a confirmed session starts." />
+          <CountCard title="Sessions completed" value={completed} detail="Recorded once when an in-progress session completes." />
+          <CountCard title="Cancelled or no-show" detail="No state-transition instrumentation is currently available." unavailable />
+        </div>
+      </section>
+
+      <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm sm:p-6">
+        <SectionHeading eyebrow="Safety" title="Safety workflow visibility">
+          Safety remains a product priority. This dashboard does not present a zero as evidence of safety when the underlying reporting workflow is unavailable.
+        </SectionHeading>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <CountCard title="Safety reports" detail="Reporting is not implemented in the current product flow." unavailable />
+          <CountCard title="Unresolved incidents" detail="Incident tracking and resolution are not implemented in the current product flow." unavailable />
+        </div>
+      </section>
+
+      <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm sm:p-6">
+        <SectionHeading eyebrow="Operational failures" title="Where the journey cannot continue">
+          Counts are captured without message content, Q&A answers, contact details or private decision reasoning.
+        </SectionHeading>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <CountCard title="Scheduling failures" value={eventCount(counts, "scheduleFailed", range)} detail="Video-room reservation or confirmation failures." />
+          <CountCard title="Connection failures" value={eventCount(counts, "qaConnectionFailed", range)} detail="Q&A connection failures reported by the client." />
+          <CountCard title="Media permission failures" value={eventCount(counts, "qaMediaPermissionFailed", range)} detail="Camera or microphone permission failures." />
+          <CountCard title="Verification failures" value={eventCount(counts, "verificationFailed", range)} detail="Identity-verification failures reported by the provider." />
+        </div>
+      </section>
+    </>
+  );
+}
+
+export default async function FounderAnalyticsPage() {
+  const posthog = await getPostHogDashboardCounts();
+
+  return (
+    <main className="mx-auto w-full max-w-7xl space-y-5 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <header className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Founder analytics</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Private beta health</h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+              A focused view of the locked MVP journey: onboarding through safety. It contains aggregate product-learning data only.
+            </p>
+          </div>
+          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-xs font-semibold text-muted-foreground">
+            <ShieldCheck className="h-4 w-4" aria-hidden="true" /> Founder-only route
+          </span>
+        </div>
+      </header>
+
+      {posthog.status === "unavailable" ? (
+        <section className="rounded-[1.75rem] border border-amber-600/30 bg-amber-50 p-5 text-amber-950 shadow-sm sm:p-6" role="status">
+          <div className="flex gap-3">
+            <CircleAlert className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+            <div>
+              <h2 className="font-semibold">Source unavailable</h2>
+              <p className="mt-2 text-sm leading-6">{posthog.message}</p>
+              <p className="mt-2 text-sm leading-6">No metrics are shown as zero while the source is unavailable.</p>
+            </div>
+          </div>
         </section>
-
-        <FounderAiAgents />
-
-        <ProductSuccessDashboard metrics={productSuccessMetrics} />
-
-        {summaryRange ? (
-          <div id="last-7-days" className="scroll-mt-6 space-y-8">
-            <FounderSummary range={summaryRange} />
-            <RangeSection range={summaryRange} />
-            <ProductHealthCards range={summaryRange} />
-            <RecommendedExperiments range={summaryRange} />
-            <ClarityReviewPrompt range={summaryRange} />
+      ) : isEmptyAnalyticsRange(posthog.counts, "last30Days") ? (
+        <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm sm:p-6" role="status">
+          <div className="flex gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+            <div>
+              <h2 className="font-semibold">No private-beta activity yet</h2>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">PostHog is connected, but no tracked Founder Analytics v1 events were received in the last 30 days.</p>
+            </div>
           </div>
-        ) : unavailableResult ? (
-          <AnalyticsUnavailableState result={unavailableResult} />
-        ) : null}
+        </section>
+      ) : (
+        <Dashboard counts={posthog.counts} range="last30Days" />
+      )}
 
-        {analyticsRanges.slice(1).map((range) => (
-          <div
-            key={range.label}
-            id={range.label === "Last 7 days" ? "last-7-days" : "last-30-days"}
-            className={cn("scroll-mt-6", "space-y-5")}
-          >
-            <RangeSection range={range} />
-          </div>
-        ))}
-      </div>
+      <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm sm:p-6">
+        <SectionHeading eyebrow="Data quality" title="Interpret the dashboard carefully">
+          PostHog provides the active 30-day event source. Existing historical aliases are read for continuity; all new captures use the canonical event names. Clarity is not used as a dashboard data source and is disabled unless explicitly enabled. Recording masking, retention and consent remain Founder decisions and must be confirmed before private beta.
+        </SectionHeading>
+      </section>
     </main>
   );
 }

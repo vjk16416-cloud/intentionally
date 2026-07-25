@@ -3,7 +3,6 @@
 import { useActionState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { trackAnalyticsEvent } from "@/lib/analytics/client";
 
 import { confirmSlot, type ConfirmState } from "./actions";
 
@@ -24,14 +23,6 @@ export function ConfirmButtons({ matchId }: { matchId: string }) {
         type="submit"
         size="lg"
         disabled={pending}
-        onClick={() =>
-          trackAnalyticsEvent("scheduleClicked", {
-            properties: {
-              match_id: matchId,
-              source: "confirm_buttons",
-            },
-          })
-        }
         className="w-full"
       >
         {pending ? "Confirming…" : "Accept time"}

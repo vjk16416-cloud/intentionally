@@ -308,10 +308,6 @@ export default async function QaSessionPage({
                   <QaDecisionButton
                     type="submit"
                     decision="continue"
-                    userId={user.id}
-                    matchId={matchId}
-                    sessionId={sessionId}
-                    visibilityMode="dynamic"
                     className="w-full rounded-2xl bg-[#F3A17F] px-4 py-4 text-base font-semibold text-[#13251F] shadow-[0_18px_44px_rgba(243,161,127,0.22)]"
                   >
                     Continue
@@ -324,10 +320,6 @@ export default async function QaSessionPage({
                   <QaDecisionButton
                     type="submit"
                     decision="pass"
-                    userId={user.id}
-                    matchId={matchId}
-                    sessionId={sessionId}
-                    visibilityMode="dynamic"
                     className="w-full rounded-2xl border border-[#FFF8EC]/12 bg-[#FFF8EC]/6 px-4 py-4 text-base font-semibold text-[#FFF8EC]"
                   >
                     Pass privately
@@ -383,7 +375,6 @@ export default async function QaSessionPage({
   return (
     <QaSessionRoom
       sessionId={sessionId}
-      userId={user.id}
       matchId={matchId}
       baseQuestions={baseQuestions}
       initialQuestionIndex={0}

@@ -5,13 +5,16 @@ import posthog from "posthog-js";
 import {
   ANALYTICS_EVENT_NAMES,
   type AnalyticsEventKey,
+  sanitiseAnalyticsProperties,
 } from "@/lib/analytics/events";
+import { claimAnalyticsDedupeKey } from "@/lib/analytics/dedupe";
 
 let initialized = false;
 
 type TrackAnalyticsOptions = {
   properties?: Record<string, unknown>;
   sendInstantly?: boolean;
+  dedupeKey?: string;
 };
 
 function viewportTier(width: number) {
@@ -44,13 +47,15 @@ export function trackAnalyticsEvent(
 ) {
   if (typeof window === "undefined") return;
 
+  if (!claimAnalyticsDedupeKey(window.sessionStorage, options.dedupeKey)) return;
+
   initAnalytics();
   if (!initialized) return;
 
   posthog.capture(
     ANALYTICS_EVENT_NAMES[eventKey],
     {
-      ...options.properties,
+      ...sanitiseAnalyticsProperties(options.properties),
       page: window.location.pathname,
       viewport: viewportTier(window.innerWidth),
     },

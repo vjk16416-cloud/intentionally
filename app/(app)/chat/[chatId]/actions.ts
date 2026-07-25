@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { trackServerAnalyticsEvent } from "@/lib/analytics/server";
 
 export async function sendMessage(formData: FormData) {
   const chatId = String(formData.get("chatId") ?? "");
@@ -21,6 +22,17 @@ export async function sendMessage(formData: FormData) {
     redirect("/login");
   }
 
+  const { data: chat } = await supabase
+    .from("chats")
+    .select("match_id")
+    .eq("id", chatId)
+    .maybeSingle<{ match_id: string }>();
+
+  const { count: existingMessageCount } = await supabase
+    .from("messages")
+    .select("id", { count: "exact", head: true })
+    .eq("chat_id", chatId);
+
   const { data: message } = await supabase
     .from("messages")
     .insert({
@@ -31,9 +43,12 @@ export async function sendMessage(formData: FormData) {
     .select("id")
     .single();
 
-  const sentParam = message?.id
-    ? `?sent=${encodeURIComponent(String(message.id))}`
-    : "";
+  if (message && existingMessageCount === 0 && chat) {
+    await trackServerAnalyticsEvent("firstMessage", {
+      distinctId: user.id,
+      properties: { match_id: chat.match_id, chat_id: chatId },
+    });
+  }
 
-  redirect(`/chat/${chatId}${sentParam}`);
+  redirect(`/chat/${chatId}`);
 }

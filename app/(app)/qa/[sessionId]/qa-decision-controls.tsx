@@ -3,93 +3,30 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 
-import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
-
 type QaDecision = "continue" | "pass";
 
-type QaDecisionProperties = {
-  userId: string;
-  matchId: string | null;
-  sessionId: string;
-  visibilityMode: string;
+type QaDecisionButtonProps = ComponentProps<"button"> & {
+  decision: QaDecision;
 };
 
-function trackQaDecision(
-  decision: QaDecision,
-  { userId, matchId, sessionId, visibilityMode }: QaDecisionProperties,
-) {
-  trackEvent(
-    decision === "continue"
-      ? AnalyticsEvents.CONTINUE_AFTER_QA
-      : AnalyticsEvents.PASS_AFTER_QA,
-    {
-      user_id: userId,
-      match_id: matchId,
-      qa_session_id: sessionId,
-      source: "qa",
-      visibility_mode: visibilityMode,
-      surface: "decision_screen",
-    },
-  );
-}
-
-type QaDecisionButtonProps = ComponentProps<"button"> &
-  QaDecisionProperties & {
-    decision: QaDecision;
-  };
-
+/** Server actions record the private decision only after it is saved. */
 export function QaDecisionButton({
   decision,
-  userId,
-  matchId,
-  sessionId,
-  visibilityMode,
-  onClick,
   ...props
 }: QaDecisionButtonProps) {
-  return (
-    <button
-      {...props}
-      onClick={(event) => {
-        trackQaDecision(decision, {
-          userId,
-          matchId,
-          sessionId,
-          visibilityMode,
-        });
-        onClick?.(event);
-      }}
-    />
-  );
+  void decision;
+  return <button {...props} />;
 }
 
-type QaDecisionLinkProps = ComponentProps<typeof Link> &
-  QaDecisionProperties & {
-    decision: QaDecision;
-    children: ReactNode;
-  };
+type QaDecisionLinkProps = ComponentProps<typeof Link> & {
+  decision: QaDecision;
+  children: ReactNode;
+};
 
 export function QaDecisionLink({
   decision,
-  userId,
-  matchId,
-  sessionId,
-  visibilityMode,
-  onClick,
   ...props
 }: QaDecisionLinkProps) {
-  return (
-    <Link
-      {...props}
-      onClick={(event) => {
-        trackQaDecision(decision, {
-          userId,
-          matchId,
-          sessionId,
-          visibilityMode,
-        });
-        onClick?.(event);
-      }}
-    />
-  );
+  void decision;
+  return <Link {...props} />;
 }

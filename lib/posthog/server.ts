@@ -1,85 +1,43 @@
-import { ANALYTICS_EVENT_NAMES } from "@/lib/analytics/events";
+import { ANALYTICS_EVENT_NAMES, type AnalyticsEventKey } from "@/lib/analytics/events";
 
-export type DashboardEventKey =
-  | "loginClicked"
-  | "onboardingStarted"
-  | "onboardingCompleted"
-  | "discoverViewed"
-  | "profileLiked"
-  | "profilePassed"
-  | "matchCreated"
-  | "scheduleClicked"
-  | "qaStarted"
-  | "visibilitySelected"
-  | "qaQuestionAnswered"
-  | "qaFinished"
-  | "continueSelected"
-  | "passPrivatelySelected"
-  | "chatSent"
-  | "datePlanViewed"
-  | "datePlanShared";
+export type DashboardEventKey = AnalyticsEventKey;
 
 export type PostHogDashboardCounts = Record<
   DashboardEventKey,
-  {
-    last7Days: number;
-    last30Days: number;
-  }
+  { last7Days: number; last30Days: number }
 >;
 
 export type PostHogDashboardResult =
-  | {
-      status: "ok";
-      counts: PostHogDashboardCounts;
-    }
+  | { status: "ok"; counts: PostHogDashboardCounts }
   | {
       status: "unavailable";
       reason: "missing_env" | "request_failed" | "invalid_response";
       message: string;
     };
 
-const dashboardEventConfig = [
-  ["loginClicked", ANALYTICS_EVENT_NAMES.loginClicked],
-  ["onboardingStarted", ANALYTICS_EVENT_NAMES.onboardingStarted],
-  ["onboardingCompleted", ANALYTICS_EVENT_NAMES.onboardingCompleted],
-  ["discoverViewed", ANALYTICS_EVENT_NAMES.discoverViewed],
-  ["profileLiked", ANALYTICS_EVENT_NAMES.profileLiked],
-  ["profilePassed", ANALYTICS_EVENT_NAMES.profilePassed],
-  ["matchCreated", ANALYTICS_EVENT_NAMES.matchCreated],
-  ["scheduleClicked", ANALYTICS_EVENT_NAMES.scheduleClicked],
-  ["qaStarted", ANALYTICS_EVENT_NAMES.qaStarted],
-  ["visibilitySelected", ANALYTICS_EVENT_NAMES.visibilitySelected],
-  ["qaQuestionAnswered", ANALYTICS_EVENT_NAMES.qaQuestionAnswered],
-  ["qaFinished", ANALYTICS_EVENT_NAMES.qaFinished],
-  ["continueSelected", "continue_after_qa"],
-  ["passPrivatelySelected", "pass_after_qa"],
-  ["chatSent", ANALYTICS_EVENT_NAMES.chatSent],
-  ["datePlanViewed", ANALYTICS_EVENT_NAMES.datePlanViewed],
-  ["datePlanShared", ANALYTICS_EVENT_NAMES.datePlanShared],
-] as const satisfies readonly [DashboardEventKey, string][];
+const dashboardEventConfig = Object.entries(ANALYTICS_EVENT_NAMES) as [
+  DashboardEventKey,
+  string,
+][];
 
+// Historical aliases preserve already-collected data while all new captures
+// use ANALYTICS_EVENT_NAMES above.
 const eventAliases: Partial<Record<DashboardEventKey, readonly string[]>> = {
-  continueSelected: [
-    ANALYTICS_EVENT_NAMES.continueSelected,
-    "qa_continue_clicked",
-  ],
-  passPrivatelySelected: [
-    ANALYTICS_EVENT_NAMES.passPrivatelySelected,
-    "qa_pass_privately_clicked",
-  ],
-  chatSent: ["chat_message_sent"],
+  scheduleStarted: ["schedule_clicked"],
+  qaCompleted: ["qa_finished"],
+  continueSelected: ["continue_after_qa", "qa_continue_clicked"],
+  passSelected: ["pass_after_qa", "qa_pass_privately_clicked"],
+  datePlanCreated: ["date_plan_shared"],
 };
 
-const eventNameToKey: ReadonlyMap<string, DashboardEventKey> = new Map(
-  dashboardEventConfig.map(([key, eventName]) => [eventName, key]),
-);
-
-const posthogEventNames = Array.from(
-  new Set([
-    ...dashboardEventConfig.map(([, eventName]) => eventName),
-    ...Object.values(eventAliases).flatMap((aliases) => aliases ?? []),
+const eventNameToKey = new Map<string, DashboardEventKey>(
+  dashboardEventConfig.flatMap(([key, eventName]) => [
+    [eventName, key] as const,
+    ...(eventAliases[key] ?? []).map((alias) => [alias, key] as const),
   ]),
 );
+
+const posthogEventNames = Array.from(eventNameToKey.keys());
 
 function emptyCounts(): PostHogDashboardCounts {
   return Object.fromEntries(
@@ -95,13 +53,12 @@ function sqlString(value: string) {
 }
 
 function isPostHogResultRow(value: unknown): value is [string, number, number] {
-  if (!Array.isArray(value) || value.length < 3) return false;
-
-  const [eventName, last7Days, last30Days] = value;
   return (
-    typeof eventName === "string" &&
-    typeof last7Days === "number" &&
-    typeof last30Days === "number"
+    Array.isArray(value) &&
+    value.length >= 3 &&
+    typeof value[0] === "string" &&
+    typeof value[1] === "number" &&
+    typeof value[2] === "number"
   );
 }
 
@@ -121,20 +78,9 @@ export async function getPostHogDashboardCounts(): Promise<PostHogDashboardResul
 
   const baseUrl = host.replace(/\/+$/, "");
   const url = `${baseUrl}/api/projects/${encodeURIComponent(projectId)}/query/`;
-  const eventNames = posthogEventNames.map((eventName) => sqlString(eventName));
-  const normalizedEventCase = dashboardEventConfig
-    .map(([key, eventName]) => {
-      const aliases = eventAliases[key] ?? [];
-      const values = [eventName, ...aliases].map(sqlString).join(", ");
-
-      return aliases.length > 0
-        ? `WHEN event IN (${values}) THEN ${sqlString(eventName)}`
-        : "";
-    })
-    .filter(Boolean)
-    .join("\n              ");
+  const eventNames = posthogEventNames.map(sqlString);
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
+  const timeout = setTimeout(() => controller.abort(), 8_000);
 
   try {
     const response = await fetch(url, {
@@ -143,30 +89,21 @@ export async function getPostHogDashboardCounts(): Promise<PostHogDashboardResul
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-        body: JSON.stringify({
-          query: {
-            kind: "HogQLQuery",
-            query: `
-            WITH normalized_events AS (
-              SELECT
-                CASE
-                  ${normalizedEventCase}
-                  ELSE event
-                END AS event,
-                timestamp
-              FROM events
-              WHERE event IN (${eventNames.join(", ")})
-                AND timestamp >= now() - INTERVAL 30 DAY
-            )
+      body: JSON.stringify({
+        query: {
+          kind: "HogQLQuery",
+          query: `
             SELECT
               event,
               countIf(timestamp >= now() - INTERVAL 7 DAY) AS last_7_days,
               countIf(timestamp >= now() - INTERVAL 30 DAY) AS last_30_days
-            FROM normalized_events
+            FROM events
+            WHERE event IN (${eventNames.join(", ")})
+              AND timestamp >= now() - INTERVAL 30 DAY
             GROUP BY event
           `,
-          },
-        name: "intentionally-admin-analytics-counts",
+        },
+        name: "intentionally-founder-analytics-v1",
       }),
       cache: "no-store",
       signal: controller.signal,
@@ -215,8 +152,10 @@ export async function getPostHogDashboardCounts(): Promise<PostHogDashboardResul
       if (!key) continue;
 
       counts[key] = {
-        last7Days: Math.max(0, Math.round(last7Days)),
-        last30Days: Math.max(0, Math.round(last30Days)),
+        last7Days:
+          counts[key].last7Days + Math.max(0, Math.round(last7Days)),
+        last30Days:
+          counts[key].last30Days + Math.max(0, Math.round(last30Days)),
       };
     }
 

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { getServiceRoleKey, SUPABASE_URL } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
+import { trackServerAnalyticsEvent } from "@/lib/analytics/server";
 
 type Decision = "continue" | "pass";
 
@@ -45,14 +46,14 @@ async function getParticipantSession(sessionId: string) {
     redirect("/discover");
   }
 
-  return session;
+  return { session, user };
 }
 
 export async function startQaSession(formData: FormData) {
   const sessionId = String(formData.get("sessionId") ?? "");
   if (!sessionId) redirect("/discover");
 
-  const session = await getParticipantSession(sessionId);
+  const { session, user } = await getParticipantSession(sessionId);
   if (!session.confirmed_at) redirect(`/schedule/${session.match_id}`);
 
   if (session.status === "scheduled") {
@@ -68,6 +69,11 @@ export async function startQaSession(formData: FormData) {
       console.error("[qa] session start failed", error);
       redirect(`/qa/${sessionId}/visibility`);
     }
+
+    await trackServerAnalyticsEvent("qaStarted", {
+      distinctId: user.id,
+      properties: { match_id: session.match_id, qa_session_id: session.id },
+    });
   }
 
   if (session.status !== "scheduled" && session.status !== "in_progress") {
@@ -81,7 +87,7 @@ export async function completeQaSession(formData: FormData) {
   const sessionId = String(formData.get("sessionId") ?? "");
   if (!sessionId) redirect("/discover");
 
-  const session = await getParticipantSession(sessionId);
+  const { session, user } = await getParticipantSession(sessionId);
   if (session.status !== "in_progress") redirect(`/qa/${sessionId}`);
 
   const { data: completedSession, error } = await admin()
@@ -97,6 +103,11 @@ export async function completeQaSession(formData: FormData) {
     redirect(`/qa/${sessionId}`);
   }
 
+  await trackServerAnalyticsEvent("qaCompleted", {
+    distinctId: user.id,
+    properties: { match_id: session.match_id, qa_session_id: session.id },
+  });
+
   redirect(`/qa/${sessionId}`);
 }
 
@@ -108,14 +119,8 @@ export async function saveQaOutcome(formData: FormData) {
     redirect("/discover");
   }
 
-  const session = await getParticipantSession(sessionId);
+  const { session, user } = await getParticipantSession(sessionId);
   if (session.status !== "completed") redirect(`/qa/${sessionId}`);
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
 
   const { error } = await admin().from("qa_outcomes").upsert(
     {
@@ -130,6 +135,14 @@ export async function saveQaOutcome(formData: FormData) {
     console.error("[qa] outcome save failed", error);
     redirect(`/qa/${sessionId}`);
   }
+
+  await trackServerAnalyticsEvent(
+    decision === "continue" ? "continueSelected" : "passSelected",
+    {
+      distinctId: user.id,
+      properties: { match_id: session.match_id, qa_session_id: session.id },
+    },
+  );
 
   redirect(`/qa/${sessionId}/waiting`);
 }
