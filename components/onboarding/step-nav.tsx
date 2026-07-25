@@ -21,7 +21,7 @@ export function StepNav({
   submitLabel = "Continue",
 }: StepNavProps) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[#e6ded0] bg-[#fffaf3]/96 px-4 py-3 shadow-[0_-10px_30px_rgba(74,59,42,0.08)] backdrop-blur sm:px-6">
+    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[#e6ded0] bg-[#fffaf3]/96 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-10px_30px_rgba(74,59,42,0.08)] backdrop-blur sm:px-6">
       <div className="mx-auto flex w-full max-w-lg items-center gap-2">
         {returnTo ? (
           <input type="hidden" name="returnTo" value={returnTo} />

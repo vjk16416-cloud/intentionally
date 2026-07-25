@@ -27,7 +27,7 @@ export default async function OnboardingLayout({
         </div>
       </header>
 
-      <main className="flex flex-1 justify-center px-4 pb-28 pt-6 sm:px-6 sm:pb-32 sm:pt-10">
+      <main className="flex flex-1 justify-center px-4 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-6 sm:px-6 sm:pb-[calc(8.5rem+env(safe-area-inset-bottom))] sm:pt-10">
         <div className="w-full max-w-lg md:max-w-2xl">{children}</div>
       </main>
     </div>
