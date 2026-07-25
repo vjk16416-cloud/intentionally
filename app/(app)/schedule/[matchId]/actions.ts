@@ -4,7 +4,6 @@ import { createClient as createServiceRoleClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { createDailyRoom } from "@/lib/daily/rooms";
 import { type Intention } from "@/lib/qa/questions";
 import { selectThreeQuestions } from "@/lib/qa/select";
 import { sendQaScheduledEmail } from "@/lib/resend/emails";
@@ -12,6 +11,14 @@ import { computeMutualSlots } from "@/lib/scheduling/slots";
 import { getServiceRoleKey, SUPABASE_URL } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 import { isUserVerified } from "@/lib/verification";
+import { getQaJoinUrl } from "@/lib/video/join-url";
+import {
+  getConfiguredVideoProvider,
+  reserveVideoRoom,
+  videoReservationErrorMessage,
+  type VideoRoomReservation,
+} from "@/lib/video/rooms";
+import type { VideoProvider } from "@/lib/video/provider";
 
 function admin() {
   return createServiceRoleClient(SUPABASE_URL, getServiceRoleKey(), {
@@ -213,12 +220,21 @@ export async function confirmSlot(
     return { error: "Couldn't determine intentions." };
   }
 
-  let room: { name: string; url: string };
+  let provider: VideoProvider | null = null;
+  let room: VideoRoomReservation;
   try {
-    room = await createDailyRoom(new Date(existing.scheduled_at));
+    provider = getConfiguredVideoProvider();
+    room = await reserveVideoRoom({
+      provider,
+      sessionId: existing.id,
+      scheduledAt: new Date(existing.scheduled_at),
+    });
   } catch (err) {
-    console.error("[schedule] daily.co room creation failed", err);
-    return { error: "Couldn't reserve the video room. Try again in a moment." };
+    console.error(
+      "[schedule] video room reservation failed",
+      err instanceof Error ? err.message : "Unknown error",
+    );
+    return { error: videoReservationErrorMessage(provider) };
   }
 
   const questions = selectThreeQuestions(intentions).map((q) => ({
@@ -231,8 +247,10 @@ export async function confirmSlot(
     .from("qa_sessions")
     .update({
       confirmed_at: new Date().toISOString(),
-      daily_room_url: room.url,
-      daily_room_name: room.name,
+      video_provider: room.provider,
+      video_room_name: room.roomName,
+      daily_room_url: room.dailyRoomUrl,
+      daily_room_name: room.dailyRoomName,
       questions,
     })
     .eq("id", existing.id)
@@ -264,6 +282,7 @@ export async function confirmSlot(
     profiles.find((p) => p.id === otherId)?.display_name ?? "your match";
 
   try {
+    const joinUrl = getQaJoinUrl(updated.id);
     const [thisUser, otherUser] = await Promise.all([
       a.auth.admin.getUserById(user.id),
       a.auth.admin.getUserById(otherId),
@@ -276,7 +295,7 @@ export async function confirmSlot(
           to: thisUser.data.user.email,
           otherName: otherDisplayName,
           scheduledAt: new Date(existing.scheduled_at),
-          joinUrl: room.url,
+          joinUrl,
           questions,
         }),
       );
@@ -287,7 +306,7 @@ export async function confirmSlot(
           to: otherUser.data.user.email,
           otherName: thisDisplayName,
           scheduledAt: new Date(existing.scheduled_at),
-          joinUrl: room.url,
+          joinUrl,
           questions,
         }),
       );

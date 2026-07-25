@@ -13,6 +13,7 @@ import {
   currentLondonTime,
 } from "@/lib/scheduling/london-time";
 import { getServiceRoleKey, SUPABASE_URL } from "@/lib/supabase/env";
+import { getQaJoinUrl } from "@/lib/video/join-url";
 
 export const runtime = "nodejs";
 
@@ -50,7 +51,6 @@ type SessionRow = {
   id: string;
   match_id: string;
   scheduled_at: string;
-  daily_room_url: string | null;
   questions: { id: string; text: string }[] | null;
   reminder_morning_of_sent_at: string | null;
   reminder_hour_before_sent_at: string | null;
@@ -79,7 +79,7 @@ export async function GET(request: Request) {
   const { data: sessions, error: sessionsError } = await supabase
     .from("qa_sessions")
     .select(
-      "id, match_id, scheduled_at, daily_room_url, questions, reminder_morning_of_sent_at, reminder_hour_before_sent_at",
+      "id, match_id, scheduled_at, questions, reminder_morning_of_sent_at, reminder_hour_before_sent_at",
     )
     .eq("status", "scheduled")
     .not("confirmed_at", "is", null)
@@ -112,7 +112,17 @@ export async function GET(request: Request) {
       msUntilStart <= HOUR_BEFORE_UPPER_MS;
 
     if (!shouldSendMorning && !shouldSendHourBefore) continue;
-    if (!session.daily_room_url) continue;
+
+    let joinUrl: string;
+    try {
+      joinUrl = getQaJoinUrl(session.id);
+    } catch (error) {
+      console.error(
+        "[cron/qa-reminders] app join URL configuration failed",
+        error instanceof Error ? error.message : "Unknown error",
+      );
+      return new NextResponse("App URL configuration error", { status: 500 });
+    }
 
     const { data: match } = await supabase
       .from("matches")
@@ -147,7 +157,7 @@ export async function GET(request: Request) {
             to: emailA,
             otherName: profileB.display_name,
             scheduledAt,
-            joinUrl: session.daily_room_url,
+            joinUrl,
           }).catch((err) => {
             console.error(
               "[cron/qa-reminders] morning-of send to A failed",
@@ -162,7 +172,7 @@ export async function GET(request: Request) {
             to: emailB,
             otherName: profileA.display_name,
             scheduledAt,
-            joinUrl: session.daily_room_url,
+            joinUrl,
           }).catch((err) => {
             console.error(
               "[cron/qa-reminders] morning-of send to B failed",
@@ -188,7 +198,7 @@ export async function GET(request: Request) {
             to: emailA,
             otherName: profileB.display_name,
             scheduledAt,
-            joinUrl: session.daily_room_url,
+            joinUrl,
             questions,
           }).catch((err) => {
             console.error(
@@ -204,7 +214,7 @@ export async function GET(request: Request) {
             to: emailB,
             otherName: profileA.display_name,
             scheduledAt,
-            joinUrl: session.daily_room_url,
+            joinUrl,
             questions,
           }).catch((err) => {
             console.error(
