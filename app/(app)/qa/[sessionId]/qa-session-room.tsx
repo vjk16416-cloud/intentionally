@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
@@ -8,8 +9,14 @@ import {
   QA_VISIBILITY_OPTIONS,
   type QaVisibilityMode,
 } from "@/lib/qa/visibility";
+import type { VideoProvider } from "@/lib/video/provider";
 
 import { LocalMediaPreview } from "./local-media-preview";
+import {
+  LiveKitParticipantVideo,
+  LiveKitVideoRoom,
+  type LiveKitVideoRoomHandle,
+} from "./livekit-video-room";
 import { QaSafetyControls } from "./qa-safety-controls";
 import { VisibilitySelector } from "./visibility-selector";
 import { completeQaSession } from "./actions";
@@ -30,7 +37,10 @@ type QaSessionRoomProps = {
   initialExtraAccepted: boolean;
   initialExtraRequest: ExtraRequestState;
   visibilityMode: QaVisibilityMode;
-  dailyRoomUrl?: string | null;
+  videoProvider: VideoProvider | null;
+  dailyRoomUrl: string | null;
+  videoSetupError: string | null;
+  isCurrentUserMatchA: boolean;
 };
 
 function clampQuestionIndex(value: number, total: number) {
@@ -52,7 +62,10 @@ export function QaSessionRoom({
   initialExtraAccepted,
   initialExtraRequest,
   visibilityMode,
+  videoProvider,
   dailyRoomUrl,
+  videoSetupError,
+  isCurrentUserMatchA,
 }: QaSessionRoomProps) {
   const [extraAccepted, setExtraAccepted] = useState(initialExtraAccepted);
   const [extraRequest, setExtraRequest] =
@@ -68,14 +81,14 @@ export function QaSessionRoom({
   const [softModeEnabled, setSoftModeEnabled] = useState(false);
   const [, startCompletionTransition] = useTransition();
   const hasTrackedEntry = useRef(false);
+  const liveKitRoomRef = useRef<LiveKitVideoRoomHandle | null>(null);
 
   const safeQuestionIndex = clampQuestionIndex(questionIndex, questions.length);
   const currentQuestion = questions[safeQuestionIndex] ?? questions[0];
   const isLastQuestion = safeQuestionIndex === questions.length - 1;
-  const demoAnsweringParticipant =
-    safeQuestionIndex % 2 === 0 ? "you" : "them";
-  const isYouAnswering = demoAnsweringParticipant === "you";
-  const isThemAnswering = demoAnsweringParticipant === "them";
+  const isMatchAAnswering = safeQuestionIndex % 2 === 0;
+  const isYouAnswering = isMatchAAnswering === isCurrentUserMatchA;
+  const isThemAnswering = !isYouAnswering;
   const effectiveVisibilityMode: QaVisibilityMode = "dynamic";
   const shouldSoftenYourTile =
     softModeEnabled || (effectiveVisibilityMode === "dynamic" && isThemAnswering);
@@ -203,7 +216,8 @@ export function QaSessionRoom({
     setPauseEndsAt(Date.now() + 30_000);
   }
 
-  return (
+  function renderRoom() {
+    return (
     <main className="min-h-[calc(100vh-57px)] bg-gradient-to-b from-background via-[#fbf3e8] to-muted px-3 py-3 text-foreground md:px-6 md:py-5 lg:px-8">
       <div className="mx-auto w-full max-w-md md:max-w-4xl lg:max-w-6xl xl:max-w-7xl">
         <section className="overflow-hidden rounded-[1.75rem] border border-[#e6ded0] bg-[#fffaf3] p-3 shadow-[0_24px_80px_rgba(74,59,42,0.12)] md:rounded-[2.25rem] md:p-5 lg:p-6">
@@ -250,8 +264,8 @@ export function QaSessionRoom({
               </p>
             </div>
 
-            <div className="relative grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(280px,360px)_minmax(0,1fr)] md:items-center lg:grid-cols-[minmax(0,1fr)_minmax(340px,440px)_minmax(0,1fr)]">
-              <div className="relative z-10 order-2 rounded-[1.35rem] border border-[#eadfce] bg-background/85 p-2.5 shadow-sm md:order-1 md:rounded-[1.75rem] md:p-3">
+            <div className="relative grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(340px,440px)_minmax(0,1fr)] lg:items-center">
+              <div className="relative z-10 order-2 rounded-[1.35rem] border border-[#eadfce] bg-background/85 p-2.5 shadow-sm md:rounded-[1.75rem] md:p-3 lg:order-1">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="rounded-full bg-card px-3 py-1 text-xs font-semibold">
                     You
@@ -281,7 +295,19 @@ export function QaSessionRoom({
                       Voice-first with a simple profile preview.
                     </p>
                   </div>
-                ) : (
+                ) : videoProvider === "livekit" ? (
+                  <LiveKitParticipantVideo
+                    participant="local"
+                    isSoftened={shouldSoftenYourTile}
+                    helperText={
+                      shouldSoftenYourTile
+                        ? "Soft Reveal keeps the listener softened so the speaker feels less watched."
+                        : isYouAnswering
+                          ? "Take a breath. A short, honest answer is enough."
+                          : "Listen without rushing your response."
+                    }
+                  />
+                ) : videoProvider === "daily" ? (
                   <LocalMediaPreview
                     visibilityMode={effectiveVisibilityMode}
                     isSoftened={shouldSoftenYourTile}
@@ -295,10 +321,15 @@ export function QaSessionRoom({
                     }
                     isCompact
                   />
+                ) : (
+                  <VideoSetupMessage
+                    message={videoSetupError}
+                    returnHref={matchId ? `/schedule/${matchId}` : "/discover"}
+                  />
                 )}
               </div>
 
-              <div className="relative z-10 order-1 rounded-[1.5rem] border border-[#d8ccbd] bg-[#fff8ef] p-4 text-center shadow-[0_16px_48px_rgba(74,59,42,0.10)] md:order-2 md:rounded-[1.75rem] md:p-6 lg:p-8">
+              <div className="relative z-10 order-1 rounded-[1.5rem] border border-[#d8ccbd] bg-[#fff8ef] p-4 text-center shadow-[0_16px_48px_rgba(74,59,42,0.10)] md:rounded-[1.75rem] md:p-6 lg:order-2 lg:p-8">
                 <div className="mx-auto mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-accent md:mb-4 md:h-9 md:w-9">
                   {safeQuestionIndex + 1}
                 </div>
@@ -354,7 +385,19 @@ export function QaSessionRoom({
                   </span>
                 </div>
 
-                {dailyRoomUrl ? (
+                {videoProvider === "livekit" ? (
+                  <LiveKitParticipantVideo
+                    participant="remote"
+                    isSoftened={shouldSoftenTheirTile}
+                    helperText={
+                      shouldSoftenTheirTile
+                        ? "Soft Reveal keeps the listener gently softened."
+                        : isThemAnswering
+                          ? "Give your match the space to answer in their own way."
+                          : "Your match is listening."
+                    }
+                  />
+                ) : videoProvider === "daily" && dailyRoomUrl ? (
                   <div className="overflow-hidden rounded-[1.5rem] bg-black">
                     <iframe
                       src={dailyRoomUrl}
@@ -368,10 +411,10 @@ export function QaSessionRoom({
                     />
                   </div>
                 ) : (
-                  <div className="rounded-[1.5rem] bg-muted p-5 text-sm leading-6 text-muted-foreground">
-                    Your video room is being prepared. If this continues,
-                    return to scheduling and confirm your Vibe Check time again.
-                  </div>
+                  <VideoSetupMessage
+                    message={videoSetupError}
+                    returnHref={matchId ? `/schedule/${matchId}` : "/discover"}
+                  />
                 )}
               </div>
 
@@ -494,5 +537,43 @@ export function QaSessionRoom({
         </section>
       </div>
     </main>
+    );
+  }
+
+  if (videoProvider === "livekit") {
+    return (
+      <LiveKitVideoRoom
+        ref={liveKitRoomRef}
+        sessionId={sessionId}
+        returnHref={matchId ? `/schedule/${matchId}` : "/discover"}
+      >
+        {renderRoom()}
+      </LiveKitVideoRoom>
+    );
+  }
+
+  return renderRoom();
+}
+
+function VideoSetupMessage({
+  message,
+  returnHref,
+}: {
+  message: string | null;
+  returnHref: string;
+}) {
+  return (
+    <div className="flex min-h-36 flex-col items-center justify-center rounded-[1.5rem] bg-muted p-5 text-center text-sm leading-6 text-muted-foreground sm:min-h-44 lg:min-h-72">
+      <p>
+        {message ??
+          "Your video room is being prepared. Try again in a moment."}
+      </p>
+      <Link
+        href={returnHref}
+        className="mt-4 rounded-2xl border border-border bg-background px-4 py-2 text-xs font-semibold text-foreground shadow-sm"
+      >
+        Return to scheduled session
+      </Link>
+    </div>
   );
 }

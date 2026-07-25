@@ -42,8 +42,8 @@ export function VisibilitySelector({
         <div>
           <p className="text-sm leading-6 text-muted-foreground">{modeCopy}</p>
           <p className="mt-1 text-xs leading-5 text-muted-foreground">
-            Open Video is not available in this beta room because mutual
-            consent is not yet persisted between both people.
+            Camera and microphone stay inside this Vibe Check while Soft Reveal
+            follows whose turn it is to answer.
           </p>
         </div>
         <button
