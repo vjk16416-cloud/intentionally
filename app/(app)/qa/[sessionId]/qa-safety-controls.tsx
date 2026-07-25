@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-type SafetyView = "menu" | "end" | "report";
+type SafetyView = "menu" | "end";
 
 type QaSafetyControlsProps = {
   isPaused: boolean;
@@ -69,7 +69,7 @@ export function QaSafetyControls({
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="flex h-10 shrink-0 items-center gap-2 rounded-full border border-border bg-background px-3 text-xs font-semibold text-foreground shadow-sm"
+        className="flex h-10 shrink-0 items-center gap-2 rounded-full border border-border bg-background px-3 text-xs font-semibold text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-accent/30"
         aria-label="Safety options"
         aria-haspopup="dialog"
         aria-expanded={isOpen}
@@ -104,7 +104,8 @@ export function QaSafetyControls({
                   You&apos;re in control.
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  You can pause or leave at any time. Your choice stays private.
+                  You can pause, soften the room, or leave at any time. If you
+                  leave, your reason stays private.
                 </p>
 
                 <div className="mt-5 grid gap-2">
@@ -112,42 +113,35 @@ export function QaSafetyControls({
                     type="button"
                     onClick={pause}
                     disabled={isPaused}
-                    className="rounded-2xl border border-border bg-background px-4 py-3.5 text-left text-sm font-semibold text-foreground shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded-2xl border border-border bg-background px-4 py-3.5 text-left text-sm font-semibold text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isPaused ? "Pause in progress" : "Pause for 30 seconds"}
                   </button>
                   <button
                     type="button"
                     onClick={enableSoftMode}
-                    className="rounded-2xl border border-border bg-background px-4 py-3.5 text-left text-sm font-semibold text-foreground shadow-sm"
+                    className="rounded-2xl border border-border bg-background px-4 py-3.5 text-left text-sm font-semibold text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-accent/30"
                   >
                     {softModeEnabled ? "Soft Mode is on" : "Switch to Soft Mode"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setView("end")}
-                    className="rounded-2xl border border-[#d9a6a0]/50 bg-[#f6e4df] px-4 py-3.5 text-left text-sm font-semibold text-[#5a2d2a]"
+                    className="rounded-2xl border border-[#d9a6a0]/50 bg-[#f6e4df] px-4 py-3.5 text-left text-sm font-semibold text-[#5a2d2a] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#d9a6a0]/40"
                   >
                     End Vibe Check privately
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setView("report")}
-                    className="rounded-2xl border border-border bg-background px-4 py-3.5 text-left text-sm font-semibold text-foreground shadow-sm"
-                  >
-                    Report concern
                   </button>
                 </div>
 
                 <button
                   type="button"
                   onClick={close}
-                  className="mt-3 w-full rounded-2xl px-4 py-3 text-sm font-semibold text-muted-foreground"
+                  className="mt-3 w-full rounded-2xl px-4 py-3 text-sm font-semibold text-muted-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-accent/30"
                 >
                   Cancel
                 </button>
               </>
-            ) : view === "end" ? (
+            ) : (
               <>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   End Vibe Check
@@ -156,50 +150,23 @@ export function QaSafetyControls({
                   Ready to leave this conversation?
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  You&apos;ll move to a private choice screen. Your match will not be told why you left.
+                  You&apos;ll move to a private choice screen. Your match will
+                  not be told why you left or what you choose next.
                 </p>
                 <div className="mt-6 grid gap-2">
                   <button
                     type="button"
                     onClick={onEnd}
-                    className="rounded-2xl bg-[#5a2d2a] px-4 py-3.5 text-sm font-semibold text-white"
+                    className="rounded-2xl bg-[#5a2d2a] px-4 py-3.5 text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#d9a6a0]/40"
                   >
                     End Vibe Check
                   </button>
                   <button
                     type="button"
                     onClick={() => setView("menu")}
-                    className="rounded-2xl border border-border bg-background px-4 py-3.5 text-sm font-semibold text-foreground"
+                    className="rounded-2xl border border-border bg-background px-4 py-3.5 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-accent/30"
                   >
                     Keep talking
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Report concern
-                </p>
-                <h2 id="qa-safety-title" className="mt-3 text-2xl font-semibold tracking-tight">
-                  Your safety comes first.
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Reporting will be available here soon. If something feels wrong, you can end the Vibe Check now and take the space you need.
-                </p>
-                <div className="mt-6 grid gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setView("end")}
-                    className="rounded-2xl bg-[#5a2d2a] px-4 py-3.5 text-sm font-semibold text-white"
-                  >
-                    End Vibe Check privately
-                  </button>
-                  <button
-                    type="button"
-                    onClick={close}
-                    className="rounded-2xl border border-border bg-background px-4 py-3.5 text-sm font-semibold text-foreground"
-                  >
-                    Cancel
                   </button>
                 </div>
               </>

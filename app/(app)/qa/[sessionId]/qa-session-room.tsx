@@ -160,6 +160,7 @@ export function QaSessionRoom({
   }, [effectiveVisibilityMode, matchId, sessionId, userId, visibilityMode]);
 
   function finishSession(extraState: ExtraRequestState = extraRequest) {
+    liveKitRoomRef.current?.disconnect();
     trackEvent(AnalyticsEvents.QA_FINISHED, {
       user_id: userId,
       match_id: matchId,
