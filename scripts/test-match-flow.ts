@@ -581,21 +581,45 @@ async function main() {
       throw new Error("Expected private Pass not to unlock chat.");
     }
 
-    const { error: updateOutcomeError } = await supabase
-      .from("qa_outcomes")
-      .update({ decision: "continue" })
-      .eq("qa_session_id", qaSession.id)
-      .eq("user_id", userBId);
+    const { user_a: mutualUserA, user_b: mutualUserB } = matchPair(userAId, userCId);
+    const { data: mutualMatch, error: mutualMatchError } = await supabase
+      .from("matches")
+      .insert({ user_a: mutualUserA, user_b: mutualUserB, status: "qa_complete" })
+      .select("id")
+      .single();
 
-    if (updateOutcomeError) {
-      throw new Error(
-        `Failed to update User B Vibe Check decision: ${updateOutcomeError.message}`,
-      );
+    if (mutualMatchError || !mutualMatch) {
+      throw new Error(`Failed to create mutual Continue match: ${mutualMatchError?.message}`);
+    }
+
+    const { data: mutualSession, error: mutualSessionError } = await supabase
+      .from("qa_sessions")
+      .insert({
+        match_id: mutualMatch.id,
+        scheduled_at: new Date().toISOString(),
+        proposed_by_id: userAId,
+        confirmed_at: new Date().toISOString(),
+        status: "completed",
+      })
+      .select("id")
+      .single();
+
+    if (mutualSessionError || !mutualSession) {
+      throw new Error(`Failed to create mutual Continue session: ${mutualSessionError?.message}`);
+    }
+
+    const { error: mutualOutcomesError } = await supabase.from("qa_outcomes").insert([
+      { qa_session_id: mutualSession.id, user_id: userAId, decision: "continue" },
+      { qa_session_id: mutualSession.id, user_id: userCId, decision: "continue" },
+    ]);
+
+    if (mutualOutcomesError) {
+      throw new Error(`Failed to save mutual Continue decisions: ${mutualOutcomesError.message}`);
     }
 
     const { data: chat, error: chatError } = await supabase
       .from("chats")
-      .insert({ match_id: match.id })
+      .insert({ match_id: mutualMatch.id })
       .select("id")
       .single();
 
@@ -623,23 +647,23 @@ async function main() {
       );
     }
 
-    if (userAChat.match_id !== match.id) {
+    if (userAChat.match_id !== mutualMatch.id) {
       throw new Error("Expected unlocked chat to belong to the current match.");
     }
 
-    const { data: userCChat, error: userCChatError } = await userCClient
+    const { data: userBChat, error: userBChatError } = await userBClient
       .from("chats")
       .select("id")
       .eq("id", chat.id)
       .maybeSingle();
 
-    if (userCChatError) {
+    if (userBChatError) {
       throw new Error(
-        `Failed to check unauthorized chat access: ${userCChatError.message}`,
+        `Failed to check unauthorized chat access: ${userBChatError.message}`,
       );
     }
 
-    if (userCChat) {
+    if (userBChat) {
       throw new Error("Expected non-participant not to read unlocked chat.");
     }
 
@@ -658,7 +682,7 @@ async function main() {
     }
 
     const { data: visibleMessages, error: visibleMessagesError } =
-      await userBClient
+      await userCClient
         .from("messages")
         .select("id, sender_id, body")
         .eq("chat_id", chat.id)
@@ -674,11 +698,11 @@ async function main() {
       throw new Error("Expected sent message to persist after refresh/read.");
     }
 
-    const { error: unauthorizedMessageError } = await userCClient
+    const { error: unauthorizedMessageError } = await userBClient
       .from("messages")
       .insert({
         chat_id: chat.id,
-        sender_id: userCId,
+        sender_id: userBId,
         body: "I should not be able to send this.",
       });
 

@@ -52,7 +52,7 @@ export default async function QaWaitingPage({
 
   const { data: outcome } = await supabase
     .from("qa_outcomes")
-    .select("id, decision")
+    .select("id")
     .eq("qa_session_id", sessionId)
     .eq("user_id", user.id)
     .maybeSingle();
@@ -61,17 +61,22 @@ export default async function QaWaitingPage({
     redirect(`/qa/${sessionId}?started=true&finished=true`);
   }
 
-  const { data: outcomes } = await supabase
+  const adminClient = admin();
+  const { data: outcomes, error: outcomesError } = await adminClient
     .from("qa_outcomes")
-    .select("user_id, decision")
+    .select("decision")
     .eq("qa_session_id", sessionId);
+
+  if (outcomesError) {
+    console.error("[qa] outcome aggregation failed", outcomesError);
+    redirect(`/qa/${sessionId}`);
+  }
 
   const bothDecided = (outcomes ?? []).length >= 2;
   const bothContinue =
     bothDecided && (outcomes ?? []).every((row) => row.decision === "continue");
 
   if (bothContinue) {
-    const adminClient = admin();
     const { data: existingChat } = await adminClient
       .from("chats")
       .select("id")
@@ -104,6 +109,19 @@ export default async function QaWaitingPage({
         }),
       ]);
       redirect(`/chat/${newChat.id}`);
+    }
+  }
+
+  if (bothDecided && !bothContinue) {
+    const { error: closeMatchError } = await adminClient
+      .from("matches")
+      .update({ status: "closed", closed_reason: null })
+      .eq("id", session.match_id)
+      .neq("status", "closed");
+
+    if (closeMatchError) {
+      console.error("[qa] match close failed", closeMatchError);
+      redirect(`/qa/${sessionId}`);
     }
   }
 

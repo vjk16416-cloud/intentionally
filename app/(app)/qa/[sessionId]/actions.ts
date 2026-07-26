@@ -122,27 +122,26 @@ export async function saveQaOutcome(formData: FormData) {
   const { session, user } = await getParticipantSession(sessionId);
   if (session.status !== "completed") redirect(`/qa/${sessionId}`);
 
-  const { error } = await admin().from("qa_outcomes").upsert(
-    {
-      qa_session_id: sessionId,
-      user_id: user.id,
-      decision,
-    },
-    { onConflict: "qa_session_id,user_id" },
-  );
+  const { error } = await admin().from("qa_outcomes").insert({
+    qa_session_id: sessionId,
+    user_id: user.id,
+    decision,
+  });
 
-  if (error) {
+  if (error && error.code !== "23505") {
     console.error("[qa] outcome save failed", error);
     redirect(`/qa/${sessionId}`);
   }
 
-  await trackServerAnalyticsEvent(
-    decision === "continue" ? "continueSelected" : "passSelected",
-    {
-      distinctId: user.id,
-      properties: { match_id: session.match_id, qa_session_id: session.id },
-    },
-  );
+  if (!error) {
+    await trackServerAnalyticsEvent(
+      decision === "continue" ? "continueSelected" : "passSelected",
+      {
+        distinctId: user.id,
+        properties: { match_id: session.match_id, qa_session_id: session.id },
+      },
+    );
+  }
 
   redirect(`/qa/${sessionId}/waiting`);
 }
