@@ -83,3 +83,5 @@ Later steps will fill in `lib/qa`, `lib/daily`, `lib/stripe`, etc.
 
 Not wired yet. See AGENTS.md §10 for the build sequence — deployment
 notes will land alongside Step 11 polish.
+
+<!-- staging deployment trigger -->
