@@ -81,11 +81,22 @@ function isLocalHost(host: string | null) {
 
 function getAppOrigin(headersOrigin: string | null) {
   const requestOrigin = headersOrigin ? withoutTrailingSlash(headersOrigin) : null;
+  const configuredOrigin = configuredAppOrigin();
+
+  // Local development should always return to the local app that initiated auth.
   if (requestOrigin && isLocalOrigin(requestOrigin)) {
     return requestOrigin;
   }
 
-  const configuredOrigin = configuredAppOrigin();
+  // If a deployed request arrives while the configured app URL is still local
+  // (a common staging misconfiguration), never send the auth callback to localhost.
+  if (
+    requestOrigin &&
+    (!configuredOrigin || isLocalOrigin(configuredOrigin))
+  ) {
+    return requestOrigin;
+  }
+
   if (configuredOrigin) {
     return configuredOrigin;
   }
