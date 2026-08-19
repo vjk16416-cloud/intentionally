@@ -86,6 +86,40 @@ jobs:
       - name: Run Playwright tests
         run: pnpm test:e2e
 
+      - name: Request one real email auth message
+        run: |
+          export VERIFY_EMAIL="$(git log -1 --format=%ae)"
+          node --input-type=module <<'NODE'
+          import { createClient } from "@supabase/supabase-js";
+
+          const email = process.env.VERIFY_EMAIL;
+          if (!email || !email.includes("@")) {
+            throw new Error("Commit author email is unavailable.");
+          }
+
+          const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+            {
+              auth: {
+                persistSession: false,
+                autoRefreshToken: false,
+              },
+            },
+          );
+
+          const { error } = await supabase.auth.signInWithOtp({
+            email,
+            options: {
+              emailRedirectTo:
+                "https://intentionally-seven.vercel.app/auth/callback?next=/discover",
+            },
+          });
+
+          if (error) throw error;
+          console.log("Requested one verification auth email.");
+          NODE
+
       - name: Run product flow test
         run: pnpm test:product
 
