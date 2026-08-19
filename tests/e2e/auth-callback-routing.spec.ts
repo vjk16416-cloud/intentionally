@@ -8,6 +8,8 @@ import {
   resolvePostAuthRedirectPath,
 } from "@/lib/auth/callback";
 
+const baseUrl = "http://localhost:3000";
+
 test.describe("auth callback redirect routing", () => {
   test("sends incomplete users to onboarding", () => {
     const url = new URL("http://localhost:3000/auth/callback?next=/discover");
@@ -55,7 +57,7 @@ test.describe("auth callback redirect routing", () => {
   test("preserves the requested protected route when redirecting to login", async ({
     page,
   }) => {
-    await page.goto("/discover?source=auth-return-test");
+    await page.goto(`${baseUrl}/discover?source=auth-return-test`);
 
     const url = new URL(page.url());
     expect(url.pathname).toBe("/login");
@@ -67,7 +69,7 @@ test.describe("auth callback redirect routing", () => {
   test("sanitises an unsafe login next value before it reaches auth forms", async ({
     page,
   }) => {
-    await page.goto("/login?next=https://evil.example/phish");
+    await page.goto(`${baseUrl}/login?next=https://evil.example/phish`);
 
     await expect(page.locator('input[name="next"]').first()).toHaveValue(
       DEFAULT_POST_AUTH_PATH,
