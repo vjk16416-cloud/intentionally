@@ -51,4 +51,26 @@ test.describe("auth callback redirect routing", () => {
     );
     expect(DEFAULT_POST_AUTH_PATH).toBe("/discover");
   });
+
+  test("preserves the requested protected route when redirecting to login", async ({
+    page,
+  }) => {
+    await page.goto("/discover?source=auth-return-test");
+
+    const url = new URL(page.url());
+    expect(url.pathname).toBe("/login");
+    expect(url.searchParams.get("next")).toBe(
+      "/discover?source=auth-return-test",
+    );
+  });
+
+  test("sanitises an unsafe login next value before it reaches auth forms", async ({
+    page,
+  }) => {
+    await page.goto("/login?next=https://evil.example/phish");
+
+    await expect(page.locator('input[name="next"]').first()).toHaveValue(
+      DEFAULT_POST_AUTH_PATH,
+    );
+  });
 });
