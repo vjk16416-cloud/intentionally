@@ -1,13 +1,24 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { getSafeNextPathValue } from "@/lib/auth/callback";
 import { getOnboardingState } from "@/lib/onboarding/state";
 import { createClient } from "@/lib/supabase/server";
 
 import { LoginForm } from "./login-form";
 
-export default async function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<{
+    next?: string | string[];
+  }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
   const enableLocalFounderLogin = process.env.NODE_ENV !== "production";
+  const params = await searchParams;
+  const requestedNext = Array.isArray(params.next) ? params.next[0] : params.next;
+  const nextPath = getSafeNextPathValue(requestedNext);
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -16,7 +27,7 @@ export default async function LoginPage() {
   if (user) {
     const onboarding = await getOnboardingState(supabase, user);
     redirect(
-      onboarding.status === "complete" ? "/discover" : onboarding.nextStep,
+      onboarding.status === "complete" ? nextPath : onboarding.nextStep,
     );
   }
 
@@ -61,7 +72,10 @@ export default async function LoginPage() {
           </header>
 
           <div className="mt-7">
-            <LoginForm enableLocalFounderLogin={enableLocalFounderLogin} />
+            <LoginForm
+              enableLocalFounderLogin={enableLocalFounderLogin}
+              nextPath={nextPath}
+            />
           </div>
 
           <div className="mt-6 text-center">
