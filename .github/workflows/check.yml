@@ -24,6 +24,7 @@ jobs:
       STRIPE_IDENTITY_WEBHOOK_SECRET: ${{ secrets.STRIPE_IDENTITY_WEBHOOK_SECRET }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       CRON_SECRET: ${{ secrets.CRON_SECRET }}
+      APP_URL: http://localhost:3000
 
     steps:
       - name: Checkout code
@@ -55,6 +56,7 @@ jobs:
           test -n "$STRIPE_IDENTITY_WEBHOOK_SECRET" || (echo "Missing STRIPE_IDENTITY_WEBHOOK_SECRET" && exit 1)
           test -n "$RESEND_API_KEY" || (echo "Missing RESEND_API_KEY" && exit 1)
           test -n "$CRON_SECRET" || (echo "Missing CRON_SECRET" && exit 1)
+          test -n "$APP_URL" || (echo "Missing APP_URL" && exit 1)
 
       - name: Typecheck
         run: pnpm typecheck
@@ -93,4 +95,3 @@ jobs:
       - name: Check live Vercel app
         run: |
           curl -I --fail --max-time 20 https://intentionally-seven.vercel.app/
-
