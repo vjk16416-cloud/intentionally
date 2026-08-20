@@ -67,4 +67,4 @@ jobs:
           exit 1
 
       - name: Run discovery Q&A invite test
-        run: pnpm exec playwright test tests/e2e/discovery-qa-invite.spec.ts --project=chromium
+        run: pnpm exec playwright test tests/e2e/discovery-qa-invite.spec.ts
