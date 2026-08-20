@@ -4,7 +4,6 @@ import { createClient as createServiceRoleClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { createDailyRoom } from "@/lib/daily/rooms";
 import { type Intention } from "@/lib/qa/questions";
 import { selectThreeQuestions } from "@/lib/qa/select";
 import { sendQaScheduledEmail } from "@/lib/resend/emails";
@@ -215,6 +214,7 @@ export async function confirmSlot(
 
   let room: { name: string; url: string };
   try {
+    const { createDailyRoom } = await import("@/lib/daily/rooms");
     room = await createDailyRoom(new Date(existing.scheduled_at));
   } catch (err) {
     console.error("[schedule] daily.co room creation failed", err);
