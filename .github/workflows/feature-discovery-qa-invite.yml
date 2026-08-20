@@ -1,15 +1,16 @@
 name: Discovery Q&A Invite Feature Check
 
 on:
-  push:
+  pull_request:
     branches:
-      - feature/discovery-qa-invite-20260820
+      - staging
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   invite-flow:
+    if: github.head_ref == 'feature/discovery-qa-invite-20260820'
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
