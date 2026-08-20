@@ -266,7 +266,6 @@ function SelectionForm({
                         source: "slot_picker_confirmation",
                       },
                     });
-                    setIsConfirmOpen(false);
                   }}
                   className="h-12 w-full rounded-2xl bg-[#75886b] px-4 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(83,104,73,0.24)] transition hover:bg-[#697b60] disabled:cursor-not-allowed disabled:opacity-50"
                 >
