@@ -11,7 +11,6 @@ export const ANALYTICS_EVENT_NAMES = {
   qaInviteSubmitted: "qa_invite_submitted",
   qaInviteFailed: "qa_invite_failed",
   qaInviteDuplicate: "qa_invite_duplicate",
-  qaInviteWaitingViewed: "qa_invite_waiting_viewed",
   scheduleClicked: "schedule_clicked",
   qaStarted: "qa_started",
   visibilitySelected: "visibility_selected",
