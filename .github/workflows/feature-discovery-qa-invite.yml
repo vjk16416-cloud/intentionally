@@ -54,7 +54,9 @@ jobs:
         run: pnpm build
 
       - name: Start app with diagnostics
-        run: pnpm dev &
+        run: |
+          nohup pnpm dev > /tmp/intentionally-dev.log 2>&1 &
+          echo $! > /tmp/intentionally-dev.pid
 
       - name: Wait for app
         run: |
@@ -64,6 +66,7 @@ jobs:
             fi
             sleep 2
           done
+          cat /tmp/intentionally-dev.log || true
           exit 1
 
       - name: Run discovery Q&A invite test
@@ -74,5 +77,7 @@ jobs:
           if [ "$status" -ne 0 ]; then
             echo "=== Playwright failure context ==="
             find test-results -name error-context.md -print -exec cat {} \; || true
+            echo "=== Next.js diagnostic log ==="
+            cat /tmp/intentionally-dev.log || true
           fi
           exit "$status"
