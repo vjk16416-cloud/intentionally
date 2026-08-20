@@ -53,8 +53,8 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Start app
-        run: pnpm start &
+      - name: Start app with diagnostics
+        run: pnpm dev &
 
       - name: Wait for app
         run: |
