@@ -67,4 +67,12 @@ jobs:
           exit 1
 
       - name: Run discovery Q&A invite test
-        run: pnpm exec playwright test tests/e2e/discovery-qa-invite.spec.ts
+        run: |
+          set +e
+          pnpm exec playwright test tests/e2e/discovery-qa-invite.spec.ts
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "=== Playwright failure context ==="
+            find test-results -name error-context.md -print -exec cat {} \; || true
+          fi
+          exit "$status"
