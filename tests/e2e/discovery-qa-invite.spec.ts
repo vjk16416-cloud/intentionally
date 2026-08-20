@@ -231,8 +231,22 @@ test.describe("Discovery to Q&A invite", () => {
 
     await page.getByRole("button", { name: "Invite to Q&A" }).click();
     await page.getByRole("button", { name: "Send invite" }).click();
-    await expect(confirmDialog).toBeHidden({ timeout: 10_000 });
 
+    await expect
+      .poll(
+        async () => {
+          const { data, error } = await admin
+            .from("qa_sessions")
+            .select("id")
+            .eq("match_id", matchId!);
+          if (error) throw error;
+          return data?.length ?? 0;
+        },
+        { timeout: 15_000, message: "initial invite should create one qa_sessions row" },
+      )
+      .toBe(1);
+
+    await expect(confirmDialog).toBeHidden({ timeout: 5_000 });
     await expect(page.getByText("Invite sent", { exact: true })).toBeVisible();
     await expect(page.getByText(new RegExp(`Waiting on ${candidateFirstName}`, "i"))).toBeVisible();
 
@@ -249,7 +263,23 @@ test.describe("Discovery to Q&A invite", () => {
     await replacementSlot.click();
     await page.getByRole("button", { name: "Invite to Q&A" }).click();
     await page.getByRole("button", { name: "Send invite" }).click();
-    await expect(confirmDialog).toBeHidden({ timeout: 10_000 });
+
+    await expect
+      .poll(
+        async () => {
+          const { data, error } = await admin
+            .from("qa_sessions")
+            .select("id, scheduled_at")
+            .eq("match_id", matchId!);
+          if (error) throw error;
+          if (!data || data.length !== 1) return null;
+          return data[0].scheduled_at;
+        },
+        { timeout: 15_000, message: "reschedule should update the existing qa_sessions row" },
+      )
+      .not.toBe(initialSession.scheduled_at);
+
+    await expect(confirmDialog).toBeHidden({ timeout: 5_000 });
     await expect(page.getByText("Invite sent", { exact: true })).toBeVisible();
 
     const { data: finalSessions, error: finalSessionError } = await admin
