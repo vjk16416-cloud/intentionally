@@ -235,27 +235,29 @@ test.describe("Discovery to Q&A invite", () => {
     await expect(page.getByText("Invite sent", { exact: true })).toBeVisible();
     await expect(page.getByText(new RegExp(`Waiting on ${candidateFirstName}`, "i"))).toBeVisible();
 
-    const { count: initialSessionCount, error: initialCountError } = await admin
+    const { data: initialSessions, error: initialSessionError } = await admin
       .from("qa_sessions")
-      .select("id", { count: "exact", head: true })
+      .select("id, scheduled_at")
       .eq("match_id", matchId!);
-    if (initialCountError) throw initialCountError;
-    expect(initialSessionCount).toBe(1);
+    if (initialSessionError) throw initialSessionError;
+    expect(initialSessions).toHaveLength(1);
+    const initialSession = initialSessions![0];
 
     const replacementSlot = page.getByRole("radio").first();
-    if (await replacementSlot.isVisible()) {
-      await replacementSlot.click();
-      await page.getByRole("button", { name: "Invite to Q&A" }).click();
-      await page.getByRole("button", { name: "Send invite" }).click();
-      await expect(page.getByText("Invite sent", { exact: true })).toBeVisible();
+    await expect(replacementSlot).toBeVisible();
+    await replacementSlot.click();
+    await page.getByRole("button", { name: "Invite to Q&A" }).click();
+    await page.getByRole("button", { name: "Send invite" }).click();
+    await expect(page.getByText("Invite sent", { exact: true })).toBeVisible();
 
-      const { count: finalSessionCount, error: finalCountError } = await admin
-        .from("qa_sessions")
-        .select("id", { count: "exact", head: true })
-        .eq("match_id", matchId!);
-      if (finalCountError) throw finalCountError;
-      expect(finalSessionCount).toBe(1);
-    }
+    const { data: finalSessions, error: finalSessionError } = await admin
+      .from("qa_sessions")
+      .select("id, scheduled_at")
+      .eq("match_id", matchId!);
+    if (finalSessionError) throw finalSessionError;
+    expect(finalSessions).toHaveLength(1);
+    expect(finalSessions![0].id).toBe(initialSession.id);
+    expect(finalSessions![0].scheduled_at).not.toBe(initialSession.scheduled_at);
 
     await context.close();
   });
