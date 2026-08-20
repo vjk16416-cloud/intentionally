@@ -197,15 +197,6 @@ test.describe("Discovery to Q&A invite", () => {
     await addSessionCookies(context, authCookies);
     const page = await context.newPage();
 
-    page.on("console", (message) => {
-      if (message.type() === "error" || message.type() === "warning") {
-        console.log(`[browser:${message.type()}] ${message.text()}`);
-      }
-    });
-    page.on("pageerror", (error) => {
-      console.log(`[browser:pageerror] ${error.stack ?? error.message}`);
-    });
-
     await page.goto(`${baseUrl}/discover`);
     await expect(page.getByRole("heading", { name: /discover/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: new RegExp(candidateFirstName, "i") })).toBeVisible();
@@ -240,15 +231,7 @@ test.describe("Discovery to Q&A invite", () => {
 
     await page.getByRole("button", { name: "Invite to Q&A" }).click();
     await page.getByRole("button", { name: "Send invite" }).click();
-    await page.waitForTimeout(750);
-
-    const { data: postSubmitSessions, error: postSubmitSessionError } = await admin
-      .from("qa_sessions")
-      .select("id, match_id, scheduled_at, proposed_by_id, confirmed_at")
-      .eq("match_id", matchId!);
-    console.log(
-      `[invite-debug] url=${page.url()} sessions=${JSON.stringify(postSubmitSessions)} queryError=${postSubmitSessionError?.message ?? "none"}`,
-    );
+    await expect(confirmDialog).toBeHidden({ timeout: 10_000 });
 
     await expect(page.getByText("Invite sent", { exact: true })).toBeVisible();
     await expect(page.getByText(new RegExp(`Waiting on ${candidateFirstName}`, "i"))).toBeVisible();
@@ -266,6 +249,7 @@ test.describe("Discovery to Q&A invite", () => {
     await replacementSlot.click();
     await page.getByRole("button", { name: "Invite to Q&A" }).click();
     await page.getByRole("button", { name: "Send invite" }).click();
+    await expect(confirmDialog).toBeHidden({ timeout: 10_000 });
     await expect(page.getByText("Invite sent", { exact: true })).toBeVisible();
 
     const { data: finalSessions, error: finalSessionError } = await admin
