@@ -100,8 +100,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      APP_URL: http://localhost:3000
-      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      APP_URL: http://127.0.0.1:3000
+      NEXT_PUBLIC_APP_URL: http://127.0.0.1:3000
       MAILPIT_URL: http://127.0.0.1:54324
       EMAIL_AUTH_LIVE: "1"
       STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
@@ -166,7 +166,7 @@ jobs:
       - name: Wait for app and Mailpit
         run: |
           for i in {1..30}; do
-            if curl -s http://localhost:3000 > /dev/null && curl -s http://127.0.0.1:54324 > /dev/null; then
+            if curl -s http://127.0.0.1:3000 > /dev/null && curl -s http://127.0.0.1:54324 > /dev/null; then
               echo "App and Mailpit are ready"
               exit 0
             fi
