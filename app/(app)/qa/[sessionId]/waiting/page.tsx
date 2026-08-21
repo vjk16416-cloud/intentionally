@@ -60,7 +60,10 @@ export default async function QaWaitingPage({
     redirect(`/qa/${sessionId}?started=true&finished=true`);
   }
 
-  const { data: outcomes } = await supabase
+  // Individual Continue/Pass choices are private under RLS. Derive the mutual
+  // result on the trusted server, and expose only the combined state to the UI.
+  const adminClient = admin();
+  const { data: outcomes } = await adminClient
     .from("qa_outcomes")
     .select("user_id, decision")
     .eq("qa_session_id", sessionId);
@@ -70,7 +73,7 @@ export default async function QaWaitingPage({
     bothDecided && (outcomes ?? []).every((row) => row.decision === "continue");
 
   if (bothContinue) {
-    const { data: unlockedChats, error } = await admin().rpc(
+    const { data: unlockedChats, error } = await adminClient.rpc(
       "unlock_chat_for_match",
       { p_match_id: session.match_id },
     );
