@@ -110,5 +110,14 @@ export async function GET(request: NextRequest) {
   const { supabase, applyCookies } = await createRouteHandlerClient();
   const redirectPath = await resolveRedirectPath(url, supabase);
 
-  return applyCookies(NextResponse.redirect(new URL(redirectPath, url.origin)));
+  // Use a relative Location header so the browser keeps the public hostname
+  // that received the callback. Building an absolute URL from request.url can
+  // use an internal/normalised host behind a proxy and strand the auth cookie
+  // on a different hostname.
+  const response = new NextResponse(null, {
+    status: 307,
+    headers: { Location: redirectPath },
+  });
+
+  return applyCookies(response);
 }
