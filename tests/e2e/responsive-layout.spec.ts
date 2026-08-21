@@ -41,7 +41,7 @@ for (const viewport of viewports) {
 
       await expect(page.getByRole("heading", { name: /start with intention/i })).toBeVisible();
       await expect(page.getByRole("link", { name: /continue as guest/i })).toBeVisible();
-      await expect(page.getByRole("button", { name: /send secure sign-in link/i })).toBeVisible();
+      await expect(page.getByRole("button", { name: /send sign-in email/i })).toBeVisible();
       await expectNoHorizontalOverflow(page);
 
       await page.getByRole("link", { name: /continue as guest/i }).click();
@@ -65,7 +65,7 @@ for (const viewport of viewports) {
       await page.goto(`${baseUrl}/schedule/demo-demo-match`);
 
       await expect(page).toHaveURL(/\/login/);
-      await expect(page.getByRole("button", { name: /send secure sign-in link/i })).toBeVisible();
+      await expect(page.getByRole("button", { name: /send sign-in email/i })).toBeVisible();
       await expectNoHorizontalOverflow(page);
     });
   });

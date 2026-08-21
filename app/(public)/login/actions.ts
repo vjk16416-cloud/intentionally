@@ -6,6 +6,10 @@ import { cookies } from "next/headers";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import {
+  getSafeNextPathValue,
+  resolvePostAuthNextPath,
+} from "@/lib/auth/callback";
 import { getOnboardingState } from "@/lib/onboarding/state";
 import { createClient } from "@/lib/supabase/server";
 
@@ -20,7 +24,6 @@ export type LoginActionState = {
 
 const E164_PATTERN = /^\+[1-9]\d{6,14}$/;
 const LOCAL_APP_ORIGIN = "http://localhost:3000";
-const EMAIL_SIGN_IN_NEXT_PATH = "/discover";
 const LOCAL_FOUNDER_DEV_COOKIE = "intentionally_local_founder_dev";
 const LOCAL_FOUNDER_DEV_COOKIE_MAX_AGE = 60 * 60 * 8;
 
@@ -108,9 +111,9 @@ function getAppOrigin(headersOrigin: string | null) {
   return requestOrigin ?? LOCAL_APP_ORIGIN;
 }
 
-function getEmailRedirectTo(origin: string) {
+function getEmailRedirectTo(origin: string, next: string | null) {
   const redirectUrl = new URL("/auth/callback", origin);
-  redirectUrl.searchParams.set("next", EMAIL_SIGN_IN_NEXT_PATH);
+  redirectUrl.searchParams.set("next", getSafeNextPathValue(next));
   return redirectUrl.toString();
 }
 
@@ -160,6 +163,7 @@ export async function requestOtp(
 ): Promise<LoginActionState> {
   const identifier = String(formData.get("identifier") ?? "").trim();
   const kind = detectKind(identifier);
+  const next = String(formData.get("next") ?? "").trim();
 
   if (!kind) {
     return {
@@ -178,7 +182,7 @@ export async function requestOtp(
       ? await supabase.auth.signInWithOtp({
           email: identifier,
           options: {
-            emailRedirectTo: getEmailRedirectTo(origin),
+            emailRedirectTo: getEmailRedirectTo(origin, next),
           },
         })
       : await supabase.auth.signInWithOtp({ phone: identifier });
@@ -197,6 +201,7 @@ export async function verifyOtp(
   const identifier = String(formData.get("identifier") ?? "").trim();
   const kindRaw = String(formData.get("kind") ?? "");
   const token = String(formData.get("token") ?? "").trim();
+  const next = String(formData.get("next") ?? "").trim();
 
   if (kindRaw !== "email" && kindRaw !== "phone") {
     return { identifier, error: "Choose email or phone to sign in." };
@@ -241,5 +246,15 @@ export async function verifyOtp(
   }
 
   const onboarding = await getOnboardingState(supabase, user);
+
+  if (kindRaw === "email") {
+    redirect(
+      resolvePostAuthNextPath({
+        next,
+        onboardingComplete: onboarding.status === "complete",
+      }),
+    );
+  }
+
   redirect(onboarding.status === "complete" ? "/discover" : "/onboarding");
 }
