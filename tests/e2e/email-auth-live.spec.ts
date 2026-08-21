@@ -69,6 +69,11 @@ async function expectPersistentAuthenticatedSession(page: Page) {
 }
 
 test.describe("live email authentication", () => {
+  test.skip(
+    process.env.EMAIL_AUTH_LIVE !== "1",
+    "Runs only in the isolated local Supabase + Mailpit auth job.",
+  );
+
   test("the 6-digit code from the generated email creates a persistent session", async ({
     page,
   }) => {
