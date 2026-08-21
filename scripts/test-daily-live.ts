@@ -7,19 +7,6 @@ import {
 } from "../lib/daily/config";
 
 const DAILY_API_URL = "https://api.daily.co/v1";
-const apiKey = process.env.DAILY_API_KEY;
-
-if (!apiKey) {
-  throw new Error("Missing required environment variable: DAILY_API_KEY");
-}
-
-const roomName = `intentionally-security-${Date.now()}`;
-const scheduledAt = new Date(Date.now() + 2 * 60_000);
-
-const headers = {
-  Authorization: `Bearer ${apiKey}`,
-  "Content-Type": "application/json",
-};
 
 async function readJson(response: Response) {
   const text = await response.text();
@@ -29,80 +16,97 @@ async function readJson(response: Response) {
   return text ? JSON.parse(text) : {};
 }
 
-let roomCreated = false;
+async function main() {
+  const apiKey = process.env.DAILY_API_KEY;
+  if (!apiKey) {
+    throw new Error("Missing required environment variable: DAILY_API_KEY");
+  }
 
-try {
-  const createResponse = await fetch(`${DAILY_API_URL}/rooms`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
-      name: roomName,
-      ...buildDailyRoomPayload(scheduledAt),
-    }),
-  });
-  const created = (await readJson(createResponse)) as {
-    name?: string;
-    privacy?: string;
-    url?: string;
-    config?: Record<string, unknown>;
-  };
-  roomCreated = true;
-
-  assert.equal(created.name, roomName);
-  assert.equal(created.privacy, "private");
-  assert.ok(created.url, "Daily create-room response should include a room URL");
-
-  const getResponse = await fetch(`${DAILY_API_URL}/rooms/${roomName}`, {
-    headers,
-  });
-  const liveRoom = (await readJson(getResponse)) as {
-    privacy?: string;
-    config?: Record<string, unknown>;
+  const roomName = `intentionally-security-${Date.now()}`;
+  const scheduledAt = new Date(Date.now() + 2 * 60_000);
+  const headers = {
+    Authorization: `Bearer ${apiKey}`,
+    "Content-Type": "application/json",
   };
 
-  assert.equal(liveRoom.privacy, "private");
-  assert.equal(liveRoom.config?.max_participants, 2);
-  assert.equal(liveRoom.config?.enforce_unique_user_ids, true);
-  assert.equal(liveRoom.config?.enable_prejoin_ui, false);
-  assert.equal(liveRoom.config?.enable_chat, false);
-  assert.equal(liveRoom.config?.enable_screenshare, false);
+  let roomCreated = false;
 
-  const participantId = randomUUID();
-  const tokenResponse = await fetch(`${DAILY_API_URL}/meeting-tokens`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(
-      buildDailyMeetingTokenPayload({
-        roomName,
-        userId: participantId,
-        scheduledAt,
+  try {
+    const createResponse = await fetch(`${DAILY_API_URL}/rooms`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        name: roomName,
+        ...buildDailyRoomPayload(scheduledAt),
       }),
-    ),
-  });
-  const tokenData = (await readJson(tokenResponse)) as { token?: string };
+    });
+    const created = (await readJson(createResponse)) as {
+      name?: string;
+      privacy?: string;
+      url?: string;
+    };
+    roomCreated = true;
 
-  assert.ok(tokenData.token, "Daily should return a scoped meeting token");
-  assert.ok(
-    tokenData.token.length > 20,
-    "Daily meeting token should be non-empty and token-shaped",
-  );
+    assert.equal(created.name, roomName);
+    assert.equal(created.privacy, "private");
+    assert.ok(created.url, "Daily create-room response should include a room URL");
 
-  console.log(
-    "Live Daily security check passed: private room config and scoped token verified.",
-  );
-} finally {
-  if (roomCreated) {
-    const deleteResponse = await fetch(`${DAILY_API_URL}/rooms/${roomName}`, {
-      method: "DELETE",
+    const getResponse = await fetch(`${DAILY_API_URL}/rooms/${roomName}`, {
       headers,
     });
+    const liveRoom = (await readJson(getResponse)) as {
+      privacy?: string;
+      config?: Record<string, unknown>;
+    };
 
-    if (!deleteResponse.ok) {
-      const body = await deleteResponse.text();
-      console.error(
-        `Daily cleanup failed (${deleteResponse.status}). Test room: ${roomName}. ${body}`,
-      );
-      process.exitCode = 1;
+    assert.equal(liveRoom.privacy, "private");
+    assert.equal(liveRoom.config?.max_participants, 2);
+    assert.equal(liveRoom.config?.enforce_unique_user_ids, true);
+    assert.equal(liveRoom.config?.enable_prejoin_ui, false);
+    assert.equal(liveRoom.config?.enable_chat, false);
+    assert.equal(liveRoom.config?.enable_screenshare, false);
+
+    const participantId = randomUUID();
+    const tokenResponse = await fetch(`${DAILY_API_URL}/meeting-tokens`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(
+        buildDailyMeetingTokenPayload({
+          roomName,
+          userId: participantId,
+          scheduledAt,
+        }),
+      ),
+    });
+    const tokenData = (await readJson(tokenResponse)) as { token?: string };
+
+    assert.ok(tokenData.token, "Daily should return a scoped meeting token");
+    assert.ok(
+      tokenData.token.length > 20,
+      "Daily meeting token should be non-empty and token-shaped",
+    );
+
+    console.log(
+      "Live Daily security check passed: private room config and scoped token verified.",
+    );
+  } finally {
+    if (roomCreated) {
+      const deleteResponse = await fetch(`${DAILY_API_URL}/rooms/${roomName}`, {
+        method: "DELETE",
+        headers,
+      });
+
+      if (!deleteResponse.ok) {
+        const body = await deleteResponse.text();
+        throw new Error(
+          `Daily cleanup failed (${deleteResponse.status}). Test room: ${roomName}. ${body}`,
+        );
+      }
     }
   }
 }
+
+void main().catch((error: unknown) => {
+  console.error(error);
+  process.exitCode = 1;
+});
