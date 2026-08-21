@@ -60,7 +60,10 @@ export default async function QaWaitingPage({
     redirect(`/qa/${sessionId}?started=true&finished=true`);
   }
 
-  const { data: outcomes } = await supabase
+  // Individual Continue/Pass choices are private under RLS. Derive the mutual
+  // result on the trusted server, and expose only the combined state to the UI.
+  const adminClient = admin();
+  const { data: outcomes } = await adminClient
     .from("qa_outcomes")
     .select("user_id, decision")
     .eq("qa_session_id", sessionId);
@@ -70,25 +73,21 @@ export default async function QaWaitingPage({
     bothDecided && (outcomes ?? []).every((row) => row.decision === "continue");
 
   if (bothContinue) {
-    const adminClient = admin();
-    const { data: existingChat } = await adminClient
-      .from("chats")
-      .select("id")
-      .eq("match_id", session.match_id)
-      .maybeSingle();
+    const { data: unlockedChats, error } = await adminClient.rpc(
+      "unlock_chat_for_match",
+      { p_match_id: session.match_id },
+    );
+    const unlockedChat = Array.isArray(unlockedChats) ? unlockedChats[0] : null;
 
-    if (existingChat) {
-      redirect(`/chat/${existingChat.id}`);
+    if (error) {
+      console.error("[qa] mutual chat unlock failed", {
+        matchId: session.match_id,
+        message: error.message,
+      });
     }
 
-    const { data: newChat, error } = await adminClient
-      .from("chats")
-      .insert({ match_id: session.match_id })
-      .select("id")
-      .single();
-
-    if (!error && newChat) {
-      redirect(`/chat/${newChat.id}`);
+    if (unlockedChat?.chat_id) {
+      redirect(`/chat/${unlockedChat.chat_id}`);
     }
   }
 
