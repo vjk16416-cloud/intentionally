@@ -103,6 +103,7 @@ jobs:
       APP_URL: http://localhost:3000
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       MAILPIT_URL: http://127.0.0.1:54324
+      EMAIL_AUTH_LIVE: "1"
       STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
       STRIPE_IDENTITY_WEBHOOK_SECRET: ${{ secrets.STRIPE_IDENTITY_WEBHOOK_SECRET }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
