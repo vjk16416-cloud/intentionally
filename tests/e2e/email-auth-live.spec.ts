@@ -93,12 +93,48 @@ test.describe("live email authentication", () => {
     page,
   }) => {
     const email = uniqueEmail("auth-link");
+    const authResponses: string[] = [];
+
+    page.on("response", (response) => {
+      const responseUrl = response.url();
+      if (
+        responseUrl.includes("/auth/callback") ||
+        responseUrl.includes("/onboarding") ||
+        responseUrl.includes("/login")
+      ) {
+        authResponses.push(`${response.status()} ${responseUrl}`);
+      }
+    });
 
     await requestSignInEmail(page, email);
     const html = await waitForAuthEmail(email);
     const magicLink = extractMagicLink(html);
+    const magicLinkUrl = new URL(magicLink);
 
-    await page.goto(magicLink);
+    console.log("AUTH_MAGIC_LINK_ORIGIN", magicLinkUrl.origin);
+    console.log("AUTH_APP_ORIGIN", new URL(APP_URL).origin);
+
+    const navigationResponse = await page.goto(magicLink);
+
+    console.log(
+      "AUTH_MAGIC_LINK_NAVIGATION",
+      navigationResponse?.status(),
+      navigationResponse?.url(),
+    );
+    console.log("AUTH_MAGIC_LINK_FINAL_URL", page.url());
+    console.log("AUTH_MAGIC_LINK_REDIRECTS", authResponses);
+
+    const cookies = await page.context().cookies();
+    console.log(
+      "AUTH_MAGIC_LINK_COOKIE_METADATA",
+      cookies.map(({ name, domain, path, secure, sameSite }) => ({
+        name,
+        domain,
+        path,
+        secure,
+        sameSite,
+      })),
+    );
 
     await expectPersistentAuthenticatedSession(page);
   });
