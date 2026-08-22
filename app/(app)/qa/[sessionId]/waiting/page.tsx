@@ -7,6 +7,11 @@ import { createClient } from "@/lib/supabase/server";
 
 import { WaitingAutoRefresh } from "./waiting-auto-refresh";
 
+type UnlockedChatRow = {
+  chat_id: string;
+  created: boolean;
+};
+
 function admin() {
   return createServiceRoleClient(SUPABASE_URL, getServiceRoleKey(), {
     auth: { persistSession: false },
@@ -72,6 +77,7 @@ export default async function QaWaitingPage({
   if (bothContinue) {
     const { data: unlockedChat, error: unlockError } = await admin()
       .rpc("unlock_chat_for_match", { p_match_id: session.match_id })
+      .returns<UnlockedChatRow[]>()
       .single();
 
     if (!unlockError && unlockedChat?.chat_id) {
