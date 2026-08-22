@@ -15,7 +15,12 @@ for (const text of requiredCopy) {
   }
 }
 
-const forbiddenCopy = ["Ready for a Vibe Check?", "Start Vibe Check", "Pass for now"];
+const forbiddenCopy = [
+  "Ready for a Vibe Check?",
+  "Start Vibe Check",
+  "Pass for now",
+  "so start with the Guided Vibe Check",
+];
 
 for (const text of forbiddenCopy) {
   if (source.includes(text)) {
