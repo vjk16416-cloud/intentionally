@@ -66,10 +66,7 @@ function locationLabel(card: DiscoverCard) {
 }
 
 function promptAnswer(answer: string | null | undefined) {
-  return (
-    answer?.trim() ||
-    "They have not answered this one yet, so start with the Guided Vibe Check."
-  );
+  return answer?.trim() || "They have not answered this one yet.";
 }
 
 function trustItems(card: DiscoverCard) {
