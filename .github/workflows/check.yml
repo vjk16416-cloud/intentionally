@@ -62,6 +62,9 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Check Discover journey copy
+        run: pnpm exec tsx scripts/test-discover-journey.ts
+
       - name: Build
         run: pnpm build
 
@@ -93,4 +96,3 @@ jobs:
       - name: Check live Vercel app
         run: |
           curl -I --fail --max-time 20 https://intentionally-seven.vercel.app/
-
