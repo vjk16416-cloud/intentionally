@@ -10,6 +10,11 @@ import {
 } from "../lib/internal-demo/profiles";
 import { resetInternalDemoJourney } from "../lib/internal-demo/reset";
 
+type UnlockedChatRow = {
+  chat_id: string;
+  created: boolean;
+};
+
 function loadEnvFile(path: string) {
   if (!existsSync(path)) return;
 
@@ -606,6 +611,7 @@ async function main() {
 
     const { data: unlockedChat, error: chatError } = await supabase
       .rpc("unlock_chat_for_match", { p_match_id: match.id })
+      .returns<UnlockedChatRow[]>()
       .single();
 
     if (chatError || !unlockedChat?.chat_id) {
