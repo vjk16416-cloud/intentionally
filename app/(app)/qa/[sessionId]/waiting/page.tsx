@@ -71,24 +71,31 @@ export default async function QaWaitingPage({
 
   if (bothContinue) {
     const adminClient = admin();
-    const { data: existingChat } = await adminClient
-      .from("chats")
-      .select("id")
-      .eq("match_id", session.match_id)
-      .maybeSingle();
+    const { error: unlockError } = await adminClient
+      .from("matches")
+      .update({ status: "unlocked" })
+      .eq("id", session.match_id);
 
-    if (existingChat) {
-      redirect(`/chat/${existingChat.id}`);
-    }
+    if (!unlockError) {
+      const { data: existingChat } = await adminClient
+        .from("chats")
+        .select("id")
+        .eq("match_id", session.match_id)
+        .maybeSingle();
 
-    const { data: newChat, error } = await adminClient
-      .from("chats")
-      .insert({ match_id: session.match_id })
-      .select("id")
-      .single();
+      if (existingChat) {
+        redirect(`/chat/${existingChat.id}`);
+      }
 
-    if (!error && newChat) {
-      redirect(`/chat/${newChat.id}`);
+      const { data: newChat, error } = await adminClient
+        .from("chats")
+        .insert({ match_id: session.match_id })
+        .select("id")
+        .single();
+
+      if (!error && newChat) {
+        redirect(`/chat/${newChat.id}`);
+      }
     }
   }
 
