@@ -70,32 +70,12 @@ export default async function QaWaitingPage({
     bothDecided && (outcomes ?? []).every((row) => row.decision === "continue");
 
   if (bothContinue) {
-    const adminClient = admin();
-    const { error: unlockError } = await adminClient
-      .from("matches")
-      .update({ status: "unlocked" })
-      .eq("id", session.match_id);
+    const { data: unlockedChat, error: unlockError } = await admin()
+      .rpc("unlock_chat_for_match", { p_match_id: session.match_id })
+      .single();
 
-    if (!unlockError) {
-      const { data: existingChat } = await adminClient
-        .from("chats")
-        .select("id")
-        .eq("match_id", session.match_id)
-        .maybeSingle();
-
-      if (existingChat) {
-        redirect(`/chat/${existingChat.id}`);
-      }
-
-      const { data: newChat, error } = await adminClient
-        .from("chats")
-        .insert({ match_id: session.match_id })
-        .select("id")
-        .single();
-
-      if (!error && newChat) {
-        redirect(`/chat/${newChat.id}`);
-      }
+    if (!unlockError && unlockedChat?.chat_id) {
+      redirect(`/chat/${unlockedChat.chat_id}`);
     }
   }
 
