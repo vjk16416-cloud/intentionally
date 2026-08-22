@@ -10,6 +10,11 @@ import {
 } from "../lib/internal-demo/profiles";
 import { resetInternalDemoJourney } from "../lib/internal-demo/reset";
 
+type UnlockedChatRow = {
+  chat_id: string;
+  created: boolean;
+};
+
 function loadEnvFile(path: string) {
   if (!existsSync(path)) return;
 
@@ -541,6 +546,17 @@ async function main() {
       throw new Error(`Expected Join Vibe Check path to use the session id, got ${joinPath}`);
     }
 
+    const { error: completeSessionError } = await supabase
+      .from("qa_sessions")
+      .update({ status: "completed", ended_at: new Date().toISOString() })
+      .eq("id", qaSession.id);
+
+    if (completeSessionError) {
+      throw new Error(
+        `Failed to complete Vibe Check session: ${completeSessionError.message}`,
+      );
+    }
+
     console.log("Checking post-session Continue / Pass decisions...");
 
     const { error: continueAError } = await supabase.from("qa_outcomes").insert({
@@ -593,14 +609,31 @@ async function main() {
       );
     }
 
-    const { data: chat, error: chatError } = await supabase
-      .from("chats")
-      .insert({ match_id: match.id })
-      .select("id")
+    const { data: unlockedChat, error: chatError } = await supabase
+      .rpc("unlock_chat_for_match", { p_match_id: match.id })
+      .returns<UnlockedChatRow[]>()
       .single();
 
-    if (chatError || !chat) {
+    if (chatError || !unlockedChat?.chat_id) {
       throw new Error(`Failed to unlock chat after mutual Continue: ${chatError?.message}`);
+    }
+
+    const chat = { id: unlockedChat.chat_id };
+
+    const { data: unlockedMatch, error: unlockedMatchError } = await supabase
+      .from("matches")
+      .select("id, status")
+      .eq("id", match.id)
+      .single();
+
+    if (unlockedMatchError || !unlockedMatch) {
+      throw new Error(
+        `Failed to verify unlocked match: ${unlockedMatchError?.message}`,
+      );
+    }
+
+    if (unlockedMatch.status !== "unlocked") {
+      throw new Error(`Expected match status unlocked, got ${unlockedMatch.status}`);
     }
 
     console.log("Checking chat access and messaging...");
@@ -698,7 +731,7 @@ async function main() {
     console.log("- Mutual Continue unlocks chat");
     console.log("- Chat participants can send and read messages");
     console.log("- Non-participants cannot access the chat");
-    console.log(`- Match moved to status: ${scheduledMatch.status}`);
+    console.log(`- Match moved to status: ${unlockedMatch.status}`);
     console.log(`- Join Vibe Check path: ${joinPath}`);
     console.log(`- Match ID: ${match.id}`);
     console.log(`- Vibe Check Session ID: ${qaSession.id}`);

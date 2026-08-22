@@ -7,6 +7,11 @@ import { createClient } from "@/lib/supabase/server";
 
 import { WaitingAutoRefresh } from "./waiting-auto-refresh";
 
+type UnlockedChatRow = {
+  chat_id: string;
+  created: boolean;
+};
+
 function admin() {
   return createServiceRoleClient(SUPABASE_URL, getServiceRoleKey(), {
     auth: { persistSession: false },
@@ -60,7 +65,8 @@ export default async function QaWaitingPage({
     redirect(`/qa/${sessionId}?started=true&finished=true`);
   }
 
-  const { data: outcomes } = await supabase
+  const adminClient = admin();
+  const { data: outcomes } = await adminClient
     .from("qa_outcomes")
     .select("user_id, decision")
     .eq("qa_session_id", sessionId);
@@ -70,25 +76,13 @@ export default async function QaWaitingPage({
     bothDecided && (outcomes ?? []).every((row) => row.decision === "continue");
 
   if (bothContinue) {
-    const adminClient = admin();
-    const { data: existingChat } = await adminClient
-      .from("chats")
-      .select("id")
-      .eq("match_id", session.match_id)
-      .maybeSingle();
-
-    if (existingChat) {
-      redirect(`/chat/${existingChat.id}`);
-    }
-
-    const { data: newChat, error } = await adminClient
-      .from("chats")
-      .insert({ match_id: session.match_id })
-      .select("id")
+    const { data: unlockedChat, error: unlockError } = await adminClient
+      .rpc("unlock_chat_for_match", { p_match_id: session.match_id })
+      .returns<UnlockedChatRow[]>()
       .single();
 
-    if (!error && newChat) {
-      redirect(`/chat/${newChat.id}`);
+    if (!unlockError && unlockedChat?.chat_id) {
+      redirect(`/chat/${unlockedChat.chat_id}`);
     }
   }
 
