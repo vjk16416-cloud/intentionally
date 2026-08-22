@@ -65,7 +65,8 @@ export default async function QaWaitingPage({
     redirect(`/qa/${sessionId}?started=true&finished=true`);
   }
 
-  const { data: outcomes } = await supabase
+  const adminClient = admin();
+  const { data: outcomes } = await adminClient
     .from("qa_outcomes")
     .select("user_id, decision")
     .eq("qa_session_id", sessionId);
@@ -75,7 +76,7 @@ export default async function QaWaitingPage({
     bothDecided && (outcomes ?? []).every((row) => row.decision === "continue");
 
   if (bothContinue) {
-    const { data: unlockedChat, error: unlockError } = await admin()
+    const { data: unlockedChat, error: unlockError } = await adminClient
       .rpc("unlock_chat_for_match", { p_match_id: session.match_id })
       .returns<UnlockedChatRow[]>()
       .single();
