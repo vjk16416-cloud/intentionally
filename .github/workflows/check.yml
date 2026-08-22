@@ -67,6 +67,9 @@ jobs:
       - name: Check Discover journey copy
         run: pnpm exec tsx scripts/test-discover-journey.ts
 
+      - name: Check chat unlock transition
+        run: pnpm exec tsx scripts/test-chat-unlock-flow.ts
+
       - name: Build
         run: pnpm build
 
