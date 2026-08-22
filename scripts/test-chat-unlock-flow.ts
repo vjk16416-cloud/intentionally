@@ -6,24 +6,26 @@ const waitingPage = readFileSync(
 );
 
 const requiredFragments = [
-  '.from("matches")',
-  '.update({ status: "unlocked" })',
-  '.eq("id", session.match_id)',
-  '.from("chats")',
-  '.insert({ match_id: session.match_id })',
+  '.rpc("unlock_chat_for_match"',
+  "p_match_id: session.match_id",
+  "chat_id",
 ];
 
 for (const fragment of requiredFragments) {
   if (!waitingPage.includes(fragment)) {
-    throw new Error(`Chat unlock flow is missing required transition: ${fragment}`);
+    throw new Error(`Chat unlock flow is missing required guarded unlock: ${fragment}`);
   }
 }
 
-const statusUpdateIndex = waitingPage.indexOf('.update({ status: "unlocked" })');
-const chatInsertIndex = waitingPage.indexOf('.insert({ match_id: session.match_id })');
+const forbiddenFragments = [
+  '.update({ status: "unlocked" })',
+  '.insert({ match_id: session.match_id })',
+];
 
-if (statusUpdateIndex > chatInsertIndex) {
-  throw new Error("Match must be marked unlocked before the chat is created.");
+for (const fragment of forbiddenFragments) {
+  if (waitingPage.includes(fragment)) {
+    throw new Error(`Chat unlock flow bypasses guarded RPC: ${fragment}`);
+  }
 }
 
-console.log("Chat unlock flow transitions the match before exposing chat.");
+console.log("Chat unlock flow uses the guarded mutual-Continue RPC.");
