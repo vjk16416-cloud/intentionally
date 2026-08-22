@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { buildDailyJoinUrl } from "@/lib/daily/config";
+import { createDailyMeetingToken } from "@/lib/daily/rooms";
 import { createClient } from "@/lib/supabase/server";
 
 import { saveQaOutcome } from "./actions";
@@ -21,6 +23,35 @@ function questionText(question: QaQuestionPayload) {
   return null;
 }
 
+function PrivateRoomUnavailable() {
+  return (
+    <main className="relative isolate min-h-[calc(100vh-57px)] overflow-hidden bg-[#071411] px-4 py-5 text-[#FFF8EC]">
+      <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_20%_0%,rgba(243,161,127,0.18)_0%,transparent_30%),radial-gradient(circle_at_82%_18%,rgba(243,161,127,0.12)_0%,transparent_32%),linear-gradient(180deg,#071411_0%,#0D1714_54%,#050D0B_100%)]" />
+      <div className="mx-auto flex min-h-[80vh] w-full max-w-md items-center md:max-w-2xl">
+        <section className="w-full rounded-[2rem] border border-[#FFF8EC]/12 bg-[#0D1714]/82 p-6 text-center shadow-[0_24px_80px_rgba(0,0,0,0.34)] backdrop-blur-xl md:p-8">
+          <p className="text-xs uppercase tracking-[0.22em] text-[#F3A17F]">
+            Private Vibe Check
+          </p>
+          <h1 className="mt-4 font-serif text-3xl font-medium leading-tight tracking-[-0.035em]">
+            We couldn&apos;t securely open the room
+          </h1>
+          <p className="mt-4 text-sm leading-6 text-[#FFF8EC]/70">
+            Refresh the page once. If the private room still does not open,
+            return to Discover and try again later. We will not fall back to an
+            unsecured video link.
+          </p>
+          <Link
+            href="/discover"
+            className="mt-6 block rounded-2xl bg-[#F3A17F] px-4 py-4 text-center text-base font-semibold text-[#13251F]"
+          >
+            Return to Discover
+          </Link>
+        </section>
+      </div>
+    </main>
+  );
+}
+
 export default async function QaSessionPage({
   params,
 }: {
@@ -39,7 +70,9 @@ export default async function QaSessionPage({
 
   const { data: session } = await supabase
     .from("qa_sessions")
-    .select("id, questions, match_id, daily_room_url, status, confirmed_at")
+    .select(
+      "id, questions, match_id, daily_room_url, daily_room_name, scheduled_at, status, confirmed_at",
+    )
     .eq("id", sessionId)
     .maybeSingle();
 
@@ -205,6 +238,39 @@ export default async function QaSessionPage({
     redirect(`/schedule/${matchId}`);
   }
 
+  if (!session.daily_room_url || !session.daily_room_name || !session.scheduled_at) {
+    console.error("[qa] private Daily room metadata missing", {
+      sessionId,
+      hasRoomUrl: Boolean(session.daily_room_url),
+      hasRoomName: Boolean(session.daily_room_name),
+      hasScheduledAt: Boolean(session.scheduled_at),
+    });
+    return <PrivateRoomUnavailable />;
+  }
+
+  const scheduledAt = new Date(session.scheduled_at);
+  if (Number.isNaN(scheduledAt.getTime())) {
+    console.error("[qa] private Daily room schedule invalid", { sessionId });
+    return <PrivateRoomUnavailable />;
+  }
+
+  let dailyJoinUrl: string;
+  try {
+    const token = await createDailyMeetingToken({
+      roomName: session.daily_room_name,
+      userId: user.id,
+      scheduledAt,
+    });
+    dailyJoinUrl = buildDailyJoinUrl(session.daily_room_url, token);
+  } catch (error) {
+    console.error("[qa] private Daily token creation failed", {
+      sessionId,
+      errorName: error instanceof Error ? error.name : "UnknownError",
+      errorMessage: error instanceof Error ? error.message : "Unknown error",
+    });
+    return <PrivateRoomUnavailable />;
+  }
+
   return (
     <QaSessionRoom
       sessionId={sessionId}
@@ -215,7 +281,7 @@ export default async function QaSessionPage({
       initialExtraAccepted={false}
       initialExtraRequest="idle"
       visibilityMode="dynamic"
-      dailyRoomUrl={session.daily_room_url}
+      dailyRoomUrl={dailyJoinUrl}
     />
   );
 }

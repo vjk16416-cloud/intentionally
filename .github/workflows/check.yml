@@ -86,6 +86,9 @@ jobs:
       - name: Run Playwright tests
         run: pnpm test:e2e
 
+      - name: Run Daily security regression test
+        run: pnpm test:daily-security
+
       - name: Run product flow test
         run: pnpm test:product
 

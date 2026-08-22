@@ -15,6 +15,7 @@
     "check": "pnpm typecheck && pnpm lint && pnpm build && pnpm test:e2e",
     "test:product": "tsx scripts/test-match-flow.ts",
     "test:expiry": "tsx scripts/test-expire-matches.ts",
+    "test:daily-security": "tsx scripts/test-daily-security.ts",
     "test:internal-profiles": "tsx scripts/manage-internal-test-profiles.ts"
   },
   "dependencies": {
