@@ -64,6 +64,9 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Check security regressions
+        run: pnpm test:security
+
       - name: Check Discover journey copy
         run: pnpm exec tsx scripts/test-discover-journey.ts
 
