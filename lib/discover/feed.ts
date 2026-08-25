@@ -1,13 +1,16 @@
+import { createClient as createSupabaseServiceClient } from "@supabase/supabase-js";
+
+import { computeAge } from "@/lib/age";
 import type { createClient } from "@/lib/supabase/server";
+import { getServiceRoleKey, SUPABASE_URL } from "@/lib/supabase/env";
 import { PROFILE_PHOTOS_BUCKET } from "@/lib/storage/photos";
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
-// What the discover deck needs to render and act on a profile card.
 export type DiscoverCard = {
   id: string;
   display_name: string;
-  date_of_birth: string;
+  age: number;
   intention: string;
   bio_prompt_key: string;
   bio_answer: string;
@@ -94,12 +97,17 @@ export type DiscoverFeedResult = {
   diagnostics?: DiscoverFeedDiagnostics;
 };
 
+function createDiscoverServiceClient() {
+  return createSupabaseServiceClient(SUPABASE_URL, getServiceRoleKey(), {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
 function hasAvailabilityOverlap(
   candidateAvailability: number[] | null | undefined,
   viewerAvailability: number[] | null | undefined,
 ) {
   if (!candidateAvailability || !viewerAvailability) return false;
-
   const candidateSlots = new Set(candidateAvailability);
   return viewerAvailability.some((slot) => candidateSlots.has(slot));
 }
@@ -159,58 +167,24 @@ function buildEmptyDiagnostics(
 
 function logDiscoverDiagnostics(diagnostics: DiscoverFeedDiagnostics) {
   if (process.env.NODE_ENV === "production") return;
-
-  console.log("[discover-feed] diagnostics", {
-    currentUserId: diagnostics.userId,
-    currentUserCity: diagnostics.viewer.city,
-    currentUserGender: diagnostics.viewer.gender,
-    currentUserSeeking: diagnostics.viewer.seeking,
-    currentUserAvailabilityCount: diagnostics.viewer.availabilityCount,
-    profilesBeforeFilters: diagnostics.counts.beforeFilters,
-    excludedBySelf: diagnostics.counts.excludedBySelf,
-    excludedByPaused: diagnostics.counts.excludedByPaused,
-    excludedByCity: diagnostics.counts.excludedByCity,
-    excludedByGenderSeeking: diagnostics.counts.excludedByGenderSeeking,
-    excludedByAvailability: diagnostics.counts.excludedByAvailability,
-    excludedBySwipes: diagnostics.counts.excludedBySwipes,
-    finalVisibleCount: diagnostics.counts.finalVisible,
-    message: diagnostics.message,
-  });
+  console.log("[discover-feed] diagnostics", diagnostics);
 }
 
 async function buildDiscoverDiagnostics({
-  supabase,
   userId,
   viewer,
   excludedIds,
   finalVisible,
 }: {
-  supabase: SupabaseServerClient;
   userId: string;
   viewer: ViewerProfile | null;
   excludedIds: string[];
   finalVisible: number;
 }): Promise<DiscoverFeedDiagnostics> {
-  if (!viewer) {
-    return buildEmptyDiagnostics(userId, null, "No profile row found for current user.");
-  }
+  if (!viewer) return buildEmptyDiagnostics(userId, null, "No profile row found for current user.");
 
-  if (
-    !viewer.city ||
-    !viewer.gender ||
-    !viewer.seeking ||
-    viewer.seeking.length === 0 ||
-    !viewer.availability ||
-    viewer.availability.length === 0
-  ) {
-    return buildEmptyDiagnostics(
-      userId,
-      viewer,
-      "Current user is missing a Discover-required field.",
-    );
-  }
-
-  const { data: profiles, error } = await supabase
+  const service = createDiscoverServiceClient();
+  const { data: profiles, error } = await service
     .from("profiles")
     .select(
       "id, display_name, date_of_birth, intention, bio_prompt_key, bio_answer, city, neighbourhood, availability, id_verified, photos, gender, seeking, paused",
@@ -227,62 +201,32 @@ async function buildDiscoverDiagnostics({
 
   let remaining = profiles;
   const beforeFilters = remaining.length;
-
   remaining = remaining.filter((profile) => profile.id !== viewer.id);
   const excludedBySelf = beforeFilters - remaining.length;
-
   const beforePaused = remaining.length;
   remaining = remaining.filter((profile) => profile.paused === false);
   const excludedByPaused = beforePaused - remaining.length;
-
   const beforeCity = remaining.length;
   remaining = remaining.filter((profile) => profile.city === viewer.city);
   const excludedByCity = beforeCity - remaining.length;
-
   const beforeGenderSeeking = remaining.length;
   remaining = remaining.filter(
     (profile) =>
       Boolean(profile.gender && viewer.seeking?.includes(profile.gender)) &&
-      Boolean(profile.seeking?.includes(viewer.gender!)),
+      Boolean(profile.seeking?.includes(viewer.gender ?? "")),
   );
   const excludedByGenderSeeking = beforeGenderSeeking - remaining.length;
-
   const beforeAvailability = remaining.length;
   remaining = remaining.filter((profile) =>
     hasAvailabilityOverlap(profile.availability, viewer.availability),
   );
   const excludedByAvailability = beforeAvailability - remaining.length;
-
   const beforeSwipes = remaining.length;
   remaining = remaining.filter((profile) => !excludedIds.includes(profile.id));
   const excludedBySwipes = beforeSwipes - remaining.length;
-
   const beforeCompleteCard = remaining.length;
   remaining = remaining.filter(hasCompleteCardFields);
   const excludedByIncompleteCard = beforeCompleteCard - remaining.length;
-
-  const counts = {
-    beforeFilters,
-    excludedBySelf,
-    excludedByPaused,
-    excludedByCity,
-    excludedByGenderSeeking,
-    excludedByAvailability,
-    excludedBySwipes,
-    excludedByIncompleteCard,
-    finalVisible,
-  };
-
-  const primaryBlocker = Object.entries(counts)
-    .filter(([key]) => key.startsWith("excludedBy"))
-    .sort(([, a], [, b]) => b - a)[0];
-
-  const message =
-    finalVisible > 0
-      ? `${finalVisible} profile${finalVisible === 1 ? "" : "s"} visible after filters.`
-      : primaryBlocker && primaryBlocker[1] > 0
-        ? `Largest exclusion: ${primaryBlocker[0]} removed ${primaryBlocker[1]} profile${primaryBlocker[1] === 1 ? "" : "s"}.`
-        : "No profiles reached the diagnostic pool; RLS or upstream visibility may be excluding candidates before Discover filters run.";
 
   return {
     userId,
@@ -291,7 +235,7 @@ async function buildDiscoverDiagnostics({
       city: viewer.city,
       gender: viewer.gender,
       seeking: viewer.seeking,
-      availabilityCount: viewer.availability.length,
+      availabilityCount: viewer.availability?.length ?? 0,
       paused: viewer.paused ?? null,
       idVerified: viewer.id_verified ?? null,
       photosCount: viewer.photos?.length ?? 0,
@@ -304,33 +248,30 @@ async function buildDiscoverDiagnostics({
           viewer.neighbourhood,
       ),
     },
-    counts,
-    message,
+    counts: {
+      beforeFilters,
+      excludedBySelf,
+      excludedByPaused,
+      excludedByCity,
+      excludedByGenderSeeking,
+      excludedByAvailability,
+      excludedBySwipes,
+      excludedByIncompleteCard,
+      finalVisible,
+    },
+    message:
+      finalVisible > 0
+        ? `${finalVisible} profile${finalVisible === 1 ? "" : "s"} visible after filters.`
+        : "No profiles are currently visible after Discover filters.",
   };
 }
 
-// Per §6.2: only show profiles where seeking and gender overlap
-// appropriately, where city = viewer's city, where availability
-// overlaps the viewer's, and where the viewer hasn't already swiped
-// on them. id_verified is NOT a filter — the locked decision is to
-// gate verification only at Q&A scheduling.
-//
-// Availability uses the Postgres array overlap operator (&&) via
-// supabase-js .overlaps(). The GIN index added with the column
-// makes this cheap. Candidates with NULL availability are naturally
-// excluded (NULL && anything is NULL).
-//
-// Ordering: created_at desc. PostgREST doesn't expose `order by
-// random()` directly, and we'd rather not add an RPC just for this
-// in MVP. Newest profiles first is a reasonable default; the random-
-// shuffle polish lands later.
 export async function getDiscoverFeed(
   supabase: SupabaseServerClient,
   userId: string,
   limit = 20,
 ): Promise<DiscoverCard[]> {
-  const result = await getDiscoverFeedWithDiagnostics(supabase, userId, limit);
-  return result.cards;
+  return (await getDiscoverFeedWithDiagnostics(supabase, userId, limit)).cards;
 }
 
 export async function getDiscoverFeedWithDiagnostics(
@@ -338,6 +279,13 @@ export async function getDiscoverFeedWithDiagnostics(
   userId: string,
   limit = 20,
 ): Promise<DiscoverFeedResult> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user || user.id !== userId) {
+    return { cards: [] };
+  }
+
   const { data: viewer } = await supabase
     .from("profiles")
     .select(
@@ -350,13 +298,9 @@ export async function getDiscoverFeedWithDiagnostics(
     !viewer ||
     !viewer.city ||
     !viewer.gender ||
-    !viewer.seeking ||
-    viewer.seeking.length === 0 ||
-    !viewer.availability ||
-    viewer.availability.length === 0
+    !viewer.seeking?.length ||
+    !viewer.availability?.length
   ) {
-    // The (app) layout completeness gate should have caught this;
-    // bail safely if not.
     const diagnostics =
       process.env.NODE_ENV === "production"
         ? undefined
@@ -369,18 +313,17 @@ export async function getDiscoverFeedWithDiagnostics(
     return { cards: [], diagnostics };
   }
 
-  // Pull the viewer's existing swipes once so we can exclude them
-  // from the feed. MVP volume — not worth paginating yet.
   const { data: swipes } = await supabase
     .from("swipes")
     .select("swipee_id")
     .eq("swiper_id", userId);
-  const excludedIds = (swipes ?? []).map((s) => s.swipee_id as string);
+  const excludedIds = (swipes ?? []).map((swipe) => swipe.swipee_id as string);
 
-  let query = supabase
+  const service = createDiscoverServiceClient();
+  let query = service
     .from("profiles")
     .select(
-      "id, display_name, date_of_birth, intention, bio_prompt_key, bio_answer, city, neighbourhood, availability, id_verified, photos",
+      "id, display_name, date_of_birth, intention, bio_prompt_key, bio_answer, city, neighbourhood, availability, id_verified, photos, gender, seeking, paused",
     )
     .neq("id", viewer.id)
     .eq("paused", false)
@@ -409,41 +352,43 @@ export async function getDiscoverFeedWithDiagnostics(
     return { cards: [], diagnostics };
   }
 
-  // The RLS visibility policy doesn't enforce that profiles in the
-  // feed are fully onboarded — only that they're not paused. Filter
-  // partial profiles client-side so the deck doesn't render half-
-  // shaped cards.
-  const cards = candidates.flatMap((p) => {
-    if (!hasCompleteCardFields(p)) {
-      return [];
-    }
-    const photoUrls = p.photos.map(
-      (path) =>
-        supabase.storage.from(PROFILE_PHOTOS_BUCKET).getPublicUrl(path).data
-          .publicUrl,
-    );
-    return [
-      {
-        id: p.id,
-        display_name: p.display_name,
-        date_of_birth: p.date_of_birth,
-        intention: p.intention,
-        bio_prompt_key: p.bio_prompt_key,
-        bio_answer: p.bio_answer,
-        city: p.city,
-        neighbourhood: p.neighbourhood,
-        availability: p.availability,
-        id_verified: p.id_verified,
-        photo_urls: photoUrls,
-      },
-    ];
-  });
+  const cards = (
+    await Promise.all(
+      candidates.map(async (profile): Promise<DiscoverCard | null> => {
+        if (!hasCompleteCardFields(profile)) return null;
+
+        const photoUrls = await Promise.all(
+          profile.photos.map(async (path) => {
+            const { data, error: photoError } = await service.storage
+              .from(PROFILE_PHOTOS_BUCKET)
+              .createSignedUrl(path, 60 * 10);
+            return photoError ? null : data.signedUrl;
+          }),
+        );
+        const usablePhotos = photoUrls.filter((url): url is string => Boolean(url));
+        if (usablePhotos.length < 2) return null;
+
+        return {
+          id: profile.id,
+          display_name: profile.display_name,
+          age: computeAge(profile.date_of_birth),
+          intention: profile.intention,
+          bio_prompt_key: profile.bio_prompt_key,
+          bio_answer: profile.bio_answer,
+          city: profile.city,
+          neighbourhood: profile.neighbourhood,
+          availability: profile.availability,
+          id_verified: profile.id_verified,
+          photo_urls: usablePhotos,
+        };
+      }),
+    )
+  ).filter((card): card is DiscoverCard => card !== null);
 
   const diagnostics =
     process.env.NODE_ENV === "production"
       ? undefined
       : await buildDiscoverDiagnostics({
-          supabase,
           userId,
           viewer,
           excludedIds,
