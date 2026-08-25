@@ -1,4 +1,4 @@
-// Pure helpers for the profile-photos bucket. Both the server action
+// Pure helpers for the private profile-photos bucket. Both the server action
 // (validating that a submitted path is owned by the caller) and the
 // client form (uploading directly via the browser Supabase client) use
 // these so the rules live in one place.
@@ -20,9 +20,8 @@ export function getPhotoExtension(mimeType: string): string | null {
 }
 
 // Path layout: `{userId}/{uuid}.{ext}`. The {userId} prefix is what
-// the storage INSERT/DELETE policies match `auth.uid()` against, and
-// the uuid keeps the path unguessable even though the bucket is
-// public-read.
+// the storage INSERT/DELETE policies match `auth.uid()` against. Discover
+// never exposes raw paths: the server issues short-lived signed URLs.
 export function buildPhotoPath(userId: string, extension: string): string {
   return `${userId}/${crypto.randomUUID()}.${extension}`;
 }
