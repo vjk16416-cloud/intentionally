@@ -1,5 +1,7 @@
 "use client";
 
+import { CHAT_MESSAGE_MAX_LENGTH } from "@/lib/chat/validation";
+
 export function ChatMessageForm({
   chatId,
   otherName,
@@ -26,7 +28,7 @@ export function ChatMessageForm({
         name="body"
         required
         rows={2}
-        maxLength={1000}
+        maxLength={CHAT_MESSAGE_MAX_LENGTH}
         placeholder="Keep it kind, specific, and easy to reply to."
         className="mt-2 w-full resize-none rounded-[1.25rem] border border-[#FFF8EC]/12 bg-[#FFF8EC]/8 px-4 py-3 text-sm leading-6 text-[#FFF8EC] outline-none placeholder:text-[#FFF8EC]/44 focus:border-[#F3A17F] focus:ring-4 focus:ring-[#F3A17F]/12"
       />
