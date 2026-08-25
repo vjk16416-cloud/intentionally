@@ -78,8 +78,6 @@ export async function POST() {
       );
     }
 
-    console.log(`[demo-reset] current user id: ${user.id}`);
-
     const result = await resetInternalDemoJourney(admin(), user.id);
 
     console.log(`[demo-reset] demo profiles found: ${result.demoProfilesFound}`);
@@ -96,13 +94,12 @@ export async function POST() {
       ok: true,
       ...result,
     });
-  } catch (error) {
-    console.error("[demo-reset] reset API failed", error);
+  } catch {
+    console.error("[demo-reset] reset API failed");
     return NextResponse.json(
       {
         ok: false,
-        error:
-          error instanceof Error ? error.message : "Reset failed. Try again.",
+        error: "Reset failed. Try again.",
       },
       { status: 500 },
     );
