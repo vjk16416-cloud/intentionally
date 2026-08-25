@@ -14,20 +14,6 @@ import { MatchModal } from "./match-modal";
 
 type ActiveMatch = { matchId: string; match: MatchedCard };
 
-function ageFromDate(dateOfBirth: string) {
-  const dob = new Date(dateOfBirth);
-  const today = new Date();
-
-  let age = today.getFullYear() - dob.getFullYear();
-  const monthDiff = today.getMonth() - dob.getMonth();
-
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-    age -= 1;
-  }
-
-  return age;
-}
-
 function firstName(name: string) {
   return name.split(" ")[0] ?? name;
 }
@@ -86,11 +72,7 @@ function trustItems(card: DiscoverCard) {
   ];
 }
 
-export function DiscoverDeck({
-  cards,
-}: {
-  cards: DiscoverCard[];
-}) {
+export function DiscoverDeck({ cards }: { cards: DiscoverCard[] }) {
   const [index, setIndex] = useState(0);
   const [pending, startTransition] = useTransition();
   const [limitReached, setLimitReached] = useState(false);
@@ -137,7 +119,7 @@ export function DiscoverDeck({
     );
   }
 
-  const age = ageFromDate(card.date_of_birth);
+  const age = card.age;
   const prompt = promptText(card.bio_prompt_key);
   const location = locationLabel(card);
   const visibleProfileName = visibleName(card.display_name);
