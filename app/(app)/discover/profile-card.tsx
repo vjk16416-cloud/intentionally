@@ -1,6 +1,5 @@
 "use client";
 
-import { computeAge } from "@/lib/age";
 import type { DiscoverCard } from "@/lib/discover/feed";
 import { BIO_PROMPTS } from "@/lib/onboarding/constants";
 
@@ -15,7 +14,6 @@ function promptText(key: string): string {
 }
 
 export function ProfileCard({ card }: { card: DiscoverCard }) {
-  const age = computeAge(card.date_of_birth);
   const intentionLabel = INTENTION_LABELS[card.intention] ?? card.intention;
   const photoCount = Math.min(card.photo_urls.length, 3);
 
@@ -60,7 +58,7 @@ export function ProfileCard({ card }: { card: DiscoverCard }) {
             </p>
 
             <h2 className="text-5xl font-semibold tracking-[-0.05em]">
-              {card.display_name}, {age}
+              {card.display_name}, {card.age}
             </h2>
 
             <p className="mt-2 max-w-xs text-sm leading-5 text-white/75">

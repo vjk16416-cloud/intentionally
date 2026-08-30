@@ -3,6 +3,7 @@
 import { createClient as createServiceRoleClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 
+import { computeAge } from "@/lib/age";
 import {
   getInternalDemoOrdinal,
   isInternalDemoProfile,
@@ -18,7 +19,7 @@ const DAILY_WINDOW_MS = 24 * 60 * 60 * 1000;
 export type MatchedCard = {
   id: string;
   display_name: string;
-  date_of_birth: string;
+  age: number;
   photo_urls: string[];
 };
 
@@ -228,7 +229,8 @@ export async function likeProfile(swipeeId: string): Promise<LikeResult> {
     return { ok: false, error: "limit" };
   }
 
-  const { data: other } = await supabase
+  const adminClient = admin();
+  const { data: other } = await adminClient
     .from("profiles")
     .select("id, display_name, date_of_birth, photos")
     .eq("id", swipeeId)
@@ -340,11 +342,16 @@ export async function likeProfile(swipeeId: string): Promise<LikeResult> {
 
   // TODO(posthog): capture `match_created` here.
 
-  const photo_urls = other.photos.map(
-    (path) =>
-      supabase.storage.from(PROFILE_PHOTOS_BUCKET).getPublicUrl(path).data
-        .publicUrl,
-  );
+  const photo_urls = (
+    await Promise.all(
+      other.photos.map(async (path) => {
+        const { data, error } = await adminClient.storage
+          .from(PROFILE_PHOTOS_BUCKET)
+          .createSignedUrl(path, 60 * 10);
+        return error ? null : data.signedUrl;
+      }),
+    )
+  ).filter((url): url is string => Boolean(url));
 
   return {
     ok: true,
@@ -353,7 +360,7 @@ export async function likeProfile(swipeeId: string): Promise<LikeResult> {
     with: {
       id: other.id,
       display_name: other.display_name,
-      date_of_birth: other.date_of_birth,
+      age: computeAge(other.date_of_birth),
       photo_urls,
     },
   };
