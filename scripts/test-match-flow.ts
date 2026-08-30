@@ -10,11 +10,6 @@ import {
 } from "../lib/internal-demo/profiles";
 import { resetInternalDemoJourney } from "../lib/internal-demo/reset";
 
-type UnlockedChatRow = {
-  chat_id: string;
-  created: boolean;
-};
-
 function loadEnvFile(path: string) {
   if (!existsSync(path)) return;
 
@@ -546,14 +541,29 @@ async function main() {
       throw new Error(`Expected Join Vibe Check path to use the session id, got ${joinPath}`);
     }
 
-    const { error: completeSessionError } = await supabase
-      .from("qa_sessions")
-      .update({ status: "completed", ended_at: new Date().toISOString() })
-      .eq("id", qaSession.id);
+    console.log("Completing Vibe Check session...");
 
-    if (completeSessionError) {
+    const completedAt = new Date().toISOString();
+    const { data: completedSession, error: completeSessionError } = await supabase
+      .from("qa_sessions")
+      .update({
+        status: "completed",
+        started_at: confirmedAt,
+        ended_at: completedAt,
+      })
+      .eq("id", qaSession.id)
+      .select("id, status")
+      .single();
+
+    if (completeSessionError || !completedSession) {
       throw new Error(
-        `Failed to complete Vibe Check session: ${completeSessionError.message}`,
+        `Failed to complete Vibe Check session: ${completeSessionError?.message}`,
+      );
+    }
+
+    if (completedSession.status !== "completed") {
+      throw new Error(
+        `Expected Vibe Check status completed, got ${completedSession.status}`,
       );
     }
 
@@ -579,6 +589,15 @@ async function main() {
 
     if (passBError) {
       throw new Error(`Failed to save User B Vibe Check Pass: ${passBError.message}`);
+    }
+
+    const { error: passUnlockError } = await supabase.rpc(
+      "unlock_chat_for_match",
+      { p_match_id: match.id },
+    );
+
+    if (!passUnlockError) {
+      throw new Error("Expected private Pass to block atomic chat unlock.");
     }
 
     const { data: chatAfterPass, error: chatAfterPassError } = await supabase
@@ -609,32 +628,56 @@ async function main() {
       );
     }
 
-    const { data: unlockedChat, error: chatError } = await supabase
-      .rpc("unlock_chat_for_match", { p_match_id: match.id })
-      .returns<UnlockedChatRow[]>()
-      .single();
+    const { data: unlockedChats, error: unlockError } = await supabase.rpc(
+      "unlock_chat_for_match",
+      { p_match_id: match.id },
+    );
+    const unlockedChat = Array.isArray(unlockedChats) ? unlockedChats[0] : null;
 
-    if (chatError || !unlockedChat?.chat_id) {
-      throw new Error(`Failed to unlock chat after mutual Continue: ${chatError?.message}`);
-    }
-
-    const chat = { id: unlockedChat.chat_id };
-
-    const { data: unlockedMatch, error: unlockedMatchError } = await supabase
-      .from("matches")
-      .select("id, status")
-      .eq("id", match.id)
-      .single();
-
-    if (unlockedMatchError || !unlockedMatch) {
+    if (unlockError || !unlockedChat?.chat_id) {
       throw new Error(
-        `Failed to verify unlocked match: ${unlockedMatchError?.message}`,
+        `Failed to unlock chat after mutual Continue: ${unlockError?.message}`,
       );
     }
 
-    if (unlockedMatch.status !== "unlocked") {
-      throw new Error(`Expected match status unlocked, got ${unlockedMatch.status}`);
+    if (unlockedChat.created !== true) {
+      throw new Error("Expected first mutual-Continue unlock to create the chat.");
     }
+
+    const { data: repeatedUnlocks, error: repeatedUnlockError } = await supabase.rpc(
+      "unlock_chat_for_match",
+      { p_match_id: match.id },
+    );
+    const repeatedUnlock = Array.isArray(repeatedUnlocks)
+      ? repeatedUnlocks[0]
+      : null;
+
+    if (repeatedUnlockError || !repeatedUnlock?.chat_id) {
+      throw new Error(
+        `Failed to repeat idempotent chat unlock: ${repeatedUnlockError?.message}`,
+      );
+    }
+
+    if (
+      repeatedUnlock.chat_id !== unlockedChat.chat_id ||
+      repeatedUnlock.created !== false
+    ) {
+      throw new Error("Expected repeated unlock to reuse the existing chat.");
+    }
+
+    const { data: unlockedMatch, error: unlockedMatchError } = await supabase
+      .from("matches")
+      .select("status")
+      .eq("id", match.id)
+      .single();
+
+    if (unlockedMatchError || unlockedMatch?.status !== "unlocked") {
+      throw new Error(
+        `Expected match status unlocked after mutual Continue: ${unlockedMatchError?.message}`,
+      );
+    }
+
+    const chat = { id: unlockedChat.chat_id };
 
     console.log("Checking chat access and messaging...");
 
@@ -727,8 +770,10 @@ async function main() {
     console.log("- Vibe Check counter-proposal stays unconfirmed");
     console.log("- Vibe Check invite accepted");
     console.log("- Vibe Check questions are renderable");
+    console.log("- Vibe Check session completed");
     console.log("- Private Pass does not unlock chat");
-    console.log("- Mutual Continue unlocks chat");
+    console.log("- Mutual Continue atomically unlocks chat");
+    console.log("- Repeated chat unlock reuses the existing chat");
     console.log("- Chat participants can send and read messages");
     console.log("- Non-participants cannot access the chat");
     console.log(`- Match moved to status: ${unlockedMatch.status}`);
