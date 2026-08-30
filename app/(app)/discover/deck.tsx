@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { AnalyticsEvents, trackEvent } from "@/lib/analytics";
@@ -8,28 +7,12 @@ import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import { FallbackActionLink, FallbackPanel } from "@/components/fallback-state";
 import type { DiscoverCard } from "@/lib/discover/feed";
 import { BIO_PROMPTS } from "@/lib/onboarding/constants";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 import { likeProfile, passProfile, type MatchedCard } from "./actions";
 import { DemoResetButton } from "./demo-reset-button";
 import { MatchModal } from "./match-modal";
 
 type ActiveMatch = { matchId: string; match: MatchedCard };
-
-function ageFromDate(dateOfBirth: string) {
-  const dob = new Date(dateOfBirth);
-  const today = new Date();
-
-  let age = today.getFullYear() - dob.getFullYear();
-  const monthDiff = today.getMonth() - dob.getMonth();
-
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-    age -= 1;
-  }
-
-  return age;
-}
 
 function firstName(name: string) {
   return name.split(" ")[0] ?? name;
@@ -69,10 +52,7 @@ function locationLabel(card: DiscoverCard) {
 }
 
 function promptAnswer(answer: string | null | undefined) {
-  return (
-    answer?.trim() ||
-    "They have not answered this one yet, so start with the Guided Vibe Check."
-  );
+  return answer?.trim() || "They have not answered this one yet.";
 }
 
 function trustItems(card: DiscoverCard) {
@@ -92,11 +72,7 @@ function trustItems(card: DiscoverCard) {
   ];
 }
 
-export function DiscoverDeck({
-  cards,
-}: {
-  cards: DiscoverCard[];
-}) {
+export function DiscoverDeck({ cards }: { cards: DiscoverCard[] }) {
   const [index, setIndex] = useState(0);
   const [pending, startTransition] = useTransition();
   const [limitReached, setLimitReached] = useState(false);
@@ -143,7 +119,7 @@ export function DiscoverDeck({
     );
   }
 
-  const age = ageFromDate(card.date_of_birth);
+  const age = card.age;
   const prompt = promptText(card.bio_prompt_key);
   const location = locationLabel(card);
   const visibleProfileName = visibleName(card.display_name);
@@ -293,32 +269,12 @@ export function DiscoverDeck({
                 Vibe Check
               </p>
               <h3 className="mt-2 text-xl font-semibold tracking-tight text-foreground">
-                Ready for a Vibe Check?
+                What happens after you match?
               </h3>
               <p className="mt-2 text-sm leading-6 text-[#5f6f57]">
-                A 10 minute guided conversation designed to help both people
-                decide whether there is a genuine connection.
+                If the interest is mutual, you’ll be able to invite each other
+                to a guided 10-minute Vibe Check before chat unlocks.
               </p>
-
-              <div className="mt-4 space-y-2">
-                <Link
-                  href="/vibe-checks"
-                  className={cn(
-                    buttonVariants({ size: "lg" }),
-                    "h-12 w-full rounded-2xl bg-[#75886b] text-sm font-semibold text-white shadow-[0_10px_24px_rgba(83,104,73,0.22)] hover:bg-[#697b60] focus-visible:ring-[#7d916f]/30",
-                  )}
-                >
-                  Start Vibe Check
-                </Link>
-                <button
-                  type="button"
-                  onClick={handlePass}
-                  disabled={pending}
-                  className="inline-flex w-full items-center justify-center rounded-xl px-3 py-2 text-sm font-medium text-[#6f6258] transition hover:text-[#3d342d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-[#eef5e8] disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Pass for now
-                </button>
-              </div>
             </section>
 
             <div className="space-y-3">
