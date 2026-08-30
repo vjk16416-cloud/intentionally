@@ -2,7 +2,6 @@
 
 import { TrackedLink } from "@/components/analytics/tracked-link";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { computeAge } from "@/lib/age";
 import { cn } from "@/lib/utils";
 
 import type { MatchedCard } from "./actions";
@@ -16,7 +15,7 @@ export function MatchModal({
   match: MatchedCard;
   onDismiss: () => void;
 }) {
-  const age = computeAge(match.date_of_birth);
+  const age = match.age;
   const firstName = match.display_name.split(" ")[0] || match.display_name;
   const initial = firstName.charAt(0).toUpperCase();
   const primaryPhoto = match.photo_urls[0];
