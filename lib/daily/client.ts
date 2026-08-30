@@ -1,8 +1,8 @@
 import "server-only";
 
-// Daily.co server-side config. The API key is server-only — never
-// expose to the client bundle. Step 6's live Q&A embed will mint
-// meeting tokens via this same key on the server.
+// Daily.co server-side config. The API key is server-only and is resolved
+// only when a Daily API request is made, so importing a server component
+// cannot accidentally make builds depend on the secret being present.
 
 function ensure(name: string, value: string | undefined): string {
   if (!value) {
@@ -11,9 +11,8 @@ function ensure(name: string, value: string | undefined): string {
   return value;
 }
 
-export const DAILY_API_KEY = ensure(
-  "DAILY_API_KEY",
-  process.env.DAILY_API_KEY,
-);
+export function getDailyApiKey() {
+  return ensure("DAILY_API_KEY", process.env.DAILY_API_KEY);
+}
 
 export const DAILY_API_URL = "https://api.daily.co/v1";
