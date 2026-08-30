@@ -1,3 +1,4 @@
+import { createClient as createSupabaseServiceClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, CalendarDays, Clock3, ShieldCheck } from "lucide-react";
@@ -6,6 +7,7 @@ import { FallbackActionLink, FallbackPanel } from "@/components/fallback-state";
 import { canUseInternalTestingShortcuts } from "@/lib/internal-demo/access";
 import { buttonVariants } from "@/components/ui/button";
 import { computeMutualSlots } from "@/lib/scheduling/slots";
+import { getServiceRoleKey, SUPABASE_URL } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { isUserVerified } from "@/lib/verification";
@@ -70,7 +72,10 @@ export default async function SchedulePage({
   }
 
   const otherId = match.user_a === user.id ? match.user_b : match.user_a;
-  const { data: profiles } = await supabase
+  const service = createSupabaseServiceClient(SUPABASE_URL, getServiceRoleKey(), {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data: profiles } = await service
     .from("profiles")
     .select("id, display_name, availability")
     .in("id", [match.user_a, match.user_b])
