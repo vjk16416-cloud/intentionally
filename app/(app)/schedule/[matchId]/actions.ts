@@ -82,7 +82,8 @@ export async function proposeSlot(
   // action re-checks before writing. Lead-time / 7-day window is
   // implicit in computeMutualSlots (MIN_LEAD_MINUTES + weekly
   // wrap).
-  const { data: pairProfiles } = await supabase
+  const a = admin();
+  const { data: pairProfiles } = await a
     .from("profiles")
     .select("id, availability")
     .in("id", [match.user_a, match.user_b])
@@ -104,7 +105,6 @@ export async function proposeSlot(
     return { error: "That slot is no longer available. Pick another." };
   }
 
-  const a = admin();
   const { data: existing } = await a
     .from("qa_sessions")
     .select("id, proposed_by_id, confirmed_at")
@@ -198,7 +198,8 @@ export async function confirmSlot(
     };
   }
 
-  const { data: profiles } = await supabase
+  const a = admin();
+  const { data: profiles } = await a
     .from("profiles")
     .select("id, display_name, intention")
     .in("id", [match.user_a, match.user_b])
@@ -227,7 +228,6 @@ export async function confirmSlot(
     text: q.text,
   }));
 
-  const a = admin();
   const { data: updated, error: updateErr } = await a
     .from("qa_sessions")
     .update({
