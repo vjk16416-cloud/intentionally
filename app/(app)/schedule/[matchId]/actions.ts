@@ -4,6 +4,7 @@ import { createClient as createServiceRoleClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { appUrlForPath } from "@/lib/app-url";
 import { createDailyRoom } from "@/lib/daily/rooms";
 import { type Intention } from "@/lib/qa/questions";
 import { selectThreeQuestions } from "@/lib/qa/select";
@@ -253,10 +254,10 @@ export async function confirmSlot(
     // even if the match status didn't flip cleanly.
   }
 
-  // Best-effort email to both participants. Phone-OTP users won't
-  // have an email on auth.users, in which case we silently skip;
-  // they'll see the same details in-app on the confirmed schedule
-  // page and later in /qa/[sessionId].
+  // Emails return people to Intentionally rather than exposing a Daily room URL.
+  // A private Daily token is minted only after the app authenticates and
+  // authorises the participant on /qa/[sessionId].
+  const joinUrl = appUrlForPath(`/qa/${updated.id}`);
   const otherId = match.user_a === user.id ? match.user_b : match.user_a;
   const thisDisplayName =
     profiles.find((p) => p.id === user.id)?.display_name ?? "your match";
@@ -276,7 +277,7 @@ export async function confirmSlot(
           to: thisUser.data.user.email,
           otherName: otherDisplayName,
           scheduledAt: new Date(existing.scheduled_at),
-          joinUrl: room.url,
+          joinUrl,
           questions,
         }),
       );
@@ -287,7 +288,7 @@ export async function confirmSlot(
           to: otherUser.data.user.email,
           otherName: thisDisplayName,
           scheduledAt: new Date(existing.scheduled_at),
-          joinUrl: room.url,
+          joinUrl,
           questions,
         }),
       );
