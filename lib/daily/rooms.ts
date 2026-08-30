@@ -1,6 +1,10 @@
 import "server-only";
 
-import { DAILY_API_KEY, DAILY_API_URL } from "./client";
+import { DAILY_API_URL, getDailyApiKey } from "./client";
+import {
+  buildDailyMeetingTokenPayload,
+  buildDailyRoomPayload,
+} from "./config";
 
 type DailyRoomResponse = {
   id: string;
@@ -8,34 +12,28 @@ type DailyRoomResponse = {
   url: string;
 };
 
-// Creates a Daily.co room for a Q&A session, server-side. The
-// returned name + url get stored on qa_sessions and the url is
-// what both participants open when the Q&A starts.
-//
-// Room properties match §8: no prejoin UI, no Daily chat, no
-// screenshare. exp (room expiry) is scheduled_at + 15 minutes per
-// the spec — that's the 10-minute session plus a 5-minute buffer
-// for late joiners. Step 5b's grace reschedule will widen this if
-// needed.
+type DailyMeetingTokenResponse = {
+  token: string;
+};
+
+function dailyHeaders() {
+  return {
+    Authorization: `Bearer ${getDailyApiKey()}`,
+    "Content-Type": "application/json",
+  };
+}
+
+// Creates a private Daily room for a Q&A session. The raw room URL is safe to
+// store because private rooms reject unauthorised joins; participants receive a
+// short-lived, room-scoped meeting token only after Intentionally authenticates
+// and authorises them.
 export async function createDailyRoom(
   scheduledAt: Date,
 ): Promise<{ name: string; url: string }> {
-  const expEpoch = Math.floor((scheduledAt.getTime() + 15 * 60_000) / 1000);
-
   const response = await fetch(`${DAILY_API_URL}/rooms`, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${DAILY_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      properties: {
-        enable_prejoin_ui: false,
-        enable_chat: false,
-        enable_screenshare: false,
-        exp: expEpoch,
-      },
-    }),
+    headers: dailyHeaders(),
+    body: JSON.stringify(buildDailyRoomPayload(scheduledAt)),
   });
 
   if (!response.ok) {
@@ -47,4 +45,36 @@ export async function createDailyRoom(
 
   const room = (await response.json()) as DailyRoomResponse;
   return { name: room.name, url: room.url };
+}
+
+export async function createDailyMeetingToken({
+  roomName,
+  userId,
+  scheduledAt,
+}: {
+  roomName: string;
+  userId: string;
+  scheduledAt: Date;
+}) {
+  const response = await fetch(`${DAILY_API_URL}/meeting-tokens`, {
+    method: "POST",
+    headers: dailyHeaders(),
+    body: JSON.stringify(
+      buildDailyMeetingTokenPayload({ roomName, userId, scheduledAt }),
+    ),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(
+      `Daily.co meeting token creation failed (${response.status}): ${body}`,
+    );
+  }
+
+  const data = (await response.json()) as DailyMeetingTokenResponse;
+  if (!data.token) {
+    throw new Error("Daily.co meeting token response was missing a token.");
+  }
+
+  return data.token;
 }
