@@ -85,7 +85,7 @@ export default async function SchedulePage({
   const otherName = otherProfile?.display_name ?? "your match";
   const showInternalDemoActions = canUseInternalTestingShortcuts(user.email);
 
-  const { data: session } = await supabase
+  const { data: session } = await service
     .from("qa_sessions")
     .select("id, scheduled_at, proposed_at, proposed_by_id, confirmed_at")
     .eq("match_id", matchId)
