@@ -145,7 +145,6 @@ function SelectionForm({
 
   useEffect(() => {
     if (!state.success) return;
-    setIsConfirmOpen(false);
     router.refresh();
   }, [router, state.success]);
 
@@ -215,7 +214,7 @@ function SelectionForm({
           </p>
         ) : null}
 
-        {isConfirmOpen && selectedSlot ? (
+        {isConfirmOpen && selectedSlot && !state.success ? (
           <div
             role="presentation"
             className="fixed inset-0 z-[70] flex items-end justify-center bg-[#2f2a23]/28 px-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-6 sm:items-center sm:px-5 sm:pb-6"
