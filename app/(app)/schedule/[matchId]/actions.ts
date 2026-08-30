@@ -19,7 +19,7 @@ function admin() {
   });
 }
 
-export type ProposeState = { error?: string };
+export type ProposeState = { error?: string; success?: boolean };
 export type ConfirmState = { error?: string };
 
 type MatchRow = {
@@ -155,7 +155,7 @@ export async function proposeSlot(
   }
 
   revalidatePath(`/schedule/${matchId}`);
-  redirect(`/schedule/${matchId}`);
+  return { success: true };
 }
 
 export async function confirmSlot(
