@@ -28,6 +28,7 @@ const COUNTRY_CODES = [
 
 type LoginFormProps = {
   enableLocalFounderLogin?: boolean;
+  nextPath: string;
 };
 
 function normalisePhone(countryCode: string, localNumber: string) {
@@ -37,7 +38,10 @@ function normalisePhone(countryCode: string, localNumber: string) {
   return `${countryCode}${withoutLeadingZero}`;
 }
 
-export function LoginForm({ enableLocalFounderLogin = false }: LoginFormProps) {
+export function LoginForm({
+  enableLocalFounderLogin = false,
+  nextPath,
+}: LoginFormProps) {
   const [method, setMethod] = useState<"email" | "phone">("email");
   const [stage, setStage] = useState<"request" | "emailSent" | "verifyPhone">(
     "request",
@@ -83,20 +87,32 @@ export function LoginForm({ enableLocalFounderLogin = false }: LoginFormProps) {
     INITIAL_STATE,
   );
 
+  const [resendState, resendAction, resendPending] = useActionState(
+    requestOtp,
+    INITIAL_STATE,
+  );
+
   if (stage === "emailSent") {
+    const resendSucceeded =
+      resendState.sent &&
+      !resendState.error &&
+      resendState.identifier === identifier &&
+      resendState.kind === "email";
+
     return (
       <div className="space-y-4">
         <div className="rounded-2xl border border-border bg-muted/40 px-4 py-4">
           <h2 className="text-base font-semibold">Check your email</h2>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            We sent a secure sign-in link to {identifier}. Open the email and
-            click the link, or enter the code from the email below.
+            We sent one sign-in email to {identifier}. Open the secure link, or
+            enter the 6-digit code from the same email below.
           </p>
         </div>
 
         <form action={verifyAction} className="space-y-4">
           <input type="hidden" name="identifier" value={identifier} />
           <input type="hidden" name="kind" value="email" />
+          <input type="hidden" name="next" value={nextPath} />
 
           <div className="space-y-1.5">
             <label htmlFor="emailToken" className="text-sm font-semibold">
@@ -117,8 +133,12 @@ export function LoginForm({ enableLocalFounderLogin = false }: LoginFormProps) {
           </div>
 
           {verifyState.error ? (
-            <p className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-              {verifyState.error}
+            <p
+              role="alert"
+              className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+            >
+              {verifyState.error} If the code has expired, request a fresh
+              sign-in email below.
             </p>
           ) : null}
 
@@ -132,9 +152,41 @@ export function LoginForm({ enableLocalFounderLogin = false }: LoginFormProps) {
           </Button>
         </form>
 
+        <form action={resendAction} className="space-y-2">
+          <input type="hidden" name="identifier" value={identifier} />
+          <input type="hidden" name="next" value={nextPath} />
+
+          <Button
+            type="submit"
+            variant="outline"
+            disabled={resendPending}
+            className="w-full rounded-2xl"
+          >
+            {resendPending ? "Resending…" : "Resend sign-in email"}
+          </Button>
+
+          {resendSucceeded ? (
+            <p
+              role="status"
+              className="text-center text-xs leading-5 text-muted-foreground"
+            >
+              Fresh sign-in email sent. Use the newest code or link.
+            </p>
+          ) : null}
+
+          {resendState.error && resendState.identifier === identifier ? (
+            <p
+              role="alert"
+              className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+            >
+              {resendState.error}
+            </p>
+          ) : null}
+        </form>
+
         <Button
           type="button"
-          variant="outline"
+          variant="ghost"
           className="w-full rounded-2xl"
           onClick={() => setStage("request")}
         >
@@ -158,6 +210,7 @@ export function LoginForm({ enableLocalFounderLogin = false }: LoginFormProps) {
         }
       >
         <input type="hidden" name="identifier" value={requestIdentifier} />
+        <input type="hidden" name="next" value={nextPath} />
 
         <div className="grid grid-cols-2 gap-2 rounded-2xl border border-border bg-muted/30 p-1">
           <button
@@ -202,7 +255,8 @@ export function LoginForm({ enableLocalFounderLogin = false }: LoginFormProps) {
               className="h-12 rounded-2xl"
             />
             <p className="text-xs leading-5 text-muted-foreground">
-              We&apos;ll send you a secure sign-in link.
+              We&apos;ll send one email with a secure sign-in link and a 6-digit
+              code.
             </p>
           </div>
         ) : (
@@ -259,7 +313,10 @@ export function LoginForm({ enableLocalFounderLogin = false }: LoginFormProps) {
         )}
 
         {requestState.error ? (
-          <p className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <p
+            role="alert"
+            className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+          >
             {requestState.error}
           </p>
         ) : null}
@@ -273,7 +330,7 @@ export function LoginForm({ enableLocalFounderLogin = false }: LoginFormProps) {
           {requestPending
             ? "Sending…"
             : method === "email"
-              ? "Send secure sign-in link"
+              ? "Send sign-in email"
               : "Text me a sign-in code"}
         </Button>
 
@@ -305,6 +362,7 @@ export function LoginForm({ enableLocalFounderLogin = false }: LoginFormProps) {
     <form action={verifyAction} className="space-y-4">
       <input type="hidden" name="identifier" value={identifier} />
       <input type="hidden" name="kind" value={kind ?? ""} />
+      <input type="hidden" name="next" value={nextPath} />
 
       <div className="space-y-1.5">
         <label htmlFor="token" className="text-sm font-semibold">
@@ -336,7 +394,10 @@ export function LoginForm({ enableLocalFounderLogin = false }: LoginFormProps) {
       </div>
 
       {verifyState.error ? (
-        <p className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <p
+          role="alert"
+          className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+        >
           {verifyState.error}
         </p>
       ) : null}
