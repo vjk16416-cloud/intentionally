@@ -154,7 +154,6 @@ export async function proposeSlot(
     if (error) return { error: error.message };
   }
 
-  revalidatePath(`/schedule/${matchId}`);
   return { success: true };
 }
 
