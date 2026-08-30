@@ -1,0 +1,81 @@
+name: Discovery Q&A Invite Feature Check
+
+on:
+  pull_request:
+    branches:
+      - staging
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  invite-flow:
+    if: github.head_ref == 'feature/discovery-qa-invite-20260820'
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      STRIPE_IDENTITY_WEBHOOK_SECRET: ${{ secrets.STRIPE_IDENTITY_WEBHOOK_SECRET }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+      APP_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build
+        run: pnpm build
+
+      - name: Start app
+        run: nohup pnpm start > /tmp/intentionally-start.log 2>&1 &
+
+      - name: Wait for app
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:3000 > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/intentionally-start.log || true
+          exit 1
+
+      - name: Run discovery Q&A invite test
+        run: |
+          set +e
+          pnpm exec playwright test tests/e2e/discovery-qa-invite.spec.ts
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "=== Playwright failure context ==="
+            find test-results -name error-context.md -print -exec cat {} \; || true
+            echo "=== Application log ==="
+            cat /tmp/intentionally-start.log || true
+          fi
+          exit "$status"
