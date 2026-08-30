@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useRouter } from "next/navigation";
 
 import { FallbackActionLink, FallbackPanel } from "@/components/fallback-state";
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
@@ -112,6 +113,7 @@ function SelectionForm({
   selectedLabel: string | null;
   children: ReactNode;
 }) {
+  const router = useRouter();
   const [state, action, pending] = useActionState(proposeSlot, INITIAL_STATE);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -140,6 +142,12 @@ function SelectionForm({
       });
     }
   }, [matchId, state.error]);
+
+  useEffect(() => {
+    if (!state.success) return;
+    setIsConfirmOpen(false);
+    router.refresh();
+  }, [router, state.success]);
 
   useEffect(() => {
     if (!isConfirmOpen) return;
