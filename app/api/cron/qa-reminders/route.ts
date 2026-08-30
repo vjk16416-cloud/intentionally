@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 
 import { appUrlForPath } from "@/lib/app-url";
 import { authoriseCron } from "@/lib/cron/auth";
+import { isQaHourBeforeReminderDue } from "@/lib/cron/qa-reminder-window";
 import {
   sendQaMorningOfEmail,
   sendQaOneHourBeforeEmail,
@@ -17,7 +18,7 @@ import { getServiceRoleKey, SUPABASE_URL } from "@/lib/supabase/env";
 
 export const runtime = "nodejs";
 
-// Reminder cron — runs every 15 minutes (vercel.json). Fires two
+// Reminder cron — runs every 15 minutes via the production scheduler. Fires two
 // kinds of reminder per confirmed qa_session:
 //
 // - Morning-of: any 15-min tick when London time is between 08:00
@@ -37,9 +38,6 @@ export const runtime = "nodejs";
 
 const MORNING_HOUR_START = 8;
 const MORNING_HOUR_END = 9;
-
-const HOUR_BEFORE_LOWER_MS = 45 * 60_000;
-const HOUR_BEFORE_UPPER_MS = 60 * 60_000;
 
 function admin() {
   return createServiceRoleClient(SUPABASE_URL, getServiceRoleKey(), {
@@ -106,10 +104,11 @@ export async function GET(request: Request) {
       isSameLondonDay(now, scheduledAt) &&
       msUntilStart > 0;
 
-    const shouldSendHourBefore =
-      session.reminder_hour_before_sent_at === null &&
-      msUntilStart > HOUR_BEFORE_LOWER_MS &&
-      msUntilStart <= HOUR_BEFORE_UPPER_MS;
+    const shouldSendHourBefore = isQaHourBeforeReminderDue({
+      now,
+      scheduledAt,
+      reminderSentAt: session.reminder_hour_before_sent_at,
+    });
 
     if (!shouldSendMorning && !shouldSendHourBefore) continue;
 
