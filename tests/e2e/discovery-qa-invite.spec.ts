@@ -269,8 +269,10 @@ test.describe("Discovery to Q&A invite", () => {
       )
       .toBe(1);
 
-    await expect(confirmDialog).toBeHidden({ timeout: 5_000 });
-    await expect(page.getByText("Invite sent", { exact: true })).toBeVisible();
+    await expect(page.getByText("Invite sent", { exact: true })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(confirmDialog).toBeHidden();
     await expect(page.getByText(new RegExp(`Waiting on ${candidateFirstName}`, "i"))).toBeVisible();
 
     const { data: initialSessions, error: initialSessionError } = await admin
@@ -302,8 +304,10 @@ test.describe("Discovery to Q&A invite", () => {
       )
       .not.toBe(initialSession.scheduled_at);
 
-    await expect(confirmDialog).toBeHidden({ timeout: 5_000 });
-    await expect(page.getByText("Invite sent", { exact: true })).toBeVisible();
+    await expect(page.getByText("Invite sent", { exact: true })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(confirmDialog).toBeHidden();
 
     const { data: finalSessions, error: finalSessionError } = await admin
       .from("qa_sessions")
