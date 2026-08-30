@@ -10,7 +10,7 @@ env:
 
 jobs:
   invite-flow:
-    if: github.head_ref == 'feature/discovery-qa-invite-20260820'
+    if: github.head_ref == 'feature/discovery-qa-invite-20260820' || github.head_ref == 'feature/2026-08-30-discovery-qa-invite-reconciled'
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
