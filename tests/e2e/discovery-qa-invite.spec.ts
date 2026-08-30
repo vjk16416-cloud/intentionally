@@ -198,7 +198,7 @@ test.describe("Discovery to Q&A invite", () => {
     const page = await context.newPage();
 
     await page.goto(`${baseUrl}/discover`);
-    await expect(page.getByRole("heading", { name: /discover/i })).toBeVisible();
+    await expect(page.getByText("Discover", { exact: true }).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: new RegExp(candidateFirstName, "i") })).toBeVisible();
 
     await page.getByRole("button", { name: "I’m interested" }).click();
