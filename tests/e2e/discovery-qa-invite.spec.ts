@@ -72,6 +72,7 @@ test.describe("Discovery to Q&A invite", () => {
   let viewerId = "";
   let candidateId = "";
   let authCookies: AuthCookie[] = [];
+  let photoPaths: string[] = [];
   const candidateName = `Invite Candidate ${Date.now()}`;
   const candidateFirstName = "Invite";
   const testCity = `Invite Test City ${Date.now()}`;
@@ -105,6 +106,25 @@ test.describe("Discovery to Q&A invite", () => {
     viewerId = viewerData.user.id;
     candidateId = candidateData.user.id;
 
+    photoPaths = [
+      `${viewerId}/qa-invite-viewer-1.png`,
+      `${viewerId}/qa-invite-viewer-2.png`,
+      `${candidateId}/qa-invite-candidate-1.png`,
+      `${candidateId}/qa-invite-candidate-2.png`,
+    ];
+    const pngPixel = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Zl1sAAAAASUVORK5CYII=",
+      "base64",
+    );
+    for (const photoPath of photoPaths) {
+      const { error: uploadError } = await admin.storage
+        .from("profile-photos")
+        .upload(photoPath, pngPixel, { contentType: "image/png", upsert: true });
+      if (uploadError) {
+        throw new Error(`Failed to upload invite-flow photo: ${uploadError.message}`);
+      }
+    }
+
     const { error: profilesError } = await admin.from("profiles").upsert([
       {
         id: viewerId,
@@ -115,7 +135,7 @@ test.describe("Discovery to Q&A invite", () => {
         intention: "long-term",
         bio_prompt_key: "best-sunday",
         bio_answer: "A long walk, good coffee and an honest conversation.",
-        photos: ["test/qa-invite-viewer-1.jpg", "test/qa-invite-viewer-2.jpg"],
+        photos: photoPaths.slice(0, 2),
         city: testCity,
         neighbourhood: "Hackney",
         availability: [66, 67, 68, 69],
@@ -132,7 +152,7 @@ test.describe("Discovery to Q&A invite", () => {
         intention: "long-term",
         bio_prompt_key: "best-sunday",
         bio_answer: "A slow morning, a gallery and cooking something together.",
-        photos: ["test/qa-invite-candidate-1.jpg", "test/qa-invite-candidate-2.jpg"],
+        photos: photoPaths.slice(2),
         city: testCity,
         neighbourhood: "Hackney",
         availability: [66, 67, 68, 69],
@@ -189,6 +209,9 @@ test.describe("Discovery to Q&A invite", () => {
   });
 
   test.afterAll(async () => {
+    if (photoPaths.length > 0) {
+      await admin.storage.from("profile-photos").remove(photoPaths);
+    }
     if (viewerId) await admin.auth.admin.deleteUser(viewerId);
     if (candidateId) await admin.auth.admin.deleteUser(candidateId);
   });
