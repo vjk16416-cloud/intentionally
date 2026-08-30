@@ -73,6 +73,9 @@ jobs:
       - name: Check chat unlock transition
         run: pnpm exec tsx scripts/test-chat-unlock-flow.ts
 
+      - name: Check Daily room security
+        run: pnpm test:daily-security
+
       - name: Build
         run: pnpm build
 
