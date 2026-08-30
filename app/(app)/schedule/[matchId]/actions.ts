@@ -5,7 +5,6 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { appUrlForPath } from "@/lib/app-url";
-import { createDailyRoom } from "@/lib/daily/rooms";
 import { type Intention } from "@/lib/qa/questions";
 import { selectThreeQuestions } from "@/lib/qa/select";
 import { sendQaScheduledEmail } from "@/lib/resend/emails";
@@ -20,7 +19,7 @@ function admin() {
   });
 }
 
-export type ProposeState = { error?: string };
+export type ProposeState = { error?: string; success?: boolean };
 export type ConfirmState = { error?: string };
 
 type MatchRow = {
@@ -83,7 +82,8 @@ export async function proposeSlot(
   // action re-checks before writing. Lead-time / 7-day window is
   // implicit in computeMutualSlots (MIN_LEAD_MINUTES + weekly
   // wrap).
-  const { data: pairProfiles } = await supabase
+  const a = admin();
+  const { data: pairProfiles } = await a
     .from("profiles")
     .select("id, availability")
     .in("id", [match.user_a, match.user_b])
@@ -105,7 +105,6 @@ export async function proposeSlot(
     return { error: "That slot is no longer available. Pick another." };
   }
 
-  const a = admin();
   const { data: existing } = await a
     .from("qa_sessions")
     .select("id, proposed_by_id, confirmed_at")
@@ -155,8 +154,7 @@ export async function proposeSlot(
     if (error) return { error: error.message };
   }
 
-  revalidatePath(`/schedule/${matchId}`);
-  redirect(`/schedule/${matchId}`);
+  return { success: true };
 }
 
 export async function confirmSlot(
@@ -199,7 +197,8 @@ export async function confirmSlot(
     };
   }
 
-  const { data: profiles } = await supabase
+  const a = admin();
+  const { data: profiles } = await a
     .from("profiles")
     .select("id, display_name, intention")
     .in("id", [match.user_a, match.user_b])
@@ -216,6 +215,7 @@ export async function confirmSlot(
 
   let room: { name: string; url: string };
   try {
+    const { createDailyRoom } = await import("@/lib/daily/rooms");
     room = await createDailyRoom(new Date(existing.scheduled_at));
   } catch (err) {
     console.error("[schedule] daily.co room creation failed", err);
@@ -227,7 +227,6 @@ export async function confirmSlot(
     text: q.text,
   }));
 
-  const a = admin();
   const { data: updated, error: updateErr } = await a
     .from("qa_sessions")
     .update({

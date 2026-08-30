@@ -2,7 +2,6 @@
 
 import { TrackedLink } from "@/components/analytics/tracked-link";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { computeAge } from "@/lib/age";
 import { cn } from "@/lib/utils";
 
 import type { MatchedCard } from "./actions";
@@ -16,16 +15,13 @@ export function MatchModal({
   match: MatchedCard;
   onDismiss: () => void;
 }) {
-  const age = computeAge(match.date_of_birth);
+  const age = match.age;
   const firstName = match.display_name.split(" ")[0] || match.display_name;
   const initial = firstName.charAt(0).toUpperCase();
   const primaryPhoto = match.photo_urls[0];
 
   return (
     <div
-      // Full-screen overlay above the deck. Fixed + flex centres the
-      // card on every breakpoint without changing the clarity of the
-      // profile behind it.
       role="dialog"
       aria-modal="true"
       aria-labelledby="match-modal-title"
@@ -48,7 +44,6 @@ export function MatchModal({
           <div className="mx-auto flex max-w-xs items-center gap-4 rounded-[1.5rem] border border-[#e6ded0] bg-[#fffdf8] p-3 text-left shadow-[0_10px_30px_rgba(74,59,42,0.08)]">
             {primaryPhoto ? (
               <>
-                {/* Raw <img> for the same reasons as the discover card. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={primaryPhoto}
@@ -67,32 +62,32 @@ export function MatchModal({
                 {firstName}, {age}
               </p>
               <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                Ready for an approximately 10-minute Vibe Check.
+                Ready for an approximately 10-minute guided Q&A.
               </p>
             </div>
           </div>
 
           <p className="mx-auto max-w-sm text-sm leading-6 text-muted-foreground">
-            You both showed interest. Before chat opens, send a Vibe Check
-            invite with Soft Reveal and see if the conversation feels natural.
+            Invite {firstName} to a guided Q&A before chat opens. You will choose
+            a shared time next, and they can accept or suggest another time.
           </p>
 
           <div className="space-y-3">
             <TrackedLink
               href={`/schedule/${matchId}`}
-              eventKey="scheduleClicked"
+              eventKey="qaInviteOpened"
               eventProperties={{ match_id: matchId, source: "match_modal" }}
               className={cn(
                 buttonVariants({ size: "lg" }),
                 "h-12 w-full rounded-2xl bg-[#75886b] text-base font-semibold text-white shadow-[0_12px_30px_rgba(83,104,73,0.24)] hover:bg-[#697b60]",
               )}
             >
-              Send Vibe Check invite
+              Invite to Q&amp;A
             </TrackedLink>
 
             <p className="text-xs leading-5 text-muted-foreground">
-              Chat unlocks only if you both privately choose Continue after
-              the Vibe Check.
+              Chat unlocks only if you both privately choose Continue after the
+              Q&amp;A.
             </p>
 
             <Button

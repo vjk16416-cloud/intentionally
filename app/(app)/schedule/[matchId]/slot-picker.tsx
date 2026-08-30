@@ -1,6 +1,12 @@
 "use client";
 
-import { useActionState, useState, type ReactNode } from "react";
+import {
+  useActionState,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 import { FallbackActionLink, FallbackPanel } from "@/components/fallback-state";
 import { trackAnalyticsEvent } from "@/lib/analytics/client";
@@ -26,6 +32,13 @@ const timeFormatter = new Intl.DateTimeFormat("en-GB", {
 
 function toAmPm(time: string) {
   return time.replace(" am", "am").replace(" pm", "pm");
+}
+
+function inviteErrorCode(error: string) {
+  if (/already|confirmed/i.test(error)) return "duplicate";
+  if (/slot|date|available/i.test(error)) return "slot_unavailable";
+  if (/match/i.test(error)) return "match_state";
+  return "failed";
 }
 
 export function SlotPicker({
@@ -100,7 +113,70 @@ function SelectionForm({
   children: ReactNode;
 }) {
   const [state, action, pending] = useActionState(proposeSlot, INITIAL_STATE);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const hiddenScheduledAt = selectedSlot?.scheduledAtIso ?? "";
+  const selectedDateTime = selectedSlot
+    ? `${dateFormatter.format(new Date(selectedSlot.scheduledAtIso))} at ${toAmPm(
+        timeFormatter.format(new Date(selectedSlot.scheduledAtIso)),
+      )}`
+    : null;
+
+  useEffect(() => {
+    if (!state.error) return;
+
+    const errorCode = inviteErrorCode(state.error);
+    trackAnalyticsEvent("qaInviteFailed", {
+      properties: {
+        match_id: matchId,
+        error_code: errorCode,
+      },
+    });
+
+    if (errorCode === "duplicate") {
+      trackAnalyticsEvent("qaInviteDuplicate", {
+        properties: { match_id: matchId },
+      });
+    }
+  }, [matchId, state.error]);
+
+  useEffect(() => {
+    if (!state.success) return;
+    window.location.reload();
+  }, [state.success]);
+
+  useEffect(() => {
+    if (!isConfirmOpen) return;
+
+    const trigger = triggerRef.current;
+    dialogRef.current?.focus();
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsConfirmOpen(false);
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      trigger?.focus();
+    };
+  }, [isConfirmOpen]);
+
+  function openConfirmation() {
+    if (!selectedSlot || pending) return;
+
+    trackAnalyticsEvent("qaInviteConfirmationOpened", {
+      properties: {
+        match_id: matchId,
+        scheduled_at: selectedSlot.scheduledAtIso,
+        source: "slot_picker",
+      },
+    });
+    setIsConfirmOpen(true);
+  }
 
   return (
     <div className="space-y-4">
@@ -109,29 +185,21 @@ function SelectionForm({
         <input type="hidden" name="matchId" value={matchId} />
         <input type="hidden" name="scheduledAt" value={hiddenScheduledAt} />
         <button
-          type="submit"
+          ref={triggerRef}
+          type="button"
           disabled={pending || !selectedSlot}
-          onClick={() => {
-            if (!selectedSlot) return;
-            trackAnalyticsEvent("scheduleClicked", {
-              properties: {
-                match_id: matchId,
-                scheduled_at: selectedSlot.scheduledAtIso,
-                source: "slot_picker",
-              },
-            });
-          }}
+          onClick={openConfirmation}
           className="w-full rounded-2xl bg-[#75886b] px-4 py-3.5 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(83,104,73,0.24)] transition hover:bg-[#697b60] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {pending
             ? "Sending invite..."
             : selectedLabel
-              ? `Continue with ${selectedLabel}`
-              : "Select a time to continue"}
+              ? "Invite to Q&A"
+              : "Select a time to invite"}
         </button>
         <p className="text-center text-xs leading-5 text-muted-foreground">
-          They&apos;ll receive your invite and can accept or suggest another
-          time.
+          They can accept or suggest another time. Chat stays locked until the
+          Q&amp;A is complete and you both privately choose Continue.
         </p>
         {pending ? (
           <p className="text-center text-xs font-medium text-muted-foreground">
@@ -142,6 +210,83 @@ function SelectionForm({
           <p className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-center text-sm text-destructive">
             {state.error}
           </p>
+        ) : null}
+
+        {isConfirmOpen && selectedSlot && !state.success ? (
+          <div
+            role="presentation"
+            className="fixed inset-0 z-[70] flex items-end justify-center bg-[#2f2a23]/28 px-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-6 sm:items-center sm:px-5 sm:pb-6"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) setIsConfirmOpen(false);
+            }}
+          >
+            <div
+              ref={dialogRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="qa-invite-confirm-title"
+              aria-describedby="qa-invite-confirm-description"
+              tabIndex={-1}
+              className="w-full max-w-md rounded-[1.75rem] border border-[#e1d6c6] bg-[#fffaf3] p-5 shadow-[0_24px_70px_rgba(47,42,35,0.20)] outline-none sm:p-6"
+            >
+              <div className="mx-auto mb-4 h-1 w-9 rounded-full bg-[#d8cbbb]" aria-hidden="true" />
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8a7c70]">
+                Q&amp;A invite
+              </p>
+              <h3
+                id="qa-invite-confirm-title"
+                className="mt-2 text-2xl font-semibold tracking-tight text-[#3d342d]"
+              >
+                Send this Q&amp;A invite?
+              </h3>
+              <p
+                id="qa-invite-confirm-description"
+                className="mt-3 text-sm leading-6 text-[#6f6258]"
+              >
+                You are proposing {selectedDateTime}. They can accept this time
+                or suggest another one.
+              </p>
+
+              <div className="mt-4 rounded-2xl border border-[#dfe7d9] bg-[#eef5e8] px-4 py-3 text-sm leading-6 text-[#5f6f57]">
+                Chat unlocks only if you both privately choose Continue after
+                the Q&amp;A.
+              </div>
+
+              <div className="mt-5 space-y-2.5">
+                <button
+                  type="submit"
+                  disabled={pending}
+                  onClick={() => {
+                    trackAnalyticsEvent("qaInviteSubmitted", {
+                      properties: {
+                        match_id: matchId,
+                        scheduled_at: selectedSlot.scheduledAtIso,
+                        source: "slot_picker_confirmation",
+                      },
+                    });
+                    trackAnalyticsEvent("scheduleClicked", {
+                      properties: {
+                        match_id: matchId,
+                        scheduled_at: selectedSlot.scheduledAtIso,
+                        source: "slot_picker_confirmation",
+                      },
+                    });
+                  }}
+                  className="h-12 w-full rounded-2xl bg-[#75886b] px-4 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(83,104,73,0.24)] transition hover:bg-[#697b60] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {pending ? "Sending invite..." : "Send invite"}
+                </button>
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => setIsConfirmOpen(false)}
+                  className="h-11 w-full rounded-xl px-4 text-sm font-semibold text-[#6f6258] transition hover:bg-[#f3eee5] hover:text-[#3d342d] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
         ) : null}
       </form>
     </div>
@@ -211,7 +356,7 @@ function SlotCard({
             {timeFormatter.format(dt)}
           </p>
           <p className="text-xs leading-5 text-muted-foreground/90">
-            {selected ? "Ready to continue." : "Tap to select this time."}
+            {selected ? "Ready to invite." : "Tap to select this time."}
           </p>
         </div>
       </div>
