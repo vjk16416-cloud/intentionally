@@ -2,16 +2,20 @@
 
 import { redirect } from "next/navigation";
 
+import { parseChatMessageInput } from "@/lib/chat/validation";
 import { createClient } from "@/lib/supabase/server";
 
 export async function sendMessage(formData: FormData) {
-  const chatId = String(formData.get("chatId") ?? "");
-  const body = String(formData.get("body") ?? "").trim();
+  const input = parseChatMessageInput(
+    formData.get("chatId"),
+    formData.get("body"),
+  );
 
-  if (!chatId || !body) {
+  if (!input) {
     redirect("/discover");
   }
 
+  const { chatId, body } = input;
   const supabase = await createClient();
   const {
     data: { user },
