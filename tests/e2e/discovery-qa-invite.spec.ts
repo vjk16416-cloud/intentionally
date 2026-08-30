@@ -74,6 +74,7 @@ test.describe("Discovery to Q&A invite", () => {
   let authCookies: AuthCookie[] = [];
   const candidateName = `Invite Candidate ${Date.now()}`;
   const candidateFirstName = "Invite";
+  const testCity = `Invite Test City ${Date.now()}`;
 
   test.beforeAll(async () => {
     const password = `TestPassword-${randomUUID()}!`;
@@ -115,7 +116,7 @@ test.describe("Discovery to Q&A invite", () => {
         bio_prompt_key: "best-sunday",
         bio_answer: "A long walk, good coffee and an honest conversation.",
         photos: ["test/qa-invite-viewer-1.jpg", "test/qa-invite-viewer-2.jpg"],
-        city: "London",
+        city: testCity,
         neighbourhood: "Hackney",
         availability: [66, 67, 68, 69],
         id_verified: true,
@@ -132,7 +133,7 @@ test.describe("Discovery to Q&A invite", () => {
         bio_prompt_key: "best-sunday",
         bio_answer: "A slow morning, a gallery and cooking something together.",
         photos: ["test/qa-invite-candidate-1.jpg", "test/qa-invite-candidate-2.jpg"],
-        city: "London",
+        city: testCity,
         neighbourhood: "Hackney",
         availability: [66, 67, 68, 69],
         id_verified: true,
