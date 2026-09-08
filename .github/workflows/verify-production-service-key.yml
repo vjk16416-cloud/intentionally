@@ -1,0 +1,27 @@
+name: Verify production Supabase service key
+
+on:
+  push:
+    branches:
+      - ops/verify-production-service-key-20260908
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      PROD_SUPABASE_URL: https://opfbojqdwyfqannyvbua.supabase.co
+    steps:
+      - name: Verify production service credential
+        shell: bash
+        run: |
+          test -n "$SUPABASE_SERVICE_ROLE_KEY" || (echo "Missing SUPABASE_SERVICE_ROLE_KEY" && exit 1)
+          status=$(curl --silent --output /dev/null --write-out "%{http_code}" \
+            "$PROD_SUPABASE_URL/rest/v1/profiles?select=id&limit=1" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY")
+          test "$status" = "200" || (echo "Service credential is not valid for active production project, HTTP $status" && exit 2)
+          echo "Production service credential is valid for the active project."
