@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 import { isQaHourBeforeReminderDue } from "../lib/cron/qa-reminder-window";
 
@@ -58,4 +59,30 @@ assert.equal(
   "an already-sent reminder must not be sent again",
 );
 
-console.log("Q&A reminder-window regression passed.");
+const schedulerSource = readFileSync(
+  ".github/workflows/qa-reminder-scheduler.yml",
+  "utf8",
+);
+
+assert.match(
+  schedulerSource,
+  /cron:\s*["']\*\/15 \* \* \* \*["']/,
+  "production reminder scheduler must invoke every 15 minutes",
+);
+assert.match(
+  schedulerSource,
+  /https:\/\/intentionally-seven\.vercel\.app\/api\/cron\/qa-reminders/,
+  "scheduler must call the stable production reminder endpoint",
+);
+assert.match(
+  schedulerSource,
+  /Authorization:\s*Bearer \$CRON_SECRET/,
+  "scheduler must preserve CRON_SECRET bearer authentication",
+);
+assert.doesNotMatch(
+  schedulerSource,
+  /mgtqithikswryuoqtwae/,
+  "scheduler must not reference the inactive staging Supabase project",
+);
+
+console.log("Q&A reminder-window and scheduler regression passed.");
