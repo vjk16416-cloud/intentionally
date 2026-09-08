@@ -16,6 +16,7 @@
     "test:product": "tsx scripts/test-match-flow.ts",
     "test:expiry": "tsx scripts/test-expire-matches.ts",
     "test:qa-reminders": "tsx scripts/test-qa-reminder-window.ts",
+    "test:production-supabase": "tsx scripts/test-production-supabase-target.ts",
     "test:security": "tsx scripts/test-security-regressions.ts && tsx scripts/test-chat-input-validation.ts",
     "test:daily-security": "tsx scripts/test-daily-security.ts",
     "test:internal-profiles": "tsx scripts/manage-internal-test-profiles.ts"
@@ -42,13 +43,13 @@
     "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.4",
     "eslint-config-next": "16.2.6",
     "supabase": "^2.101.0",
-    "tailwindcss": "^4",
+    "tailwindcss": "^4.3.0",
     "tsx": "^4.22.4",
-    "typescript": "^5"
+    "typescript": "^5.9.3"
   }
 }
