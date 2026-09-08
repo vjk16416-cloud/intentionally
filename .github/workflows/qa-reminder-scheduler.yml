@@ -1,0 +1,35 @@
+name: Q&A Reminder Scheduler
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-reminder-scheduler
+  cancel-in-progress: false
+
+jobs:
+  invoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+      QA_REMINDER_URL: https://intentionally-seven.vercel.app/api/cron/qa-reminders
+
+    steps:
+      - name: Check scheduler secret
+        run: test -n "$CRON_SECRET" || (echo "Missing CRON_SECRET" && exit 1)
+
+      - name: Invoke protected Q&A reminder route
+        run: |
+          curl \
+            --fail-with-body \
+            --silent \
+            --show-error \
+            --max-time 30 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$QA_REMINDER_URL"
