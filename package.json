@@ -17,6 +17,7 @@
     "test:expiry": "tsx scripts/test-expire-matches.ts",
     "test:qa-reminders": "tsx scripts/test-qa-reminder-window.ts",
     "test:production-supabase": "tsx scripts/test-production-supabase-target.ts",
+    "test:github-scheduler-oidc": "tsx scripts/test-github-scheduler-oidc.ts",
     "test:security": "tsx scripts/test-security-regressions.ts && tsx scripts/test-chat-input-validation.ts",
     "test:daily-security": "tsx scripts/test-daily-security.ts",
     "test:internal-profiles": "tsx scripts/manage-internal-test-profiles.ts"
