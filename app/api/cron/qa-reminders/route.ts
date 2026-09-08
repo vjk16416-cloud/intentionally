@@ -66,7 +66,7 @@ type ProfileRow = {
 };
 
 export async function GET(request: Request) {
-  if (!authoriseCron(request)) {
+  if (!(await authoriseCron(request))) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
