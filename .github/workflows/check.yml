@@ -25,6 +25,7 @@ jobs:
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       APP_URL: http://localhost:3000
       CRON_SECRET: ${{ secrets.CRON_SECRET }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
     steps:
       - name: Checkout code
@@ -57,6 +58,27 @@ jobs:
           test -n "$RESEND_API_KEY" || (echo "Missing RESEND_API_KEY" && exit 1)
           test -n "$APP_URL" || (echo "Missing APP_URL" && exit 1)
           test -n "$CRON_SECRET" || (echo "Missing CRON_SECRET" && exit 1)
+
+      - name: Verify production deployment credentials
+        run: |
+          expected="https://opfbojqdwyfqannyvbua.supabase.co"
+          test "$NEXT_PUBLIC_SUPABASE_URL" = "$expected" || (echo "GitHub Supabase URL does not target active intentionally-mvp" && exit 2)
+          publishable_status=$(curl --silent --output /dev/null --write-out "%{http_code}" \
+            "$expected/rest/v1/profiles?select=id&limit=1" \
+            -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $NEXT_PUBLIC_SUPABASE_ANON_KEY")
+          test "$publishable_status" = "200" || (echo "GitHub publishable credential is not valid for active intentionally-mvp, HTTP $publishable_status" && exit 3)
+          service_status=$(curl --silent --output /dev/null --write-out "%{http_code}" \
+            "$expected/rest/v1/profiles?select=id&limit=1" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY")
+          test "$service_status" = "200" || (echo "GitHub service credential is not valid for active intentionally-mvp, HTTP $service_status" && exit 4)
+          test -n "$VERCEL_TOKEN" || (echo "Missing VERCEL_TOKEN GitHub secret" && exit 5)
+          vercel_status=$(curl --silent --output /dev/null --write-out "%{http_code}" \
+            "https://api.vercel.com/v10/projects/prj_FH0Mds4U70zM8hWAU7mSoAZJCfyK/env?teamId=team_slRZYPwifhlsjPDBmf9v8XQU" \
+            -H "Authorization: Bearer $VERCEL_TOKEN")
+          test "$vercel_status" = "200" || (echo "VERCEL_TOKEN cannot read production environment, HTTP $vercel_status" && exit 6)
+          echo "Production deployment credentials verified without exposing secret values."
 
       - name: Typecheck
         run: pnpm typecheck
