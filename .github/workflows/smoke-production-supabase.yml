@@ -1,0 +1,28 @@
+name: Smoke production Supabase
+
+on:
+  push:
+    branches:
+      - ops/smoke-production-supabase-20260908
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+      QA_REMINDER_URL: https://intentionally-seven.vercel.app/api/cron/qa-reminders
+    steps:
+      - name: Check cron credential
+        run: test -n "$CRON_SECRET" || (echo "Missing CRON_SECRET" && exit 1)
+
+      - name: Verify production database path
+        run: |
+          response=$(curl --fail-with-body --silent --show-error --max-time 30 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$QA_REMINDER_URL")
+          echo "Production reminder route returned successfully."
+          echo "$response"
