@@ -70,6 +70,9 @@ jobs:
       - name: Check Q&A reminder window
         run: pnpm test:qa-reminders
 
+      - name: Check production Supabase target
+        run: pnpm test:production-supabase
+
       - name: Check Discover journey copy
         run: pnpm exec tsx scripts/test-discover-journey.ts
 
