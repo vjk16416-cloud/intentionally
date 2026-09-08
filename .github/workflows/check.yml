@@ -67,6 +67,9 @@ jobs:
       - name: Check security regressions
         run: pnpm test:security
 
+      - name: Check Q&A reminder window
+        run: pnpm test:qa-reminders
+
       - name: Check Discover journey copy
         run: pnpm exec tsx scripts/test-discover-journey.ts
 
