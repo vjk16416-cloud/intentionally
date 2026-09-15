@@ -100,7 +100,11 @@ async function main() {
     "an expired token must be rejected",
   );
 
-  const tampered = `${issueToken().slice(0, -1)}x`;
+  const [encodedHeader, encodedPayload, encodedSignature] = issueToken().split(".");
+  const tamperedSignature = `${
+    encodedSignature[0] === "A" ? "B" : "A"
+  }${encodedSignature.slice(1)}`;
+  const tampered = `${encodedHeader}.${encodedPayload}.${tamperedSignature}`;
   assert.equal(
     await verifyGitHubSchedulerOidcToken(tampered, fetchJwks),
     false,

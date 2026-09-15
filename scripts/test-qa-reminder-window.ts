@@ -76,8 +76,28 @@ assert.match(
 );
 assert.match(
   schedulerSource,
-  /Authorization:\s*Bearer \$CRON_SECRET/,
-  "scheduler must preserve CRON_SECRET bearer authentication",
+  /id-token:\s*write/,
+  "scheduler must request a short-lived GitHub OIDC token",
+);
+assert.match(
+  schedulerSource,
+  /ACTIONS_ID_TOKEN_REQUEST_URL/,
+  "scheduler must request its token from GitHub Actions",
+);
+assert.match(
+  schedulerSource,
+  /ACTIONS_ID_TOKEN_REQUEST_TOKEN/,
+  "scheduler must authenticate the OIDC token request with GitHub Actions",
+);
+assert.match(
+  schedulerSource,
+  /Authorization:\s*Bearer \$OIDC_TOKEN/,
+  "scheduler must send its short-lived OIDC token to the reminder endpoint",
+);
+assert.doesNotMatch(
+  schedulerSource,
+  /CRON_SECRET/,
+  "scheduler must not store or send a long-lived cron secret",
 );
 assert.doesNotMatch(
   schedulerSource,
