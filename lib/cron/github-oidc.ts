@@ -1,4 +1,8 @@
-import { createPublicKey, verify as verifySignature } from "node:crypto";
+import {
+  createPublicKey,
+  type JsonWebKey as NodeJsonWebKey,
+  verify as verifySignature,
+} from "node:crypto";
 
 const GITHUB_OIDC_ISSUER = "https://token.actions.githubusercontent.com";
 const GITHUB_OIDC_JWKS_URL =
@@ -38,8 +42,16 @@ type JwtClaims = {
   event_name?: unknown;
 };
 
+// GitHub's JWKS entries use Node's extensible crypto JWK shape. The `kid`,
+// `alg`, and `use` fields are issuer metadata, rather than Web Crypto keys.
+type GitHubJwk = NodeJsonWebKey & {
+  kid?: unknown;
+  alg?: unknown;
+  use?: unknown;
+};
+
 type JwksResponse = {
-  keys?: JsonWebKey[];
+  keys?: GitHubJwk[];
 };
 
 function decodeBase64UrlJson<T>(value: string): T | null {
