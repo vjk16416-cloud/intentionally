@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 concurrency:
   group: qa-reminder-scheduler
@@ -17,19 +18,26 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     env:
-      CRON_SECRET: ${{ secrets.CRON_SECRET }}
       QA_REMINDER_URL: https://intentionally-seven.vercel.app/api/cron/qa-reminders
 
     steps:
-      - name: Check scheduler secret
-        run: test -n "$CRON_SECRET" || (echo "Missing CRON_SECRET" && exit 1)
-
-      - name: Invoke protected Q&A reminder route
+      - name: Invoke Q&A reminder route with GitHub OIDC
         run: |
+          OIDC_TOKEN="$(
+            curl \
+              --fail-with-body \
+              --silent \
+              --show-error \
+              --get \
+              --data-urlencode "audience=$QA_REMINDER_URL" \
+              -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+              "$ACTIONS_ID_TOKEN_REQUEST_URL" \
+              | jq --exit-status --raw-output '.value'
+          )"
           curl \
             --fail-with-body \
             --silent \
             --show-error \
             --max-time 30 \
-            -H "Authorization: Bearer $CRON_SECRET" \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
             "$QA_REMINDER_URL"
