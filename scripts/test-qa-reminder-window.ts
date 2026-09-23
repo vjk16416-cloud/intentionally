@@ -66,8 +66,8 @@ const schedulerSource = readFileSync(
 
 assert.match(
   schedulerSource,
-  /cron:\s*["']\*\/15 \* \* \* \*["']/,
-  "production reminder scheduler must invoke every 15 minutes",
+  /cron:\s*["']7,22,37,52 \* \* \* \*["']/,
+  "production reminder scheduler must invoke every 15 minutes away from the hourly peak",
 );
 assert.match(
   schedulerSource,
