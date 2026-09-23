@@ -2,7 +2,8 @@ name: Q&A Reminder Scheduler
 
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    # Avoid the top-of-hour peak; GitHub schedules are still best-effort.
+    - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
 
 permissions:
